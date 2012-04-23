@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Zdraví Vás GroupClearingActivity!</string>
+    <string name="app_name">Group Clearing</string>
+    <string name="add_new_event">Přidat akci</string>
+    <string name="add_new_participant">Přidat účastníka</string>
+    <string name="event_name">Název akce</string>
+    <string name="event_note">Poznámka</string>
+    <string name="event_from_date">Od:</string>
+    <string name="event_from_date_default">12.12. 2012</string>
+    <string name="event_to_date">Do:</string>
+    <string name="event_to_date_default">12.12. 2012</string>
+    <string name="event_view_participants">Účastníci</string>
+    <string name="event_add_participant">Přidat</string>
+    <string name="event_view_transactions">Transakce</string>
+    <string name="event_add_transaction">Přidat</string>
+    <string name="change">Změnit</string>
+    <string name="event_transactions">Transakce</string>
+    <string name="event_delete">Smazat</string>
+    <string name="about">O programu</string>
+    <string name="info_version">Verze 1.0</string>
+    <string name="info_author">© Strašlivý Uragán, 2011</string>
+    <string name="program_name">Group Clearing</string>
+    <string name="save_failed_alert">Nepodařilo se uložit některé akce.</string>
+    <string name="alert_title">Chyba!</string>
+    <string name="no_external_storage_alert">Není možné načíst data z externího úložiště.</string>
+    <string name="syntax_error_alert">Některé akce nebylo lze přečíst pro syntaktické chyby.</string>
+    <string name="participant_name">Jméno účastníka</string>
+    <string name="participant_delete">Smazat</string>
+    <string name="transaction_delete">Smazat</string>
+    <string name="add_new_transaction">Přidat transakci</string>
+    <string name="transaction_name">Název transakce:</string>
+    <string name="transaction_value">Zaplaceno:</string>
+    <string name="transaction_date">Datum:</string>
+    <string name="transaction_paid_by">Platil:</string>
+    <string name="transaction_participants">Zúčastnění:</string>
+    <string name="trans_part_name_placeholder">Jméno účastníka</string>
+    <string name="trans_part_value_placeholder">0,- </string>
+
+</resources>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, GroupClearingActivity!</string>
+    <string name="app_name">Group Clearing</string>
+    <string name="add_new_event">Add new event</string>
+    <string name="add_new_participant">Add new participant</string>
+    <string name="event_name">Event name</string>
+    <string name="event_note">Note</string>
+    <string name="event_from_date">From:</string>
+    <string name="event_from_date_default">12/12/2012</string>
+    <string name="event_to_date">To:</string>
+    <string name="event_to_date_default">12/12/2012</string>
+    <string name="event_view_participants">Participants</string>
+    <string name="event_view_transactions">Transactions</string>
+    <string name="change">Change</string>
+    <string name="event_transactions">Transactions</string>
+    <string name="event_delete">Delete</string>
+    <string name="about">About</string>
+    <string name="info_version">Version 1.0</string>
+    <string name="info_author">© Strašlivý Uragán, 2011</string>
+    <string name="program_name">Group Clearing</string>
+    <string name="save_failed_alert">Failed to save some events.</string>
+    <string name="alert_title">Group Clearing Alert</string>
+    <string name="no_external_storage_alert">Could not get access to the external storage.</string>
+    <string name="syntax_error_alert">Some events could not be read due to a syntax error.</string>
+    <string name="participant_name">Name of the Participant</string>
+    <string name="participant_delete">Delete</string>
+    <string name="transaction_delete">Delete</string>
+    <string name="add_new_transaction">Add new transaction</string>
+    <string name="transaction_name">Transaction name:</string>
+    <string name="transaction_value">Value:</string>
+    <string name="transaction_date">Date:</string>
+	<string name="transaction_participants">Participants:</string>
+	<string name="trans_part_name_placeholder">Name of participant</string>
+	<string name="trans_part_value_placeholder">0,- </string>
+</resources>
