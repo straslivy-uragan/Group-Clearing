@@ -18,7 +18,7 @@ import java.io.PrintStream;
  * too. Among other it concerns current balance
  */
 public class ClearingPerson implements Comparable<ClearingPerson> {
-   private int id;
+   private long id;
    private String name;
    private String note;
    private int balance;
@@ -46,8 +46,8 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
     * @param note
     * @param balance
     */
-   public ClearingPerson(int id, String name,
-         String note, int balance) {
+   public ClearingPerson(long id, String name,
+         int balance, String note) {
       super();
       this.id = id;
       this.name = (name != null ? name : "");
@@ -69,7 +69,7 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
    /**
     * @return the id
     */
-   public int getId() {
+   public long getId() {
       return id;
    }
    /**

@@ -11,38 +11,45 @@ import android.view.ViewGroup;
 import android.widget.ListAdapter;
 
 public class TransactionsListAdapter implements ListAdapter {
-	LayoutInflater inflater;
-    Context context;
-    GroupClearingApplication myApplication;
-    ClearingEvent myEvent;
-    ArrayList<DataSetObserver> observers;
+   LayoutInflater inflater;
+   Context context;
+   long myEventId = -1;
+   ArrayList<DataSetObserver> observers;
+   Vector<Transaction> transactions;
+   GCDatabase db = null;
 
     public static final int NORMAL_TRANSACTION_TYPE = 0;
 
-    public TransactionsListAdapter(Context aContext) {
-    	myApplication = GroupClearingApplication.getInstance();
-      myEvent = myApplication.getActiveEvent();
-    	context = aContext;
-      inflater = (LayoutInflater)context.getSystemService(
-            Context.LAYOUT_INFLATER_SERVICE);
-      observers = new ArrayList<DataSetObserver>();
-   }
+    public TransactionsListAdapter(Context aContext, long eventId)
+    {
+       myApplication = GroupClearingApplication.getInstance();
+       myEventId = eventId;
+       context = aContext;
+       inflater = (LayoutInflater)context.getSystemService(
+             Context.LAYOUT_INFLATER_SERVICE);
+       observers = new ArrayList<DataSetObserver>();
+       readTransactionsFromDB();
+    }
 
    @Override
       public int getCount() {
-         return myEvent.getNumberOfTransactions();
+         return transactions.size();
       }
 
    @Override
       public Object getItem(int position) {
-         return myEvent.getTransaction(position);
+         if (position < transactions.size())
+         {
+            return transactions.get(position);
+         }
+         return null;
       }
 
    @Override
       public long getItemId(int position) {
-         if (position < myEvent.getNumberOfTransactions())
+         if (position < transactions.size())
          {
-            return myEvent.getTransaction(position).getId();
+            return transactions.get(position).getId();
          }
          return 0;
       }
@@ -66,7 +73,7 @@ public class TransactionsListAdapter implements ListAdapter {
             wrapper = new TransactionsListItemWrapper(rowView);
             rowView.setTag(wrapper);
          }
-         ClearingTransaction transaction = myEvent.getTransaction(position);
+         ClearingTransaction transaction = transactions.get(position);
          DateFormat df = DateFormat.getDateInstance();
          wrapper.getName().setText(transaction.getName());
          wrapper.getDate().setText(df.format(transaction.getDate()));
@@ -85,7 +92,7 @@ public class TransactionsListAdapter implements ListAdapter {
 
    @Override
       public boolean isEmpty() {
-         return myEvent.getNumberOfTransactions() > 0;
+         return transactions.isEmpty();
       }
 
    @Override
@@ -114,5 +121,22 @@ public class TransactionsListAdapter implements ListAdapter {
          return true;
       }
 
+   public void readTransactionsFromDB()
+   {
+      if (db == null)
+      {
+         db = new GCDatabase(context);
+      }
+      transactions = db.readTransactionsOfEvent(myEventId);
+      notifyDataSetChanged();
+   }
 
+   public Transaction createTransaction() {
+      notifyDataSetChanged();
+   }
+
+   public void removeTransactionAtPosition(int position)
+   {
+      notifyDataSetChanged();
+   }
 }

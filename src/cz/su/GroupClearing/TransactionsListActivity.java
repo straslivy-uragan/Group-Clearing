@@ -28,7 +28,7 @@ public class TransactionsListActivity extends FragmentActivity {
       public void onCreate(Bundle savedInstanceState) {
          super.onCreate(savedInstanceState);
          myApplication = GroupClearingApplication.getInstance();
-         myEvent = myApplication.getActiveEvent();
+        // myEvent = myApplication.getActiveEvent();
          setContentView(R.layout.transactions_list);
          ListView lv = (ListView) findViewById(R.id.transactions_list_view);
          lv.setOnItemClickListener(new OnItemClickListener() {
@@ -37,6 +37,7 @@ public class TransactionsListActivity extends FragmentActivity {
                onTransactionClicked(position, id);
                }
                });
+         myEventId = getIntent().getIntExtra("cz.su.GroupClearing.EventId", -1);
          transactionsListAdapter = new TransactionsListAdapter(this);
          lv.setAdapter(transactionsListAdapter);
          registerForContextMenu(lv);
@@ -49,42 +50,34 @@ public class TransactionsListActivity extends FragmentActivity {
       }
 
    @Override
-      protected void onPause() {
-         super.onPause();
-         try {
-            myApplication.saveModifiedEvents();
-         } catch (GroupClearingException e) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(e.getMessage());
-            builder.setTitle(R.string.alert_title);
-            builder.setPositiveButton("OK",
-                  new DialogInterface.OnClickListener() {
-                  public void onClick(DialogInterface dialog, int which) {
-                  }
-                  });
-            AlertDialog alert = builder.create();
-            alert.show();
+      protected void onDestroy()
+      {
+         super.onDestroy();
+         if (participantsListAdapter != null)
+         {
+            participantsListAdapter.closeDB();
          }
       }
-
+   
    public void onTransactionClicked(final int position, long id) {
       Intent intent = new Intent(this, TransactionEditActivity.class);
       ClearingTransaction aTransaction = null;
       if (position >= myEvent.getNumberOfTransactions())
       {
-         aTransaction = myEvent.newTransaction();
+         aTransaction = transactionsListAdapter.createTransaction();
          refreshData();
       }
       else
       {
-         aTransaction = myEvent.getTransaction(position);
+         aTransaction = transactionsListAdapter.getItem(position);
       }
+      intent.putExtra("cz.su.GroupClearing.EventId", myEventId);
       intent.putExtra("cz.su.GroupClearing.TransactionId", aTransaction.getId());
       startActivity(intent);
    }
 
    public void refreshData() {
-      transactionsListAdapter.notifyDataSetChanged();
+      transactionsListAdapter.readTransactionsFromDB();
    }
 
    @Override
@@ -100,7 +93,7 @@ public class TransactionsListActivity extends FragmentActivity {
          switch (item.getItemId()) {
             case R.id.menu_add_transaction:
                {
-                  onTransactionClicked(myEvent.getNumberOfTransactions(), 0);
+                  onTransactionClicked(participantsListAdapter.getCount(), 0);
                   return true;
                }
             default:
@@ -122,7 +115,7 @@ public class TransactionsListActivity extends FragmentActivity {
          switch (item.getItemId()) {
             case R.id.menu_transaction_delete:
                {
-                  myEvent.removeTransaction((int)info.id);
+                  transactionsListAdapter.removeTransactionAtPosition(info.position);
                   refreshData();
                }
                return true;

@@ -1,6 +1,5 @@
 package cz.su.GroupClearing;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -27,8 +26,7 @@ import cz.su.GroupClearing.ParticipantsListAdapter;
 
 public class ParticipantsListActivity extends FragmentActivity {
 
-   private ClearingEvent myEvent = null;
-   private GroupClearingApplication myApplication = null;
+   private long myEventId = -1;
    private ParticipantsListAdapter participantsListAdapter = null;
    private EditParticipantDialog editParticipantDialog = null;
 
@@ -93,8 +91,6 @@ public class ParticipantsListActivity extends FragmentActivity {
    @Override
       public void onCreate(Bundle savedInstanceState) {
          super.onCreate(savedInstanceState);
-         myApplication = GroupClearingApplication.getInstance();
-         myEvent = myApplication.getActiveEvent();
          setContentView(R.layout.participants_list);
          ListView lv = (ListView) findViewById(R.id.participants_list_view);
          lv.setOnItemClickListener(new OnItemClickListener() {
@@ -103,7 +99,8 @@ public class ParticipantsListActivity extends FragmentActivity {
                onPersonClicked(position, id);
                }
                });
-         participantsListAdapter = new ParticipantsListAdapter(this);
+         myEventId = getIntent().getIntExtra("cz.su.GroupClearing.EventId", -1);
+         participantsListAdapter = new ParticipantsListAdapter(this, myEventId);
          lv.setAdapter(participantsListAdapter);
          registerForContextMenu(lv);
       }
@@ -115,23 +112,14 @@ public class ParticipantsListActivity extends FragmentActivity {
       }
 
    @Override
-      protected void onPause() {
-         super.onPause();
-         try {
-            myApplication.saveModifiedEvents();
-         } catch (GroupClearingException e) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(e.getMessage());
-            builder.setTitle(R.string.alert_title);
-            builder.setPositiveButton("OK",
-                  new DialogInterface.OnClickListener() {
-                  public void onClick(DialogInterface dialog, int which) {
-                  }
-                  });
-            AlertDialog alert = builder.create();
-            alert.show();
-         }
+   protected void onDestroy()
+   {
+      super.onDestroy();
+      if (participantsListAdapter != null)
+      {
+         participantsListAdapter.closeDB();
       }
+   }
 
    public void onPersonClicked(final int position, long id) {
       FragmentManager fm = getSupportFragmentManager();
@@ -148,30 +136,29 @@ public class ParticipantsListActivity extends FragmentActivity {
 
       editParticipantDialog.show(ft, "edit_participant_dialog");
       editParticipantDialog.setPosition(position);
-      if (position >= myEvent.getNumberOfParticipants()) {
+      if (position >= participantsListAdapter.getCount()) {
          editParticipantDialog.setName(getString(R.string.participant_name));
       } else {
-         ClearingPerson participant = myEvent.getParticipant(position);
-         editParticipantDialog.setName(participant.getName());
+         editParticipantDialog.setName(
+               ((ClearingPerson)participantsListAdapter.getItem(position)).getName());
       }
    }
 
    public void onNameEditorOK(final int position) {
-      if (position >= myEvent.getNumberOfParticipants()) {
-         myEvent.newParticipantWithName(editParticipantDialog.getName());
+      if (position >= participantsListAdapter.getCount()) {
+         participantsListAdapter.createParticipantWithName(
+               editParticipantDialog.getName());
       } else {
-         ClearingPerson participant = myEvent.getParticipant(position);
-         participant.setName(editParticipantDialog.getName());
-         myEvent.participantWasModified();
+         participantsListAdapter.setNameOfParticipantAtPosition(
+               position, editParticipantDialog.getName());
       }
-      refreshData();
    }
 
    public void onNameEditorCancelled(final int position) {
    }
 
    public void refreshData() {
-      participantsListAdapter.notifyDataSetChanged();
+      participantsListAdapter.readParticipantsFromDB();
    }
 
    @Override
@@ -187,7 +174,7 @@ public class ParticipantsListActivity extends FragmentActivity {
          switch (item.getItemId()) {
             case R.id.menu_add_participant:
                {
-                  onPersonClicked(myEvent.getNumberOfParticipants(), 0);
+                  onPersonClicked(participantsListAdapter.getCount(), 0);
                   return true;
                }
             default:
@@ -209,14 +196,12 @@ public class ParticipantsListActivity extends FragmentActivity {
          switch (item.getItemId()) {
             case R.id.menu_participant_delete:
                {
-                  myEvent.removeParticipant((int)info.id);
-                  refreshData();
+                  participantsListAdapter.removeParticipantAtPosition(info.position);
                }
                return true;
             default:
                return super.onContextItemSelected(item);
          }
       }
-
 
 }
