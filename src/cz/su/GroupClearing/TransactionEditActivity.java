@@ -7,9 +7,6 @@ import android.widget.EditText;
 
 public class TransactionEditActivity extends Activity
 {
-   private GroupClearingApplication myApplication;
-   private ClearingEvent myEvent;
-   private ClearingTransaction myTransaction;
    private EditText transactionNameEdit;
 
    /** Called when the activity is first created. */
@@ -19,13 +16,11 @@ public class TransactionEditActivity extends Activity
          super.onCreate(savedInstanceState);
          setContentView(R.layout.transaction_edit);
 
-         myApplication = GroupClearingApplication.getInstance();
          //	myEvent = myApplication.getActiveEvent();
          transactionNameEdit = (EditText) findViewById(R.id.transaction_name_edit);
          int transactionId = getIntent().getIntExtra(
                "cz.su.GroupClearing.TransactionId", 10);
          transactionNameEdit.setText((new Integer(transactionId)).toString());
-         myTransaction = null;
       }
 
    @Override

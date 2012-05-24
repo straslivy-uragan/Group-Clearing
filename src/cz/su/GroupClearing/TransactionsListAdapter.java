@@ -2,6 +2,7 @@ package cz.su.GroupClearing;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Vector;
 
 import android.content.Context;
 import android.database.DataSetObserver;
@@ -15,14 +16,13 @@ public class TransactionsListAdapter implements ListAdapter {
    Context context;
    long myEventId = -1;
    ArrayList<DataSetObserver> observers;
-   Vector<Transaction> transactions;
+   Vector<ClearingTransaction> transactions;
    GCDatabase db = null;
 
     public static final int NORMAL_TRANSACTION_TYPE = 0;
 
     public TransactionsListAdapter(Context aContext, long eventId)
     {
-       myApplication = GroupClearingApplication.getInstance();
        myEventId = eventId;
        context = aContext;
        inflater = (LayoutInflater)context.getSystemService(
@@ -131,12 +131,30 @@ public class TransactionsListAdapter implements ListAdapter {
       notifyDataSetChanged();
    }
 
-   public Transaction createTransaction() {
+   public ClearingTransaction createTransaction()
+   {
+      ClearingTransaction aTransaction = db.createNewTransaction(myEventId);
+      transactions.add(aTransaction);
       notifyDataSetChanged();
+      return null;
    }
 
    public void removeTransactionAtPosition(int position)
    {
-      notifyDataSetChanged();
+      if (position < getCount())
+      {
+         db.deleteTransactionWithId(transactions.get(position).getId());
+         transactions.remove(position);
+         notifyDataSetChanged();
+      }
+   }
+   
+   public void closeDB()
+   {
+      if (db != null)
+      {
+         db.close();
+      }
+      db = null;
    }
 }

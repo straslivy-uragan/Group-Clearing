@@ -14,7 +14,7 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
    public static final String TABLE_EVENTS = "gc_events";
    public static final String TABLE_PERSONS = "gc_persons";
    public static final String TABLE_TRANSACTIONS = "gc_transactions";
-// public static final String TABLE_EVENT_PARTICIPANTS = "gc_event_participants";
+   public static final String TABLE_TRANSACTION_PARTICIPANTS = "gc_trans_participants";
 
    public static final String TE_ID = "id";
    public static final String TE_NAME = "name";
@@ -29,10 +29,9 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
    public static final String TP_ID = "id";
    public static final String TP_EVENT_ID = "event_id";
    public static final String TP_NAME = "name";
-   public static final String TP_BALANCE = "balance";
    public static final String TP_NOTE = "note";
    public static final String[] TABLE_PERSONS_COLUMNS = {
-      TP_ID, TP_EVENT_ID, TP_NAME, TP_BALANCE, TP_NOTE
+      TP_ID, TP_EVENT_ID, TP_NAME, TP_NOTE
    };
 
    public static final String TT_ID = "id";
@@ -40,32 +39,41 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
    public static final String TT_NAME = "name";
    public static final String TT_DATE = "date";
    public static final String TT_CURRENCY = "currency";
-   public static final String TT_RECEIVER = "receiver";
-   public static final String TT_PARTICIPANTS = "participants"; // as comma separated list of ids
    public static final String TT_NOTE = "note";
-/*
-   public static final String TEP_EVENT = "event_id";
-   public static final String TEP_PARTICIPANT = "person_id";
-   public static final String TEP_BALANCE = "balance";
-*/
+   public static final String[] TABLE_TRANSACTIONS_COLUMNS = {
+      TT_ID, TT_EVENT_ID, TT_NAME, TT_DATE, TT_CURRENCY, TT_NOTE
+   };
+
+   public static final String TTP_ID = "id";
+   public static final String TTP_EVENT_ID = "event_id";
+   public static final String TTP_TRANSACTION_ID = "transaction_id";
+   public static final String TTP_PARTICIPANT_ID = "participant_id";
+   public static final String TTP_VALUE = "value";
+
+   public static final String[] TABLE_TTP_COLUMNS = {
+      TTP_ID, TTP_EVENT_ID, TTP_TRANSACTION_ID, TTP_PARTICIPANT_ID, TTP_VALUE
+   };
+
    public GCDatabaseHelper(Context context)
    {
-	super(context, DATABASE_NAME, null, DATABASE_VERSION);
+      super(context, DATABASE_NAME, null, DATABASE_VERSION);
    }
 
    @Override
    public void onCreate(SQLiteDatabase db)
    {
-      db.execSQL("CREATE TABLE " + TABLE_EVENTS + " (" + TE_ID
-            + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TE_NAME + " TEXT, "
-            + TE_NOTE + " TEXT, " + TE_START_DATE + " TEXT, "
-            + TE_FINISH_DATE + " TEXT, " + TE_CURRENCY + " TEXT);");
+      db.execSQL("CREATE TABLE " + TABLE_EVENTS + " ("
+            + TE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + TE_NAME + " TEXT, "
+            + TE_NOTE + " TEXT, "
+            + TE_START_DATE + " TEXT, "
+            + TE_FINISH_DATE + " TEXT, "
+            + TE_CURRENCY + " TEXT);");
 
       db.execSQL("CREATE TABLE " + TABLE_PERSONS + " (" 
             + TP_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + TP_EVENT_ID + " INTEGER, "
             + TP_NAME + " TEXT, "
-            + TP_BALANCE + " INTEGER, "
             + TP_NOTE + " TEXT);");
 
       db.execSQL("CREATE TABLE " + TABLE_TRANSACTIONS + " ("
@@ -74,13 +82,14 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
             + TT_NAME + " TEXT, "
             + TT_DATE + " TEXT, "
             + TT_CURRENCY + " TEXT, "
-            + TT_RECEIVER + " INTEGER, "
-            + TT_PARTICIPANTS + " TEXT, "
             + TT_NOTE + " TEXT);");
-      /*    db.execSQL("CREATE TABLE " + TABLE_EVENT_PARTICIPANTS + " (" + TEP_EVENT
-            + " INTEGER, " + TEP_PARTICIPANT + " INTEGER, " + TEP_BALANCE
-            + " REAL);");
-            */
+
+      db.execSQL("CREATE TABLE " + TABLE_TRANSACTION_PARTICIPANTS + " ("
+            + TTP_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + TTP_EVENT_ID + " INTEGER, "
+            + TTP_TRANSACTION_ID + " INTEGER, "
+            + TTP_PARTICIPANT_ID + " INTEGER, "
+            + TTP_VALUE + " INTEGER);");
    }
 
    @Override
