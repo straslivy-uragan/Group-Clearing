@@ -15,10 +15,12 @@ import android.database.sqlite.SQLiteDatabase;
 public class GCDatabase
 {
    private SQLiteDatabase db;
+   private SimpleDateFormat dateFormat;
 
    public GCDatabase(Context context)
    {
       db = (new GCDatabaseHelper(context)).getWritableDatabase();
+      dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
    }
 
    public void close()
@@ -30,13 +32,10 @@ public class GCDatabase
    public ClearingEvent createNewEvent()
    {
       ContentValues values = new ContentValues(5);
-      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       values.put(GCDatabaseHelper.TE_NAME, "");
       values.put(GCDatabaseHelper.TE_NOTE, "");
-      values.put(GCDatabaseHelper.TE_START_DATE,
-            df.format(new Date()));
-      values.put(GCDatabaseHelper.TE_FINISH_DATE,
-            df.format(new Date()));
+      values.put(GCDatabaseHelper.TE_START_DATE, dateFormat.format(new Date()));
+      values.put(GCDatabaseHelper.TE_FINISH_DATE, dateFormat.format(new Date()));
       values.put(GCDatabaseHelper.TE_CURRENCY,
             Currency.getInstance(Locale.getDefault()).toString());
       long id = db.insert(GCDatabaseHelper.TABLE_EVENTS, null, values);
@@ -58,7 +57,7 @@ public class GCDatabase
       {
          return null;
       }
-      SimpleDateFormat dateParser = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss");
+      SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       ClearingEvent event = new ClearingEvent(id);
       event.setName(eventCursor.getString(1));
       event.setNote(eventCursor.getString(2));
@@ -115,34 +114,26 @@ public class GCDatabase
    public void updateEvent(ClearingEvent anEvent)
    {
       ContentValues values = new ContentValues(5);
-      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       values.put(GCDatabaseHelper.TE_NAME, anEvent.getName());
       values.put(GCDatabaseHelper.TE_NOTE, anEvent.getNote());
       values.put(GCDatabaseHelper.TE_START_DATE,
-            df.format(anEvent.getStartDate()));
+            dateFormat.format(anEvent.getStartDate()));
       values.put(GCDatabaseHelper.TE_FINISH_DATE,
-            df.format(anEvent.getFinishDate()));
+            dateFormat.format(anEvent.getFinishDate()));
       values.put(GCDatabaseHelper.TE_CURRENCY,
             anEvent.getDefaultCurrency().toString());
-      StringBuilder whereClause = new StringBuilder();
-      whereClause.append(GCDatabaseHelper.TE_ID);
-      whereClause.append('=');
-      whereClause.append(anEvent.getId());
-      db.update(GCDatabaseHelper.TABLE_EVENTS, values, whereClause.toString(),
-               null);
-
+      String whereClause = String.format("%s=%d", GCDatabaseHelper.TE_ID,
+            anEvent.getId());
+      db.update(GCDatabaseHelper.TABLE_EVENTS, values, whereClause, null);
    }
 
    public void updateEventName(ClearingEvent anEvent)
    {
       ContentValues values = new ContentValues(1);
       values.put(GCDatabaseHelper.TE_NAME, anEvent.getName());
-      StringBuilder whereClause = new StringBuilder();
-      whereClause.append(GCDatabaseHelper.TE_ID);
-      whereClause.append('=');
-      whereClause.append(anEvent.getId());
-      db.update(GCDatabaseHelper.TABLE_EVENTS, values, whereClause.toString(),
-               null);
+      String whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TE_ID, anEvent.getId());
+      db.update(GCDatabaseHelper.TABLE_EVENTS, values, whereClause, null);
    }
 
    public void updateEventNote(ClearingEvent anEvent)
@@ -160,9 +151,8 @@ public class GCDatabase
    public void updateEventStartDate(ClearingEvent anEvent)
    {
       ContentValues values = new ContentValues(1);
-      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       values.put(GCDatabaseHelper.TE_START_DATE,
-            df.format(anEvent.getStartDate()));
+            dateFormat.format(anEvent.getStartDate()));
       StringBuilder whereClause = new StringBuilder();
       whereClause.append(GCDatabaseHelper.TE_ID);
       whereClause.append('=');
@@ -174,9 +164,8 @@ public class GCDatabase
    public void updateEventFinishDate(ClearingEvent anEvent)
    {
       ContentValues values = new ContentValues(1);
-      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       values.put(GCDatabaseHelper.TE_FINISH_DATE,
-            df.format(anEvent.getFinishDate()));
+            dateFormat.format(anEvent.getFinishDate()));
       StringBuilder whereClause = new StringBuilder();
       whereClause.append(GCDatabaseHelper.TE_ID);
       whereClause.append('=');
@@ -292,20 +281,80 @@ public class GCDatabase
             GCDatabaseHelper.TABLE_TTP_COLUMNS,
             whereClause, null,
             null, null, GCDatabaseHelper.TTP_TRANSACTION_ID);
-      // TODO: Implement
       // Go through both cursors simultaneously.
+      Vector<ClearingTransaction> transactions =
+         new Vector<ClearingTransaction>(transactionsCursor.getCount());
       transactionsCursor.moveToFirst();
       participantsCursor.moveToFirst();
       while (!transactionsCursor.isAfterLast())
       {
+         ClearingTransaction aTransaction =
+            new ClearingTransaction(transactionsCursor.getInt(0),
+                  transactionsCursor.getInt(1));
+         aTransaction.setName(transactionsCursor.getString(2));
+         SimpleDateFormat dateParser =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+         aTransaction.setDate(dateParser.parse(transactionsCursor.getString(3),
+               new ParsePosition(0)));
+         aTransaction.setCurrency(Currency.getInstance(
+                  transactionsCursor.getString(4)));
+         aTransaction.setAmount(transactionsCursor.getLong(5));
+         aTransaction.setReceiverId(transactionsCursor.getLong(6));
+         aTransaction.setSplitEvenly(transactionsCursor.getInt(7) != 0);
+         aTransaction.setNote(transactionsCursor.getString(8));
+         // Participants
+         while (!participantsCursor.isAfterLast() 
+               && participantsCursor.getInt(2) == transactionsCursor.getInt(0))
+         {
+            aTransaction.putParticipantValue(participantsCursor.getInt(3),
+                  participantsCursor.getInt(4));
+            participantsCursor.moveToNext();
+         }
          transactionsCursor.moveToNext();
+         transactions.add(aTransaction);
       }
-      return null;
+      return transactions;
    }
 
    public ClearingTransaction readTransactionWithId(long id)
    {
-      return null;
+      String whereClause = String.format("%s=%d", GCDatabaseHelper.TT_ID, id);
+      Cursor transactionCursor = db.query(GCDatabaseHelper.TABLE_TRANSACTIONS,
+            GCDatabaseHelper.TABLE_TRANSACTIONS_COLUMNS, whereClause, null,
+            null, null, null);
+      transactionCursor.moveToFirst();
+      if (transactionCursor.isAfterLast())
+      {
+         return null;
+      }
+      whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TTP_TRANSACTION_ID, id);
+      Cursor participantsCursor = db.query(
+            GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+            GCDatabaseHelper.TABLE_TTP_COLUMNS, whereClause, null,
+            null, null, null);
+      participantsCursor.moveToFirst();
+      ClearingTransaction aTransaction =
+         new ClearingTransaction(transactionCursor.getInt(0),
+               transactionCursor.getInt(1));
+      aTransaction.setName(transactionCursor.getString(2));
+      SimpleDateFormat dateParser = 
+         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      aTransaction.setDate(dateParser.parse(transactionCursor.getString(3),
+               new ParsePosition(0)));
+      aTransaction.setCurrency(Currency.getInstance(
+               transactionCursor.getString(4)));
+      aTransaction.setAmount(transactionCursor.getLong(5));
+      aTransaction.setReceiverId(transactionCursor.getLong(6));
+      aTransaction.setSplitEvenly(transactionCursor.getInt(7) != 0);
+      aTransaction.setNote(transactionCursor.getString(8));
+      while (!participantsCursor.isAfterLast())
+      {
+         aTransaction.putParticipantValue(participantsCursor.getInt(3),
+               participantsCursor.getInt(4));
+         participantsCursor.moveToNext();
+      }
+      return aTransaction;
    }
 
    public void deleteTransactionWithId(long id)
@@ -320,7 +369,118 @@ public class GCDatabase
 
    public ClearingTransaction createNewTransaction(long eventId)
    {
-      // TODO: Implement
+      // Get default currency of the event
+      String whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TE_ID, eventId);
+      String[] currencyColumn = {GCDatabaseHelper.TE_CURRENCY};
+      Cursor currencyCursor = db.query(GCDatabaseHelper.TABLE_EVENTS,
+            currencyColumn, whereClause, null,
+            null, null, null);
+      currencyCursor.moveToFirst();
+      if (currencyCursor.isAfterLast())
+      {
+         // TODO: throw something?
+         return null;
+      }
+      String transactionCurrency = currencyCursor.getString(0);
+
+      ContentValues values = new ContentValues(8);
+      values.put(GCDatabaseHelper.TT_EVENT_ID, eventId);
+      values.put(GCDatabaseHelper.TT_NAME, "");
+      values.put(GCDatabaseHelper.TT_DATE, dateFormat.format(new Date()));
+      values.put(GCDatabaseHelper.TT_CURRENCY, transactionCurrency);
+      values.put(GCDatabaseHelper.TT_AMOUNT, 0);
+      values.put(GCDatabaseHelper.TT_RECEIVER_ID, -1);
+      values.put(GCDatabaseHelper.TT_SPLIT_EVENLY, true); 
+      values.put(GCDatabaseHelper.TT_NOTE, "");
+      long id = db.insert(GCDatabaseHelper.TABLE_TRANSACTIONS, null, values);
+      if (id > 0)
+      {
+         return readTransactionWithId(id);
+      }
       return null;
+   }
+
+   public void updateTransaction(ClearingTransaction aTransaction)
+   {
+      ContentValues values = new ContentValues(7);
+      values.put(GCDatabaseHelper.TT_NAME, aTransaction.getName());
+      values.put(GCDatabaseHelper.TT_DATE,
+            dateFormat.format(aTransaction.getDate()));
+      values.put(GCDatabaseHelper.TT_CURRENCY,
+            aTransaction.getCurrency().toString());
+      values.put(GCDatabaseHelper.TT_AMOUNT, aTransaction.getAmount());
+      values.put(GCDatabaseHelper.TT_RECEIVER_ID,
+            aTransaction.getReceiverId());
+      values.put(GCDatabaseHelper.TT_SPLIT_EVENLY,
+            aTransaction.getSplitEvenly()); 
+      values.put(GCDatabaseHelper.TT_NOTE, aTransaction.getNote());
+      // TODO: update participants values
+      String whereClause = String.format("%s=%d", GCDatabaseHelper.TT_ID,
+            aTransaction.getId());
+      db.update(GCDatabaseHelper.TABLE_TRANSACTIONS, values, whereClause, null);
+   }
+
+   public void updateTransactionName(ClearingTransaction aTransaction)
+   {
+      ContentValues values = new ContentValues(1);
+      values.put(GCDatabaseHelper.TT_NAME, aTransaction.getName());
+      String whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TT_ID, aTransaction.getId());
+      db.update(GCDatabaseHelper.TABLE_TRANSACTIONS,
+            values, whereClause, null);
+   }
+
+   public void updateTransactionNote(ClearingTransaction aTransaction)
+   {
+      ContentValues values = new ContentValues(1);
+      values.put(GCDatabaseHelper.TT_NOTE, aTransaction.getNote());
+      String whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TT_ID, aTransaction.getId());
+      db.update(GCDatabaseHelper.TABLE_TRANSACTIONS,
+            values, whereClause, null);
+   }
+
+   public void updateTransactionAmount(ClearingTransaction aTransaction)
+   {
+      ContentValues values = new ContentValues(1);
+      values.put(GCDatabaseHelper.TT_AMOUNT, aTransaction.getAmount());
+      String whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TT_ID, aTransaction.getId());
+      db.update(GCDatabaseHelper.TABLE_TRANSACTIONS,
+            values, whereClause, null);
+   }
+
+   public void updateTransactionDate(ClearingTransaction aTransaction)
+   {
+      ContentValues values = new ContentValues(1);
+      values.put(GCDatabaseHelper.TT_DATE, 
+            dateFormat.format(aTransaction.getDate()));
+      String whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TT_ID, aTransaction.getId());
+      db.update(GCDatabaseHelper.TABLE_TRANSACTIONS,
+            values, whereClause, null);
+   }
+
+   public void updateTransactionReceiverId(ClearingTransaction aTransaction)
+   {
+      ContentValues values = new ContentValues(1);
+      values.put(GCDatabaseHelper.TT_RECEIVER_ID, 
+            aTransaction.getReceiverId());
+      String whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TT_ID, aTransaction.getId());
+      db.update(GCDatabaseHelper.TABLE_TRANSACTIONS,
+            values, whereClause, null);
+   }
+
+   public void updateTransactionSplitEvenly(ClearingTransaction aTransaction)
+   {
+      ContentValues values = new ContentValues(1);
+      values.put(GCDatabaseHelper.TT_SPLIT_EVENLY, 
+            aTransaction.getSplitEvenly());
+      String whereClause = String.format("%s=%d",
+            GCDatabaseHelper.TT_ID, aTransaction.getId());
+      db.update(GCDatabaseHelper.TABLE_TRANSACTIONS,
+            values, whereClause, null);
    }
 }

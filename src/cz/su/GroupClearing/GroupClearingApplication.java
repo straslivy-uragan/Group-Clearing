@@ -5,6 +5,9 @@ package cz.su.GroupClearing;
 
 import android.app.Application;
 
+import java.text.NumberFormat;
+import java.util.Currency;
+
 /**
  * @author su
  * 
@@ -12,6 +15,8 @@ import android.app.Application;
 public class GroupClearingApplication extends Application
 {
    private static GroupClearingApplication instance;
+   private NumberFormat currencyFormatterWithSymbol = null;
+   private NumberFormat currencyFormatter = null;
 
    public static GroupClearingApplication getInstance()
    {
@@ -25,4 +30,73 @@ public class GroupClearingApplication extends Application
       instance = this;
    }
 
+   public String formatCurrencyValue(long amount, Currency currency)
+   {
+      if (currencyFormatter == null)
+      {
+         currencyFormatter = NumberFormat.getInstance();
+      }
+      currencyFormatter.setGroupingUsed(false);
+      currencyFormatter.setMaximumFractionDigits(currency.getDefaultFractionDigits());
+      double value = amount / Math.pow(10, 
+               currency.getDefaultFractionDigits());
+      return currencyFormatter.format(value);
+   }
+
+   public String formatCurrencyValueWithSymbol(long amount, Currency currency)
+   {
+	   if (currencyFormatterWithSymbol == null)
+      {
+         currencyFormatterWithSymbol = NumberFormat.getCurrencyInstance();
+      }
+      currencyFormatterWithSymbol.setCurrency(currency);
+      double value = amount / Math.pow(10, 
+               currency.getDefaultFractionDigits());
+      return currencyFormatterWithSymbol.format(value);
+   }
+
+   public long parseCurrencyValue(String valueString, Currency currency)
+      throws GCSyntaxException
+   {
+      // We cannot use format, because there might be both , and . used as
+      // fraction digits separators.
+      long value = 0;
+      int index = 0;
+      while (index < valueString.length() 
+            && Character.isDigit(valueString.charAt(index)))
+      {
+         value = value * 10 + (valueString.charAt(index) - '0');
+         ++ index;
+      }
+      if (index < valueString.length()
+            && valueString.charAt(index) != '.'
+            && valueString.charAt(index) != ',')
+      {
+         throw new GCSyntaxException();
+      }
+      ++ index;
+      int fractionIndex = 0;
+      while (fractionIndex < currency.getDefaultFractionDigits()
+            && index + fractionIndex < valueString.length()
+            && Character.isDigit(valueString.charAt(index + fractionIndex)))
+      {
+         value = value * 10 + (valueString.charAt(index + fractionIndex) - '0');
+         ++ fractionIndex;
+      }
+      int restIndex = index + fractionIndex;
+      while (restIndex < valueString.length())
+      {
+         if (!Character.isDigit(valueString.charAt(index + fractionIndex)))
+         {
+            throw new GCSyntaxException();
+         }
+         ++ restIndex;
+      }
+      while (fractionIndex < currency.getDefaultFractionDigits())
+      {
+         value *= 10;
+         ++ fractionIndex;
+      }
+      return value;
+   }
 }

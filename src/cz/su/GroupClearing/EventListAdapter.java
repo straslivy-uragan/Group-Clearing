@@ -207,6 +207,7 @@ public class EventListAdapter implements ListAdapter
          Date finishDate = dateParser.parse(result.getString(3),
                new ParsePosition(0));
          subtitleBuilder.append(df.format(finishDate));
+         subtitleBuilder.append(' ');
          String subtitle = subtitleBuilder.toString();
          if (row < events.size())
          {

@@ -76,7 +76,11 @@ public class TransactionsListAdapter implements ListAdapter {
          ClearingTransaction transaction = transactions.get(position);
          DateFormat df = DateFormat.getDateInstance();
          wrapper.getName().setText(transaction.getName());
-         wrapper.getDate().setText(df.format(transaction.getDate()));
+         wrapper.getDate().setText(df.format(transaction.getDate()) + " ");
+         wrapper.getAmount().setText(
+               GroupClearingApplication.getInstance()
+               .formatCurrencyValueWithSymbol(
+                  transaction.getAmount(), transaction.getCurrency()) + " ");
          return rowView;
       }
 
@@ -136,7 +140,7 @@ public class TransactionsListAdapter implements ListAdapter {
       ClearingTransaction aTransaction = db.createNewTransaction(myEventId);
       transactions.add(aTransaction);
       notifyDataSetChanged();
-      return null;
+      return aTransaction;
    }
 
    public void removeTransactionAtPosition(int position)

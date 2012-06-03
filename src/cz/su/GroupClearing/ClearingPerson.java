@@ -4,8 +4,6 @@
  */
 package cz.su.GroupClearing;
 
-import java.io.PrintStream;
-
 /**
  * @author su
  * A class describing a person participating on a clearing event. A
@@ -21,18 +19,18 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
    private long id;
    private String name;
    private String note;
-   private int balance;
+   private long balance;
 
-   public int getBalance() {
+   public long getBalance() {
       return balance;
    }
-   public void setBalance(int balance) {
+   public void setBalance(long balance) {
       this.balance = balance;
    }
    /**
     * @param id
     */
-   public ClearingPerson(int id) {
+   public ClearingPerson(long id) {
       super();
       this.id = id;
       this.name = "";
@@ -47,7 +45,7 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
     * @param balance
     */
    public ClearingPerson(long id, String name,
-         int balance, String note) {
+         long balance, String note) {
       super();
       this.id = id;
       this.name = (name != null ? name : "");
@@ -87,26 +85,8 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
 
    @Override
       public String toString() {
-         return "ClearingPerson [id=" + id
-            + ", name=" + name
-            + ", note=" + note
-            + ", balance=" + balance + "]";
+         return name;
       }
-
-   public void print(PrintStream outStream) {
-      outStream.print("<participant id=\"");
-      outStream.print(id);
-      outStream.println('"');
-      outStream.print("name=\"");
-      outStream.print(name);
-      outStream.println('"');
-      outStream.print("balance=\"");
-      outStream.print(balance);
-      outStream.println('"');
-      outStream.print("note=\"");
-      outStream.print(note);
-      outStream.println("\" >");
-   }
 
    public int compareTo(ClearingPerson otherPerson) {
       if (otherPerson == null)

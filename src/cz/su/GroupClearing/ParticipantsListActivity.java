@@ -28,7 +28,7 @@ public class ParticipantsListActivity extends FragmentActivity {
 
    private long myEventId = -1;
    private ParticipantsListAdapter participantsListAdapter = null;
-   private EditParticipantDialog editParticipantDialog = null;
+   // private EditParticipantDialog editParticipantDialog = null;
 
    public class EditParticipantDialog extends DialogFragment {
       String name = null;
@@ -57,13 +57,19 @@ public class ParticipantsListActivity extends FragmentActivity {
                   okButtonClicked(v);
                   }
                   });
+            Button cancelButton = (Button) v.findViewById(R.id.participant_edit_cancel);
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                  public void onClick(View v) {
+                  dismiss();
+                  }
+                  });
             return v;
          }
 
       public void okButtonClicked(View v) {
          name = nameTextView.getText().toString();
          dismiss();
-         onNameEditorOK(position);
+         onNameEditorOK(position, name);
       }
 
       public void onCancel(DialogInterface dialog) {
@@ -99,7 +105,7 @@ public class ParticipantsListActivity extends FragmentActivity {
                onPersonClicked(position, id);
                }
                });
-         myEventId = getIntent().getIntExtra("cz.su.GroupClearing.EventId", -1);
+         myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
          participantsListAdapter = new ParticipantsListAdapter(this, myEventId);
          lv.setAdapter(participantsListAdapter);
          registerForContextMenu(lv);
@@ -130,27 +136,24 @@ public class ParticipantsListActivity extends FragmentActivity {
          ft.remove(prev);
       }
       ft.addToBackStack(null);
-      if (editParticipantDialog == null) {
-         editParticipantDialog = new EditParticipantDialog();
-      }
+      EditParticipantDialog editParticipantDialog = new EditParticipantDialog();
+      
 
-      editParticipantDialog.show(ft, "edit_participant_dialog");
       editParticipantDialog.setPosition(position);
       if (position >= participantsListAdapter.getCount()) {
-         editParticipantDialog.setName(getString(R.string.participant_name));
+         editParticipantDialog.setName("");
       } else {
          editParticipantDialog.setName(
                ((ClearingPerson)participantsListAdapter.getItem(position)).getName());
       }
+      editParticipantDialog.show(ft, "edit_participant_dialog");
    }
 
-   public void onNameEditorOK(final int position) {
+   public void onNameEditorOK(final int position, String name) {
       if (position >= participantsListAdapter.getCount()) {
-         participantsListAdapter.createParticipantWithName(
-               editParticipantDialog.getName());
+         participantsListAdapter.createParticipantWithName(name);
       } else {
-         participantsListAdapter.setNameOfParticipantAtPosition(
-               position, editParticipantDialog.getName());
+         participantsListAdapter.setNameOfParticipantAtPosition(position, name);
       }
    }
 
@@ -174,7 +177,7 @@ public class ParticipantsListActivity extends FragmentActivity {
          switch (item.getItemId()) {
             case R.id.menu_add_participant:
                {
-                  onPersonClicked(participantsListAdapter.getCount(), 0);
+                  onPersonClicked(participantsListAdapter.getCount(), -1);
                   return true;
                }
             default:

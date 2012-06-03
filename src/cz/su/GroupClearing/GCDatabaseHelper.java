@@ -39,9 +39,13 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
    public static final String TT_NAME = "name";
    public static final String TT_DATE = "date";
    public static final String TT_CURRENCY = "currency";
+   public static final String TT_AMOUNT = "amount";
+   public static final String TT_RECEIVER_ID = "receiver_id";
+   public static final String TT_SPLIT_EVENLY = "split_evenly";
    public static final String TT_NOTE = "note";
    public static final String[] TABLE_TRANSACTIONS_COLUMNS = {
-      TT_ID, TT_EVENT_ID, TT_NAME, TT_DATE, TT_CURRENCY, TT_NOTE
+      TT_ID, TT_EVENT_ID, TT_NAME, TT_DATE, TT_CURRENCY,
+      TT_AMOUNT, TT_RECEIVER_ID, TT_SPLIT_EVENLY, TT_NOTE
    };
 
    public static final String TTP_ID = "id";
@@ -82,6 +86,9 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
             + TT_NAME + " TEXT, "
             + TT_DATE + " TEXT, "
             + TT_CURRENCY + " TEXT, "
+            + TT_AMOUNT + " INTEGER, "
+            + TT_RECEIVER_ID + " INTEGER, "
+            + TT_SPLIT_EVENLY + " INTEGER, "
             + TT_NOTE + " TEXT);");
 
       db.execSQL("CREATE TABLE " + TABLE_TRANSACTION_PARTICIPANTS + " ("

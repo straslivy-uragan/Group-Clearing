@@ -11,13 +11,17 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TextView;
 
 /**
  * @author su
@@ -40,15 +44,16 @@ public class EventViewActivity extends Activity
    private DatePickerDialog.OnDateSetListener startDateSetListener = new DatePickerDialog.OnDateSetListener() {
 
       public void onDateSet(DatePicker view, int year, int monthOfYear,
-               int dayOfMonth)
+            int dayOfMonth)
       {
          startDateSet(year, monthOfYear, dayOfMonth);
       }
    };
+
    private DatePickerDialog.OnDateSetListener finishDateSetListener = new DatePickerDialog.OnDateSetListener() {
 
       public void onDateSet(DatePicker view, int year, int monthOfYear,
-               int dayOfMonth)
+            int dayOfMonth)
       {
          finishDateSet(year, monthOfYear, dayOfMonth);
       }
@@ -62,10 +67,77 @@ public class EventViewActivity extends Activity
       setContentView(R.layout.event_properties);
 
       eventName = (EditText) findViewById(R.id.event_name_edittext);
+      eventName
+            .setOnEditorActionListener(new TextView.OnEditorActionListener() {
+               @Override
+               public boolean onEditorAction(TextView v, int actionId,
+                     KeyEvent event)
+               {
+                  if (actionId == EditorInfo.IME_ACTION_DONE)
+                  {
+                     onNameChanged();
+                     return true;
+                  }
+                  return false;
+               }
+            });
+      eventName.setOnFocusChangeListener(new OnFocusChangeListener() {
+         public void onFocusChange(View v, boolean hasFocus)
+         {
+            if (!hasFocus)
+            {
+               onNameChanged();
+            }
+         }
+      });
+      /* eventName.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+               if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                  (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                  onNameChanged();
+                  return true;
+               }
+               return false;
+            }
+            });*/
       eventNote = (EditText) findViewById(R.id.event_note_edittext);
+      eventNote
+            .setOnEditorActionListener(new TextView.OnEditorActionListener() {
+               @Override
+               public boolean onEditorAction(TextView v, int actionId,
+                     KeyEvent event)
+               {
+                  if (actionId == EditorInfo.IME_ACTION_DONE)
+                  {
+                     onNoteChanged();
+                     return true;
+                  }
+                  return false;
+               }
+            });
+      eventNote.setOnFocusChangeListener(new OnFocusChangeListener() {
+         public void onFocusChange(View v, boolean hasFocus)
+         {
+            if (!hasFocus)
+            {
+               onNoteChanged();
+            }
+         }
+      });
+      /*
+        eventNote.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+               if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                  (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                  onNoteChanged();
+               }
+               return false;
+            }
+            });
+       */
       startDateButton = (Button) findViewById(R.id.event_from_date_button);
       finishDateButton = (Button) findViewById(R.id.event_to_date_button);
-      myEventId = getIntent().getIntExtra("cz.su.GroupClearing.EventId", -1);
+      myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
    }
 
    @Override
@@ -79,6 +151,7 @@ public class EventViewActivity extends Activity
       if (myEventId < 0)
       {
          myEvent = db.createNewEvent();
+         myEventId = myEvent.getId();
       }
       else
       {
@@ -133,7 +206,7 @@ public class EventViewActivity extends Activity
       switch (item.getItemId())
       {
       case R.id.menu_event_delete:
-         db.deleteEventWithId (myEvent.getId());
+         db.deleteEventWithId(myEvent.getId());
          finish();
          return true;
       default:
@@ -141,14 +214,13 @@ public class EventViewActivity extends Activity
       }
    }
 
-   @Override
-   protected void onPause()
-   {
-      super.onPause();
-      myEvent.setName(eventName.getText().toString());
-      myEvent.setNote(eventNote.getText().toString());
-      db.updateEvent(myEvent);
-   }
+   @Override 
+      protected void onPause()
+      {
+         super.onPause();
+         onNameChanged();
+         onNoteChanged();
+      }
 
    public void startDateButtonClicked(View v)
    {
@@ -184,12 +256,24 @@ public class EventViewActivity extends Activity
       showTransactionsList();
    }
 
-   public void deleteButtonClicked(View v)
+   public void onNameChanged()
    {
+      String newName = eventName.getText().toString();
+      if (newName.compareTo(myEvent.getName()) != 0)
+      {
+         myEvent.setName(newName);
+         db.updateEventName(myEvent);
+      }
    }
 
-   public void saveButtonClicked(View v)
+   public void onNoteChanged()
    {
+      String newNote = eventNote.getText().toString();
+      if (newNote.compareTo(myEvent.getNote()) != 0)
+      {
+         myEvent.setNote(newNote);
+         db.updateEventNote(myEvent);
+      }
    }
 
    public void startDateSet(int year, int monthOfYear, int dayOfMonth)
@@ -217,12 +301,12 @@ public class EventViewActivity extends Activity
       {
       case START_DATE_PICK_DIALOG_ID:
          return new DatePickerDialog(this, startDateSetListener,
-                  myEvent.getStartYear(), myEvent.getStartMonth(),
-                  myEvent.getStartDayOfMonth());
+               myEvent.getStartYear(), myEvent.getStartMonth(),
+               myEvent.getStartDayOfMonth());
       case FINISH_DATE_PICK_DIALOG_ID:
          return new DatePickerDialog(this, finishDateSetListener,
-                  myEvent.getFinishYear(), myEvent.getFinishMonth(),
-                  myEvent.getFinishDayOfMonth());
+               myEvent.getFinishYear(), myEvent.getFinishMonth(),
+               myEvent.getFinishDayOfMonth());
       }
       return null;
    }

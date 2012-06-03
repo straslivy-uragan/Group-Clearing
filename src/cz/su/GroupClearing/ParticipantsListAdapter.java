@@ -17,6 +17,7 @@ public class ParticipantsListAdapter implements ListAdapter
    ArrayList<DataSetObserver> observers;
    Vector<ClearingPerson> participants;
    long myEventId = -1;
+   ClearingEvent myEvent = null;
    GCDatabase db = null;
 
    public static final int NORMAL_PARTICIPANT_TYPE = 0;
@@ -80,15 +81,10 @@ public class ParticipantsListAdapter implements ListAdapter
          rowView.setTag(wrapper);
       }
       ClearingPerson person = participants.get(position);
-      StringBuilder balanceBuilder = new StringBuilder();
-      /*
-       * balanceBuilder.append(myEvent.getDefaultCurrency());
-       * balanceBuilder.append(' ');
-       */
-      balanceBuilder.append(person.getBalance());
-      balanceBuilder.append(",- ");
       wrapper.getName().setText(person.getName());
-      wrapper.getBalance().setText(balanceBuilder.toString());
+      wrapper.getBalance().setText(
+            GroupClearingApplication.getInstance().formatCurrencyValueWithSymbol(
+               person.getBalance(), myEvent.getDefaultCurrency()) + " ");
       return rowView;
    }
 
@@ -183,6 +179,7 @@ public class ParticipantsListAdapter implements ListAdapter
       {
          db = new GCDatabase(context);
       }
+      myEvent = db.readEventWithId(myEventId);
       participants = db.readParticipantsOfEvent(myEventId);
       notifyDataSetChanged();
    }

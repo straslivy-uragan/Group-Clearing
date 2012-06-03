@@ -9,6 +9,7 @@ android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:textSize="18sp"
+    android:color="@android:color/primary_text_dark"
     android:id="@+id/eventListItemTitle" >
 </TextView>
 <TextView
@@ -17,6 +18,6 @@ android:orientation="vertical"
     android:id="@+id/eventListItemSubtitle"
     android:layout_width="wrap_content"
     android:textStyle="italic"
-    android:textColor="@color/subtitle_color_select">
+    android:textColor="@android:color/secondary_text_dark">
 </TextView>
 </LinearLayout>

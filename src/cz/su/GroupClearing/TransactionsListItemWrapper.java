@@ -7,6 +7,7 @@ public class TransactionsListItemWrapper {
 	View base = null;
 	TextView name = null;
 	TextView date = null;
+   TextView amount = null;
 
 	TransactionsListItemWrapper(View aBase) {
 		base = aBase;
@@ -21,10 +22,16 @@ public class TransactionsListItemWrapper {
 
 	TextView getDate() {
 		if (date == null) {
-			date = (TextView) base
-					.findViewById(R.id.transactionsListItemDate);
+         date = (TextView) base.findViewById(R.id.transactionsListItemDate);
 		}
 		return date;
 	}
+
+   TextView getAmount() {
+      if (amount == null) {
+         amount = (TextView) base.findViewById(R.id.transactionsListItemAmount);
+      }
+      return amount;
+   }
 
 }

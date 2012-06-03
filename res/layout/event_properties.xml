@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:onClick="startDateButtonClicked"
-            android:text="@string/event_from_date_default"
+            android:text="@string/date_placeholder"
             android:textSize="22sp" />
     </LinearLayout>
 
@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:onClick="finishDateButtonClicked"
-            android:text="@string/event_to_date_default"
+            android:text="@string/date_placeholder"
             android:textSize="22sp" />
     </LinearLayout>
 
@@ -75,9 +75,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dip"
         android:layout_weight="1"
-        android:autoText="true"
+        android:inputType="textMultiLine"
         android:gravity="top"
-        android:inputType="text"
         android:text="@string/event_note" />
 
     <Button

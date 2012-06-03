@@ -36,7 +36,7 @@ public class TransactionsListActivity extends FragmentActivity
             onTransactionClicked(position, id);
          }
       });
-      myEventId = getIntent().getIntExtra("cz.su.GroupClearing.EventId", -1);
+      myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
       transactionsListAdapter = new TransactionsListAdapter(this, myEventId);
       lv.setAdapter(transactionsListAdapter);
       registerForContextMenu(lv);

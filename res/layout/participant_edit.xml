@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:minWidth="250dp"
-    android:orientation="vertical"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp"
     android:paddingLeft="20dp"
     android:paddingRight="20dp" >
 
@@ -11,12 +12,14 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:text="@string/participant_name" />
 
     <EditText
         android:id="@+id/participant_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/textView1"
         android:inputType="textPersonName" >
 
         <requestFocus />
@@ -24,10 +27,24 @@
 
     <Button
         android:id="@+id/participant_edit_ok"
-        android:layout_width="120dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:minWidth="100dp"
+        android:layout_below="@id/participant_name"
+        android:layout_alignParentRight="true"
         android:gravity="center"
         android:text="@android:string/ok" />
-
-</LinearLayout>
+   
+    <Button
+        android:id="@+id/participant_edit_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="100dp"
+        android:layout_below="@id/participant_name"
+        android:layout_toLeftOf="@id/participant_edit_ok"
+        android:layout_alignTop="@id/participant_edit_ok"
+        android:gravity="center"
+        android:text="@android:string/cancel" />
+    
+    
+</RelativeLayout>

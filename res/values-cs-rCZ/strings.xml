@@ -8,9 +8,8 @@
     <string name="event_name">Název akce</string>
     <string name="event_note">Poznámka</string>
     <string name="event_from_date">Od:</string>
-    <string name="event_from_date_default">12.12. 2012</string>
+    <string name="date_placeholder">12.12. 2012</string>
     <string name="event_to_date">Do:</string>
-    <string name="event_to_date_default">12.12. 2012</string>
     <string name="event_view_participants">Účastníci</string>
     <string name="event_add_participant">Přidat</string>
     <string name="event_view_transactions">Transakce</string>
@@ -33,9 +32,13 @@
     <string name="transaction_name">Název transakce:</string>
     <string name="transaction_value">Zaplaceno:</string>
     <string name="transaction_date">Datum:</string>
+    <string name="transaction_note">Poznámka:</string>
     <string name="transaction_paid_by">Platil:</string>
+	<string name="transaction_paid_by_prompt">Vyberte příjemce peněz:</string>
     <string name="transaction_participants">Zúčastnění:</string>
     <string name="trans_part_name_placeholder">Jméno účastníka</string>
-    <string name="trans_part_value_placeholder">0,- </string>
-
+    <string name="trans_value_placeholder">0,- </string>
+    <string name="split_evenly">Rozdělit rovným dílem</string>
+	<string name="transaction_no_receiver">--</string>
+	<string name="number_hint">0,00</string>
 </resources>
