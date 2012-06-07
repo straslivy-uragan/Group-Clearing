@@ -38,4 +38,5 @@
 	<string name="transaction_paid_by_prompt">Select transaction receiver:</string>
 	<string name="transaction_no_receiver">--</string>
 	<string name="number_hint">0.00</string>
+	<string name="balance">Balance:</string>
 </resources>

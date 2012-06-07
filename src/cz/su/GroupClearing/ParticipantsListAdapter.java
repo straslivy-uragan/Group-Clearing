@@ -19,6 +19,7 @@ public class ParticipantsListAdapter implements ListAdapter
    long myEventId = -1;
    ClearingEvent myEvent = null;
    GCDatabase db = null;
+   GroupClearingApplication myApp = GroupClearingApplication.getInstance();
 
    public static final int NORMAL_PARTICIPANT_TYPE = 0;
 
@@ -82,8 +83,7 @@ public class ParticipantsListAdapter implements ListAdapter
       }
       ClearingPerson person = participants.get(position);
       wrapper.getName().setText(person.getName());
-      wrapper.getBalance().setText(
-            GroupClearingApplication.getInstance().formatCurrencyValueWithSymbol(
+      wrapper.getBalance().setText(myApp.formatCurrencyValueWithSymbol(
                person.getBalance(), myEvent.getDefaultCurrency()) + " ");
       return rowView;
    }

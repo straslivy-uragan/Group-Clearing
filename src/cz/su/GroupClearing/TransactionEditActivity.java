@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -22,327 +23,348 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.EditorInfo;
+import android.view.LayoutInflater;
 
-public class TransactionEditActivity extends Activity
-{
-   private EditText nameEdit = null;
-   private EditText noteEdit = null;
-   private EditText amountEdit = null;
-   private Button dateButton = null;
-   private CheckBox splitEvenlyCheck = null;
-   Vector<ClearingPerson> participants = null;
-   private ArrayAdapter<ClearingPerson> receiversAdapter = null;
-   private Spinner receiverSpinner = null;
-   private LinearLayout participantsList = null;
-   private long myEventId = -1;
-   private long myTransactionId = -1;
-   private ClearingTransaction myTransaction = null;
-   private GCDatabase db = null;
-   private ClearingPerson noReceiver = null;
+public class TransactionEditActivity extends Activity {
+	private LayoutInflater inflater;
+	private EditText nameEdit = null;
+	private EditText noteEdit = null;
+	private EditText amountEdit = null;
+	private Button dateButton = null;
+	private CheckBox splitEvenlyCheck = null;
+	private Vector<ClearingPerson> participants = null;
+	private ArrayAdapter<ClearingPerson> receiversAdapter = null;
+	private Spinner receiverSpinner = null;
+	private LinearLayout participantsList = null;
+	private long myEventId = -1;
+	private long myTransactionId = -1;
+	private ClearingTransaction myTransaction = null;
+	private GCDatabase db = null;
+	private ClearingPerson noReceiver = null;
+	private GroupClearingApplication myApp = null;
+	private int numberOfChecks = 0;
 
-   private static final int DATE_PICK_DIALOG_ID = 0;
+	private static final int DATE_PICK_DIALOG_ID = 0;
 
-   private DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
+	private DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
 
-      public void onDateSet(DatePicker view, int year, int monthOfYear,
-            int dayOfMonth)
-      {
-         onDateChanged(year, monthOfYear, dayOfMonth);
-      }
-   };
+		public void onDateSet(DatePicker view, int year, int monthOfYear,
+				int dayOfMonth) {
+			onDateChanged(year, monthOfYear, dayOfMonth);
+		}
+	};
 
-   public class ReceiverSpinnerOnItemSelected implements OnItemSelectedListener
-   {
-      public void onItemSelected(AdapterView<?> parent, View view, int pos,
-            long id)
-      {
-         onReceiverChanged(pos, id);
-      }
+	public class ReceiverSpinnerOnItemSelected
+			implements
+				OnItemSelectedListener {
+		public void onItemSelected(AdapterView<?> parent, View view, int pos,
+				long id) {
+			onReceiverChanged(pos, id);
+		}
 
-      @Override
-      public void onNothingSelected(AdapterView<?> arg0)
-      {
-         onReceiverChanged(0, -1);
-      }
-   }
+		@Override
+		public void onNothingSelected(AdapterView<?> arg0) {
+			onReceiverChanged(0, -1);
+		}
+	}
 
-   /** Called when the activity is first created. */
-   @Override
-   public void onCreate(Bundle savedInstanceState)
-   {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.transaction_edit);
+	public class ParticipantItemWrapper {
+		private View base;
+		private CheckBox check;
+		private TextView balanceText;
+		private long balance = 0;
 
-      nameEdit = (EditText) findViewById(R.id.transaction_name_edit);
-      nameEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-         @Override
-         public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
-         {
-            if (actionId == EditorInfo.IME_ACTION_DONE)
-            {
-               onNameChanged();
-               return true;
-            }
-            return false;
-         }
-      });
-      nameEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
-         public void onFocusChange(View v, boolean hasFocus)
-         {
-            if (!hasFocus)
-            {
-               onNameChanged();
-            }
-         }
-      });
-      noteEdit = (EditText) findViewById(R.id.transaction_note_edit);
-      noteEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-         @Override
-         public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
-         {
-            if (actionId == EditorInfo.IME_ACTION_DONE)
-            {
-               onNoteChanged();
-               return true;
-            }
-            return false;
-         }
-      });
-      noteEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
-         public void onFocusChange(View v, boolean hasFocus)
-         {
-            if (!hasFocus)
-            {
-               onNoteChanged();
-            }
-         }
-      });
-      amountEdit = (EditText) findViewById(R.id.transaction_amount_edit);
-      amountEdit
-            .setOnEditorActionListener(new TextView.OnEditorActionListener() {
-               @Override
-               public boolean onEditorAction(TextView v, int actionId,
-                     KeyEvent event)
-               {
-                  if (actionId == EditorInfo.IME_ACTION_DONE)
-                  {
-                     onAmountChanged();
-                  }
-                  return false;
-               }
-            });
-      amountEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
-         public void onFocusChange(View v, boolean hasFocus)
-         {
-            if (!hasFocus)
-            {
-               onAmountChanged();
-            }
-         }
-      });
-      dateButton = (Button) findViewById(R.id.transaction_date_button);
-      splitEvenlyCheck = (CheckBox) findViewById(R.id.transaction_split_check);
-      receiverSpinner = (Spinner) findViewById(R.id.transaction_receiver_spinner);
-      receiversAdapter = new ArrayAdapter<ClearingPerson>(this,
-            android.R.layout.simple_spinner_item);
-      receiversAdapter
-            .setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      receiverSpinner.setAdapter(receiversAdapter);
-      receiverSpinner
-            .setOnItemSelectedListener(new ReceiverSpinnerOnItemSelected());
-      participantsList = (LinearLayout) findViewById(R.id.transaction_participants_list);
-      myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
-      myTransactionId = getIntent().getLongExtra(
-            "cz.su.GroupClearing.TransactionId", -1);
-      noReceiver = new ClearingPerson(-1);
-      noReceiver.setName(getString(R.string.transaction_no_receiver));
-   }
+		public ParticipantItemWrapper(View v, String name, boolean state,
+				long aBalance) {
+			base = v;
+			check = (CheckBox) base.findViewById(R.id.trans_part_name);
+			balance = aBalance;
+			balanceText = (TextView) base.findViewById(R.id.trans_part_balance);
+			check.setText(name);
+			setCheckState(state);
+			setBalance(aBalance);
+		}
 
-   @Override
-   protected void onResume()
-   {
-      super.onResume();
-      if (db == null)
-      {
-         db = new GCDatabase(this);
-      }
-      if (myTransactionId < 0)
-      {
-         myTransaction = db.createNewTransaction(myEventId);
-      }
-      else
-      {
-         myTransaction = db.readTransactionWithId(myTransactionId);
-      }
-      nameEdit.setText(myTransaction.getName());
-      noteEdit.setText(myTransaction.getNote());
-      amountEdit.setText(GroupClearingApplication.getInstance()
-            .formatCurrencyValue(myTransaction.getAmount(),
-                  myTransaction.getCurrency()));
-      DateFormat df = DateFormat.getDateInstance();
-      Date date = myTransaction.getDate();
-      if (date != null)
-      {
-         dateButton.setText(df.format(date));
-      }
-      else
-      {
-         dateButton.setText("--");
-      }
-      splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
-      refreshParticipants();
-   }
+		boolean getCheckState() {
+			return check.isChecked();
+		}
 
-   @Override
-   protected void onPause()
-   {
-      super.onPause();
-      onNameChanged();
-      onNoteChanged();
-      onAmountChanged();
-   }
+		void setCheckState(boolean state) {
+			check.setChecked(state);
+		}
 
-   @Override
-   protected void onDestroy()
-   {
-      super.onDestroy();
-      if (db != null)
-      {
-         db.close();
-         db = null;
-      }
-   }
+		void setBalance(long aBalance) {
+			balance = aBalance;
+			balanceText.setText(myApp.formatCurrencyValueWithSymbol(balance,
+					myTransaction.getCurrency()) + " ");
+		}
 
-   public void onTransactionDateButtonClicked(View v)
-   {
-      showDialog(DATE_PICK_DIALOG_ID);
-   }
+		long getBalance() {
+			return balance;
+		}
+	}
 
-   public void refreshParticipants()
-   {
-      participants = db.readParticipantsOfEvent(myEventId);
-      receiversAdapter.clear();
-      receiversAdapter.add(noReceiver);
-      int selectedPosition = 0;
-      participantsList.removeAllViews();
-      for (int i = 0; i < participants.size(); ++i)
-      {
-         ClearingPerson participant = participants.get(i);
-         if (participant.getId() == myTransaction.getReceiverId())
-         {
-            selectedPosition = i + 1;
-         }
-         receiversAdapter.add(participants.get(i));
-         addParticipantView(i);
-      }
-      receiverSpinner.setSelection(selectedPosition);
-   }
+	Vector<ParticipantItemWrapper> participantWrappers = null;
 
-   public void onParticipantClicked(View v)
-   {
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.transaction_edit);
+		inflater = (LayoutInflater) this
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		myApp = GroupClearingApplication.getInstance();
+		nameEdit = (EditText) findViewById(R.id.transaction_name_edit);
+		nameEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId,
+					KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					onNameChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+		nameEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					onNameChanged();
+				}
+			}
+		});
+		noteEdit = (EditText) findViewById(R.id.transaction_note_edit);
+		noteEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId,
+					KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					onNoteChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+		noteEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					onNoteChanged();
+				}
+			}
+		});
+		amountEdit = (EditText) findViewById(R.id.transaction_amount_edit);
+		amountEdit
+				.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+					@Override
+					public boolean onEditorAction(TextView v, int actionId,
+							KeyEvent event) {
+						if (actionId == EditorInfo.IME_ACTION_DONE) {
+							onAmountChanged();
+						}
+						return false;
+					}
+				});
+		amountEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					onAmountChanged();
+				}
+			}
+		});
+		dateButton = (Button) findViewById(R.id.transaction_date_button);
+		splitEvenlyCheck = (CheckBox) findViewById(R.id.transaction_split_check);
+		receiverSpinner = (Spinner) findViewById(R.id.transaction_receiver_spinner);
+		receiversAdapter = new ArrayAdapter<ClearingPerson>(this,
+				android.R.layout.simple_spinner_item);
+		receiversAdapter
+				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		receiverSpinner.setAdapter(receiversAdapter);
+		receiverSpinner
+				.setOnItemSelectedListener(new ReceiverSpinnerOnItemSelected());
+		participantsList = (LinearLayout) findViewById(R.id.transaction_participants_list);
+		myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
+		myTransactionId = getIntent().getLongExtra(
+				"cz.su.GroupClearing.TransactionId", -1);
+		noReceiver = new ClearingPerson(-1);
+		noReceiver.setName(getString(R.string.transaction_no_receiver));
+	}
 
-   }
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (db == null) {
+			db = new GCDatabase(this);
+		}
+		if (myTransactionId < 0) {
+			myTransaction = db.createNewTransaction(myEventId);
+		} else {
+			myTransaction = db.readTransactionWithId(myTransactionId);
+		}
+		nameEdit.setText(myTransaction.getName());
+		noteEdit.setText(myTransaction.getNote());
+		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
+				myTransaction.getCurrency()));
+		DateFormat df = DateFormat.getDateInstance();
+		Date date = myTransaction.getDate();
+		if (date != null) {
+			dateButton.setText(df.format(date));
+		} else {
+			dateButton.setText("--");
+		}
+		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
+		refreshParticipants();
+	}
 
-   public void addParticipantView(int position)
-   {
-      CheckBox participantCheck = new CheckBox(this);
-      participantCheck.setText(participants.get(position).getName());
-      participantCheck.setTag(participants.get(position));
-      participantCheck.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-               onParticipantClicked(v);
-            }
-            }
-            );
-      participantsList.addView(participantCheck);
-   }
+	@Override
+	protected void onPause() {
+		super.onPause();
+		onNameChanged();
+		onNoteChanged();
+		onAmountChanged();
+	}
 
-   public void onNameChanged()
-   {
-      String newName = nameEdit.getText().toString();
-      if (newName.compareTo(myTransaction.getName()) != 0)
-      {
-         myTransaction.setName(newName);
-         db.updateTransactionName(myTransaction);
-      }
-   }
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (db != null) {
+			db.close();
+			db = null;
+		}
+	}
 
-   public void onNoteChanged()
-   {
-      String newNote = noteEdit.getText().toString();
-      if (newNote.compareTo(myTransaction.getNote()) != 0)
-      {
-         myTransaction.setNote(newNote);
-         db.updateTransactionNote(myTransaction);
-      }
-   }
+	public void onTransactionDateButtonClicked(View v) {
+		showDialog(DATE_PICK_DIALOG_ID);
+	}
 
-   public void onAmountChanged()
-   {
-      GroupClearingApplication app = GroupClearingApplication.getInstance();
-      try
-      {
-         long newAmount = app.parseCurrencyValue(amountEdit.getText()
-               .toString(), myTransaction.getCurrency());
-         if (newAmount != myTransaction.getAmount())
-         {
-            myTransaction.setAmount(newAmount);
-            db.updateTransactionAmount(myTransaction);
-            // TODO: Do some real computations here
-         }
-      }
-      catch (GCSyntaxException e)
-      {
-      }
-      amountEdit.setText(GroupClearingApplication.getInstance()
-            .formatCurrencyValue(myTransaction.getAmount(),
-                  myTransaction.getCurrency()));
-   }
+	public void refreshParticipants() {
+		participants = db.readParticipantsOfEvent(myEventId);
+		participantWrappers = new Vector<ParticipantItemWrapper>(
+				participants.size());
+		receiversAdapter.clear();
+		receiversAdapter.add(noReceiver);
+		int selectedPosition = 0;
+		numberOfChecks = 0;
+		participantsList.removeAllViews();
+		for (int i = 0; i < participants.size(); ++i) {
+			ClearingPerson participant = participants.get(i);
+			if (participant.getId() == myTransaction.getReceiverId()) {
+				selectedPosition = i + 1;
+			}
+			receiversAdapter.add(participants.get(i));
+			View rowView = inflater.inflate(
+					R.layout.trans_participants_list_item, null);
+			ParticipantItemWrapper wrapper = new ParticipantItemWrapper(
+					rowView, participants.get(i).getName(), true,
+					myTransaction.getParticipantValue(participants.get(i)
+							.getId()));
+			++numberOfChecks;
+			participantWrappers.add(wrapper);
+			participantsList.addView(rowView);
+		}
+		receiverSpinner.setSelection(selectedPosition);
+	}
 
-   public void onDateChanged(int year, int monthOfYear, int day)
-   {
-      if (day != myTransaction.getDayOfMonth()
-            || monthOfYear != myTransaction.getMonth()
-            || year != myTransaction.getYear())
-      {
-         myTransaction.setDate(year, monthOfYear, day);
-         DateFormat df = DateFormat.getDateInstance();
-         Date date = myTransaction.getDate();
-         dateButton.setText(df.format(date));
-         db.updateTransactionDate(myTransaction);
-      }
-   }
+	public void onParticipantClicked(View v) {
 
-   @Override
-   protected Dialog onCreateDialog(int id)
-   {
-      switch (id)
-      {
-      case DATE_PICK_DIALOG_ID:
-         return new DatePickerDialog(this, dateSetListener,
-               myTransaction.getYear(), myTransaction.getMonth(),
-               myTransaction.getDayOfMonth());
-      }
-      return null;
-   }
+	}
 
-   public void onReceiverChanged(int position, long id)
-   {
-      ClearingPerson receiver = receiversAdapter.getItem(position);
-      if (receiver.getId() != myTransaction.getId())
-      {
-         myTransaction.setReceiverId(receiver.getId());
-         db.updateTransactionReceiverId(myTransaction);
-      }
-   }
+	public void onNameChanged() {
+		String newName = nameEdit.getText().toString();
+		if (newName.compareTo(myTransaction.getName()) != 0) {
+			myTransaction.setName(newName);
+			db.updateTransactionName(myTransaction);
+		}
+	}
 
-   public void onSplitEvenlyChanged(View v)
-   {
-      if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly())
-      {
-         myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
-         db.updateTransactionSplitEvenly(myTransaction);
-         // TODO: Also, do some necessary computations here.
-      }
-   }
+	public void onNoteChanged() {
+		String newNote = noteEdit.getText().toString();
+		if (newNote.compareTo(myTransaction.getNote()) != 0) {
+			myTransaction.setNote(newNote);
+			db.updateTransactionNote(myTransaction);
+		}
+	}
+
+	private void recomputeValues() {
+		if (myTransaction.getSplitEvenly()) {
+			if (numberOfChecks > 0) {
+				long share = myTransaction.getAmount() / numberOfChecks;
+				long unbalance = myTransaction.getAmount()
+						- (share * numberOfChecks);
+				for (int i = 0; i < participants.size(); ++i) {
+					ParticipantItemWrapper wrapper = participantWrappers.get(i);
+					if (wrapper.getCheckState()) {
+						long value = share;
+						if (unbalance > 0) {
+							++value;
+							--unbalance;
+						}
+						wrapper.setBalance(value);
+						myTransaction.setParticipantValue(participants.get(i)
+								.getId(), value);
+						db.updateTransactionParticipantValue(
+                                myEventId,
+                                myTransaction.getId(),
+								participants.get(i).getId(),
+                                value);
+					}
+				}
+			}
+
+		}
+	}
+
+	public void onAmountChanged() {
+		try {
+			long newAmount = myApp.parseCurrencyValue(amountEdit.getText()
+					.toString(), myTransaction.getCurrency());
+			if (newAmount != myTransaction.getAmount()) {
+				myTransaction.setAmount(newAmount);
+				db.updateTransactionAmount(myTransaction);
+				recomputeValues();
+			}
+		} catch (GCSyntaxException e) {
+		}
+		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
+				myTransaction.getCurrency()));
+
+	}
+
+	public void onDateChanged(int year, int monthOfYear, int day) {
+		if (day != myTransaction.getDayOfMonth()
+				|| monthOfYear != myTransaction.getMonth()
+				|| year != myTransaction.getYear()) {
+			myTransaction.setDate(year, monthOfYear, day);
+			DateFormat df = DateFormat.getDateInstance();
+			Date date = myTransaction.getDate();
+			dateButton.setText(df.format(date));
+			db.updateTransactionDate(myTransaction);
+		}
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		switch (id) {
+			case DATE_PICK_DIALOG_ID :
+				return new DatePickerDialog(this, dateSetListener,
+						myTransaction.getYear(), myTransaction.getMonth(),
+						myTransaction.getDayOfMonth());
+		}
+		return null;
+	}
+
+	public void onReceiverChanged(int position, long id) {
+		ClearingPerson receiver = receiversAdapter.getItem(position);
+		if (receiver.getId() != myTransaction.getReceiverId()) {
+			myTransaction.setReceiverId(receiver.getId());
+			db.updateTransactionReceiverId(myTransaction);
+		}
+	}
+
+	public void onSplitEvenlyChanged(View v) {
+		if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
+			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
+			db.updateTransactionSplitEvenly(myTransaction);
+			// TODO: Also, do some necessary computations here.
+		}
+	}
 }

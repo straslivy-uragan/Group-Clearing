@@ -96,7 +96,10 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
             + TTP_EVENT_ID + " INTEGER, "
             + TTP_TRANSACTION_ID + " INTEGER, "
             + TTP_PARTICIPANT_ID + " INTEGER, "
-            + TTP_VALUE + " INTEGER);");
+            + TTP_VALUE + " INTEGER, "
+            + "UNIQUE(" + TTP_EVENT_ID + ", " 
+            + TTP_TRANSACTION_ID + ", " + TTP_PARTICIPANT_ID + ")"
+            + ");");
    }
 
    @Override

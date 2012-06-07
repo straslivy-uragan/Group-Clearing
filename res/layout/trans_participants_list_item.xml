@@ -4,12 +4,19 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <TextView
+    <CheckBox
         android:id="@+id/trans_part_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/icon_checkbox"
-        android:gravity="center_vertical"
         android:text="@string/trans_part_name_placeholder" />
+
+    <TextView
+        android:id="@+id/trans_part_balance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:textStyle="italic"
+        android:paddingLeft="40dip"
+        android:text="@string/number_hint" />
 
 </LinearLayout>
