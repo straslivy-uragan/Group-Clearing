@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.CheckBox;
@@ -73,15 +74,23 @@ public class TransactionEditActivity extends Activity {
 		private CheckBox check;
 		private TextView balanceText;
 		private long balance = 0;
+        private long participantId = 0;
 
-		public ParticipantItemWrapper(View v, String name, boolean state,
+		public ParticipantItemWrapper(View v, long aParticipantId,
+                String name, boolean state,
 				long aBalance) {
 			base = v;
+            participantId = aParticipantId;
 			check = (CheckBox) base.findViewById(R.id.trans_part_name);
+			setCheckState(state);
+            check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged(CompoundButton button, boolean isChecked) {
+                    onParticipantCheckedChange(participantId, isChecked);
+                    }
+                    });
 			balance = aBalance;
 			balanceText = (TextView) base.findViewById(R.id.trans_part_balance);
 			check.setText(name);
-			setCheckState(state);
 			setBalance(aBalance);
 		}
 
@@ -254,18 +263,17 @@ public class TransactionEditActivity extends Activity {
 			View rowView = inflater.inflate(
 					R.layout.trans_participants_list_item, null);
 			ParticipantItemWrapper wrapper = new ParticipantItemWrapper(
-					rowView, participants.get(i).getName(), true,
-					myTransaction.getParticipantValue(participants.get(i)
-							.getId()));
-			++numberOfChecks;
+					rowView, participant.getId(),
+                    participant.getName(),
+                    myTransaction.isParticipantMarked(participant.getId()),
+					myTransaction.getParticipantValue(participant.getId()));
+            if (myTransaction.isParticipantMarked(participant.getId())) {
+                ++numberOfChecks;
+            }
 			participantWrappers.add(wrapper);
 			participantsList.addView(rowView);
 		}
 		receiverSpinner.setSelection(selectedPosition);
-	}
-
-	public void onParticipantClicked(View v) {
-
 	}
 
 	public void onNameChanged() {
@@ -292,20 +300,24 @@ public class TransactionEditActivity extends Activity {
 						- (share * numberOfChecks);
 				for (int i = 0; i < participants.size(); ++i) {
 					ParticipantItemWrapper wrapper = participantWrappers.get(i);
-					if (wrapper.getCheckState()) {
+                    ClearingPerson participant = participants.get(i);
+					if (myTransaction.isParticipantMarked(participant.getId())) {
 						long value = share;
 						if (unbalance > 0) {
 							++value;
 							--unbalance;
 						}
 						wrapper.setBalance(value);
-						myTransaction.setParticipantValue(participants.get(i)
-								.getId(), value);
+						myTransaction.setParticipantValue(participant.getId(),
+                                value);
 						db.updateTransactionParticipantValue(
                                 myEventId,
                                 myTransaction.getId(),
-								participants.get(i).getId(),
-                                value);
+								participant.getId(),
+                                value, true);
+					}
+					else {
+						wrapper.setBalance(0);
 					}
 				}
 			}
@@ -367,4 +379,19 @@ public class TransactionEditActivity extends Activity {
 			// TODO: Also, do some necessary computations here.
 		}
 	}
+
+    public void onParticipantCheckedChange(long participantId, boolean isChecked) {
+        if (isChecked != myTransaction.isParticipantMarked(participantId)) {
+            myTransaction.setParticipantMark(participantId, isChecked);
+            if (isChecked) {
+                ++ numberOfChecks;
+            }
+            else {
+                db.updateTransactionParticipantValue(myEventId, myTransactionId,
+                        participantId, 0, false);
+                -- numberOfChecks;
+            }
+            recomputeValues();
+        }
+    }
 }

@@ -53,9 +53,11 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
    public static final String TTP_TRANSACTION_ID = "transaction_id";
    public static final String TTP_PARTICIPANT_ID = "participant_id";
    public static final String TTP_VALUE = "value";
+   public static final String TTP_MARK = "marked";
 
    public static final String[] TABLE_TTP_COLUMNS = {
-      TTP_ID, TTP_EVENT_ID, TTP_TRANSACTION_ID, TTP_PARTICIPANT_ID, TTP_VALUE
+      TTP_ID, TTP_EVENT_ID, TTP_TRANSACTION_ID,
+      TTP_PARTICIPANT_ID, TTP_VALUE, TTP_MARK
    };
 
    public GCDatabaseHelper(Context context)
@@ -97,6 +99,7 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
             + TTP_TRANSACTION_ID + " INTEGER, "
             + TTP_PARTICIPANT_ID + " INTEGER, "
             + TTP_VALUE + " INTEGER, "
+            + TTP_MARK + " INTEGER, "
             + "UNIQUE(" + TTP_EVENT_ID + ", " 
             + TTP_TRANSACTION_ID + ", " + TTP_PARTICIPANT_ID + ")"
             + ");");

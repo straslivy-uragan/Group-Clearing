@@ -206,11 +206,12 @@ public class GCDatabase {
 
 		// Get all negative amounts
         query = String.format(
-                "SELECT SUM(%s) FROM %s WHERE %s=%d AND %s=%d",
+                "SELECT SUM(%s) FROM %s WHERE %s=%d AND %s=%d AND %s<>0",
                 GCDatabaseHelper.TTP_VALUE,
                 GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
                 GCDatabaseHelper.TTP_EVENT_ID, eventId,
-                GCDatabaseHelper.TTP_PARTICIPANT_ID, personId);
+                GCDatabaseHelper.TTP_PARTICIPANT_ID, personId,
+                GCDatabaseHelper.TTP_MARK);
         sumCursor = db.rawQuery(query, null);
         sumCursor.moveToFirst();
         if (!sumCursor.isAfterLast()) {
@@ -302,8 +303,9 @@ public class GCDatabase {
 			while (!participantsCursor.isAfterLast()
 					&& participantsCursor.getInt(2) == transactionsCursor
 							.getInt(0)) {
-				aTransaction.setParticipantValue(participantsCursor.getInt(3),
-						participantsCursor.getInt(4));
+				aTransaction.addParticipant(participantsCursor.getInt(3),
+						participantsCursor.getInt(4),
+                        participantsCursor.getInt(5) != 0);
 				participantsCursor.moveToNext();
 			}
 			transactionsCursor.moveToNext();
@@ -343,8 +345,9 @@ public class GCDatabase {
 		aTransaction.setSplitEvenly(transactionCursor.getInt(7) != 0);
 		aTransaction.setNote(transactionCursor.getString(8));
 		while (!participantsCursor.isAfterLast()) {
-			aTransaction.setParticipantValue(participantsCursor.getInt(3),
-					participantsCursor.getInt(4));
+			aTransaction.addParticipant(participantsCursor.getInt(3),
+					participantsCursor.getInt(4),
+                    participantsCursor.getInt(5) != 0);
 			participantsCursor.moveToNext();
 		}
 		return aTransaction;
@@ -393,12 +396,13 @@ public class GCDatabase {
 					whereClause, null, null, null, null);
 			participantsCursor.moveToFirst();
 			while (!currencyCursor.isAfterLast()) {
-				ContentValues participantValues = new ContentValues(4);
+				ContentValues participantValues = new ContentValues(5);
 				participantValues.put(GCDatabaseHelper.TTP_EVENT_ID, eventId);
 				participantValues.put(GCDatabaseHelper.TTP_TRANSACTION_ID, id);
 				participantValues.put(GCDatabaseHelper.TTP_PARTICIPANT_ID,
 						participantsCursor.getLong(0));
 				participantValues.put(GCDatabaseHelper.TTP_VALUE, 0);
+				participantValues.put(GCDatabaseHelper.TTP_MARK, 1);
 				db.insert(GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
 						null, participantValues);
 				currencyCursor.moveToNext();
@@ -421,7 +425,7 @@ public class GCDatabase {
 		values.put(GCDatabaseHelper.TT_SPLIT_EVENLY,
 				aTransaction.getSplitEvenly());
 		values.put(GCDatabaseHelper.TT_NOTE, aTransaction.getNote());
-		// TODO: update participants values
+		// TODO: update participants values and marks (??)
 		String whereClause = String.format("%s=%d", GCDatabaseHelper.TT_ID,
 				aTransaction.getId());
 		db.update(GCDatabaseHelper.TABLE_TRANSACTIONS, values, whereClause,
@@ -486,12 +490,14 @@ public class GCDatabase {
 	}
 
 	public void updateTransactionParticipantValue(long eventId,
-			long transactionId, long participantId, long value) {
-		ContentValues values = new ContentValues(5);
+			long transactionId, long participantId,
+            long value, boolean mark) {
+		ContentValues values = new ContentValues(6);
 		values.put(GCDatabaseHelper.TTP_EVENT_ID, eventId);
 		values.put(GCDatabaseHelper.TTP_TRANSACTION_ID, transactionId);
 		values.put(GCDatabaseHelper.TTP_PARTICIPANT_ID, participantId);
 		values.put(GCDatabaseHelper.TTP_VALUE, value);
+		values.put(GCDatabaseHelper.TTP_MARK, mark);
 		db.insertWithOnConflict(
 				GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS, null, values,
 				SQLiteDatabase.CONFLICT_REPLACE);

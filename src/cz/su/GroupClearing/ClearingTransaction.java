@@ -16,6 +16,32 @@ import java.util.Locale;
  */
 public class ClearingTransaction {
 
+	public class ParticipantInfo {
+		long value;
+		boolean marked;
+
+		public ParticipantInfo(long aValue, boolean aMark) {
+			value = aValue;
+			marked = aMark;
+		}
+
+		public long getValue() {
+			return value;
+		}
+
+		public boolean isMarked() {
+			return marked;
+		}
+
+		public void setMarked(boolean aMark) {
+			marked = aMark;
+		}
+
+		public void setValue(long aValue) {
+			value = aValue;
+		}
+	}
+
 	private long id;
 	private long eventId;
 	/**
@@ -47,7 +73,7 @@ public class ClearingTransaction {
 	private String name;
 	private GregorianCalendar calendarDate;
 	private Currency currency;
-	private HashMap<Long, Long> participantsValues;
+	private HashMap<Long, ParticipantInfo> participantsInfo;
 	private String note;
 	/**
 	 * If the amount should be split evenly among the participants.
@@ -64,15 +90,16 @@ public class ClearingTransaction {
 	 * 
 	 *        Note, that in case this value is -1, no explicit receiver is set.
 	 *        It does not necessarily mean that the transaction is unbalanced,
-	 *        because in participantsValues the values of participants can be
-	 *        both positive and negative. Which means that transaction can be
-	 *        general in this sense. In case of general transaction you should
-	 *        keep amount zero while the actual amounts are then positiveAmount
-	 *        and negativeAmount, the former with sum of positive values and the
-	 *        latter with the sum of negative values in participantsValues hash
+	 *        because in participantsInfo the values of participants can be both
+	 *        positive and negative. Which means that transaction can be general
+	 *        in this sense. In case of general transaction you should keep
+	 *        amount zero while the actual amounts are then positiveAmount and
+	 *        negativeAmount, the former with sum of positive values and the
+	 *        latter with the sum of negative values in participantsInfo hash
 	 *        map.
 	 */
 	private long receiverId = -1;
+	private int numberOfMarkedParticipants = 0;
 
 	public ClearingTransaction(long anId, long anEventId) {
 		super();
@@ -83,7 +110,7 @@ public class ClearingTransaction {
 		amount = 0;
 		positiveAmount = 0;
 		negativeAmount = 0;
-		participantsValues = new HashMap<Long, Long>();
+		participantsInfo = new HashMap<Long, ParticipantInfo>();
 		note = "";
 		receiverId = -1;
 		splitEvenly = true;
@@ -179,58 +206,90 @@ public class ClearingTransaction {
 		return eventId;
 	}
 
-	public int numberOfParticipants() {
-		return participantsValues.size();
+	public int getNumberOfMarkedParticipants() {
+		return numberOfMarkedParticipants;
 	}
 
+	/**
+	 * @brief Sets value of participant with given id in this transaction.
+	 * 
+	 *        Does not modify marks. If participant with given id is not yet in
+	 *        the participantsInfo hash, then it is inserted with mark set to
+	 *        false.
+	 */
 	public void setParticipantValue(long participantId, long aValue) {
 		Long participantIdObject = new Long(participantId);
-		Long oldValueObject = participantsValues.get(participantIdObject);
-		if (oldValueObject != null) {
-			if (oldValueObject.longValue() > 0) {
-				positiveAmount -= oldValueObject.longValue();
+		ParticipantInfo info = participantsInfo.get(participantIdObject);
+		if (info != null) {
+			if (info.getValue() > 0) {
+				positiveAmount -= info.getValue();
 			} else {
-				negativeAmount -= oldValueObject.longValue();
+				negativeAmount -= info.getValue();
 			}
+			info.setValue(aValue);
+		} else {
+			info = new ParticipantInfo(aValue, false);
+			participantsInfo.put(participantIdObject, info);
 		}
 		if (aValue > 0) {
 			positiveAmount += aValue;
 		} else {
 			negativeAmount += aValue;
 		}
-		participantsValues.put(participantIdObject, new Long(aValue));
 	}
 
-	public long getParticipantValue(long participantId) {
+	/**
+	 * @brief Sets mark of participant with given id.
+	 * 
+	 *        If participant with given id does not exist yet, it is inserted
+	 *        with value 0 only in case aMark is true.
+	 */
+	public void setParticipantMark(long participantId, boolean aMark) {
 		Long participantIdObject = new Long(participantId);
-		Long valueObject = participantsValues.get(participantIdObject);
-		if (valueObject != null) {
-			return valueObject.longValue();
-		}
-		return 0;
-	}
-
-	public void removeParticipantId(long participantId) {
-		Long valueObject = participantsValues.remove(new Long(participantId));
-		if (valueObject != null) {
-			if (valueObject.intValue() > 0) {
-				positiveAmount -= valueObject.intValue();
-			} else {
-				negativeAmount -= valueObject.intValue();
+		ParticipantInfo info = participantsInfo.get(participantIdObject);
+		if (info != null) {
+			int oldMark = (info.isMarked() ? 1 : 0);
+			int newMark = (aMark ? 1 : 0);
+			info.setMarked(aMark);
+			numberOfMarkedParticipants += newMark - oldMark;
+		} else {
+			if (aMark) {
+				info = new ParticipantInfo(0, true);
+				++numberOfMarkedParticipants;
+				participantsInfo.put(participantIdObject, info);
 			}
 		}
 	}
 
-	public boolean containsParticipantId(long participantId) {
-		return participantsValues.containsKey(new Long(participantId));
+	public long getParticipantValue(long participantId) {
+		Long participantIdObject = new Long(participantId);
+		ParticipantInfo info = participantsInfo.get(participantIdObject);
+		if (info != null) {
+			return info.getValue();
+		}
+		return 0;
 	}
 
+	public boolean isParticipantMarked(long participantId) {
+		Long participantIdObject = new Long(participantId);
+		ParticipantInfo info = participantsInfo.get(participantIdObject);
+		if (info != null) {
+			return info.isMarked();
+		}
+		return false;
+	}
+
+	public void addParticipant(long participantId, long aValue, boolean aMark) {
+		ParticipantInfo info = new ParticipantInfo(aValue, aMark);
+        participantsInfo.put(new Long(participantId), info);
+	}
+	
 	@Override
 	public String toString() {
 		return "ClearingTransaction [id=" + id + ", eventId=" + eventId
 				+ ", calendarDate=" + calendarDate + ", amount=" + amount
 				+ ", positiveAmount=" + positiveAmount + ", negativeAmount="
 				+ negativeAmount + ", currency=" + currency + ", participants="
-				+ participantsValues + ", note=" + note + "]";
+				+ participantsInfo + ", note=" + note + "]";
 	}
 }
