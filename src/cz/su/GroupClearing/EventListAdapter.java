@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
+import android.widget.TextView;
 
 public class EventListAdapter implements ListAdapter
 {
@@ -52,6 +53,8 @@ public class EventListAdapter implements ListAdapter
    }
 
    public static final int NORMAL_EVENT_TYPE = 0;
+   public static final int ADD_EVENT_TYPE = 1;
+
    public static final String EVENT_DESCRIPTION_QUERY = "select "
          + GCDatabaseHelper.TE_ID + ", " + GCDatabaseHelper.TE_NAME + ", "
          + GCDatabaseHelper.TE_START_DATE + ", "
@@ -77,7 +80,7 @@ public class EventListAdapter implements ListAdapter
    @Override
    public int getCount()
    {
-      return events.size();
+      return events.size() + 1;
    }
 
    @Override
@@ -97,13 +100,13 @@ public class EventListAdapter implements ListAdapter
       {
          return events.elementAt(position).getId();
       }
-      return 0;
+      return -1;
    }
 
    @Override
    public int getItemViewType(int position)
    {
-      return NORMAL_EVENT_TYPE;
+       return (position < events.size() ? NORMAL_EVENT_TYPE : ADD_EVENT_TYPE);
    }
 
    @Override
@@ -124,6 +127,9 @@ public class EventListAdapter implements ListAdapter
             wrapper = new EventListItemWrapper(rowView);
             rowView.setTag(wrapper);
          }
+         else { // ADD_EVENT_TYPE
+             rowView = inflater.inflate(R.layout.add_item, null);
+         }
       }
       if (getItemViewType(position) == NORMAL_EVENT_TYPE)
       {
@@ -131,13 +137,17 @@ public class EventListAdapter implements ListAdapter
          wrapper.getTitle().setText(event.getTitle());
          wrapper.getSubtitle().setText(event.getSubtitle());
       }
+      else { // ADD_EVENT_TYPE
+          TextView text = (TextView)rowView.findViewById(R.id.add_item_text);
+          text.setText(context.getString(R.string.add_new_event) + " ");
+      }
       return rowView;
    }
 
    @Override
    public int getViewTypeCount()
    {
-      return 1;
+      return 2;
    }
 
    @Override

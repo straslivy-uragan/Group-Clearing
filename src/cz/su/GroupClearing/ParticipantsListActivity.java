@@ -140,7 +140,7 @@ public class ParticipantsListActivity extends FragmentActivity {
       
 
       editParticipantDialog.setPosition(position);
-      if (position >= participantsListAdapter.getCount()) {
+      if (position >= participantsListAdapter.getNumberOfParticipants()) {
          editParticipantDialog.setName("");
       } else {
          editParticipantDialog.setName(
@@ -150,7 +150,7 @@ public class ParticipantsListActivity extends FragmentActivity {
    }
 
    public void onNameEditorOK(final int position, String name) {
-      if (position >= participantsListAdapter.getCount()) {
+      if (position >= participantsListAdapter.getNumberOfParticipants()) {
          participantsListAdapter.createParticipantWithName(name);
       } else {
          participantsListAdapter.setNameOfParticipantAtPosition(position, name);

@@ -44,6 +44,7 @@ public class TransactionEditActivity extends Activity {
 	private ClearingPerson noReceiver = null;
 	private GroupClearingApplication myApp = null;
 	private int numberOfChecks = 0;
+	private TextView balanceText = null;
 
 	private static final int DATE_PICK_DIALOG_ID = 0;
 
@@ -55,9 +56,8 @@ public class TransactionEditActivity extends Activity {
 		}
 	};
 
-	public class ReceiverSpinnerOnItemSelected
-			implements
-				OnItemSelectedListener {
+	public class ReceiverSpinnerOnItemSelected implements
+			OnItemSelectedListener {
 		public void onItemSelected(AdapterView<?> parent, View view, int pos,
 				long id) {
 			onReceiverChanged(pos, id);
@@ -74,20 +74,20 @@ public class TransactionEditActivity extends Activity {
 		private CheckBox check;
 		private TextView balanceText;
 		private long balance = 0;
-        private long participantId = 0;
+		private long participantId = 0;
 
-		public ParticipantItemWrapper(View v, long aParticipantId,
-                String name, boolean state,
-				long aBalance) {
+		public ParticipantItemWrapper(View v, long aParticipantId, String name,
+				boolean state, long aBalance) {
 			base = v;
-            participantId = aParticipantId;
+			participantId = aParticipantId;
 			check = (CheckBox) base.findViewById(R.id.trans_part_name);
 			setCheckState(state);
-            check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged(CompoundButton button, boolean isChecked) {
-                    onParticipantCheckedChange(participantId, isChecked);
-                    }
-                    });
+			check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+				public void onCheckedChanged(CompoundButton button,
+						boolean isChecked) {
+					onParticipantCheckedChange(participantId, isChecked);
+				}
+			});
 			balance = aBalance;
 			balanceText = (TextView) base.findViewById(R.id.trans_part_balance);
 			check.setText(name);
@@ -123,6 +123,7 @@ public class TransactionEditActivity extends Activity {
 		inflater = (LayoutInflater) this
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		myApp = GroupClearingApplication.getInstance();
+		balanceText = (TextView) findViewById(R.id.transaction_balance);
 		nameEdit = (EditText) findViewById(R.id.transaction_name_edit);
 		nameEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
@@ -254,6 +255,7 @@ public class TransactionEditActivity extends Activity {
 		int selectedPosition = 0;
 		numberOfChecks = 0;
 		participantsList.removeAllViews();
+		long participantsBalancesSum = 0;
 		for (int i = 0; i < participants.size(); ++i) {
 			ClearingPerson participant = participants.get(i);
 			if (participant.getId() == myTransaction.getReceiverId()) {
@@ -262,18 +264,34 @@ public class TransactionEditActivity extends Activity {
 			receiversAdapter.add(participants.get(i));
 			View rowView = inflater.inflate(
 					R.layout.trans_participants_list_item, null);
+			long value = myTransaction.getParticipantValue(participant.getId());
 			ParticipantItemWrapper wrapper = new ParticipantItemWrapper(
-					rowView, participant.getId(),
-                    participant.getName(),
-                    myTransaction.isParticipantMarked(participant.getId()),
-					myTransaction.getParticipantValue(participant.getId()));
-            if (myTransaction.isParticipantMarked(participant.getId())) {
-                ++numberOfChecks;
-            }
+					rowView, participant.getId(), participant.getName(),
+					myTransaction.isParticipantMarked(participant.getId()),
+					value);
+			if (myTransaction.isParticipantMarked(participant.getId())) {
+				++numberOfChecks;
+				participantsBalancesSum += value;
+			}
 			participantWrappers.add(wrapper);
 			participantsList.addView(rowView);
 		}
 		receiverSpinner.setSelection(selectedPosition);
+		setBalanceText(participantsBalancesSum - myTransaction.getAmount());
+
+	}
+
+	public void setBalanceText(long balance) {
+		balanceText.setText(myApp.formatCurrencyValueWithSymbol(balance,
+				myTransaction.getCurrency()) + " ");
+		if (balance > 0) {
+			balanceText.setTextColor(android.graphics.Color.GREEN);
+		} else if (balance < 0) {
+			balanceText.setTextColor(android.graphics.Color.RED);
+		} else {
+			balanceText.setTextColor(getResources().getColor(
+					android.R.color.primary_text_dark));
+		}
 	}
 
 	public void onNameChanged() {
@@ -294,34 +312,31 @@ public class TransactionEditActivity extends Activity {
 
 	private void recomputeValues() {
 		if (myTransaction.getSplitEvenly()) {
+			long balance = -myTransaction.getAmount();
 			if (numberOfChecks > 0) {
 				long share = myTransaction.getAmount() / numberOfChecks;
-				long unbalance = myTransaction.getAmount()
-						- (share * numberOfChecks);
+				balance += share * numberOfChecks;
 				for (int i = 0; i < participants.size(); ++i) {
 					ParticipantItemWrapper wrapper = participantWrappers.get(i);
-                    ClearingPerson participant = participants.get(i);
+					ClearingPerson participant = participants.get(i);
 					if (myTransaction.isParticipantMarked(participant.getId())) {
 						long value = share;
-						if (unbalance > 0) {
+						if (balance < 0) {
 							++value;
-							--unbalance;
+							++balance;
 						}
 						wrapper.setBalance(value);
 						myTransaction.setParticipantValue(participant.getId(),
-                                value);
-						db.updateTransactionParticipantValue(
-                                myEventId,
-                                myTransaction.getId(),
-								participant.getId(),
-                                value, true);
-					}
-					else {
+								value);
+						db.updateTransactionParticipantValue(myEventId,
+								myTransaction.getId(), participant.getId(),
+								value, true);
+					} else {
 						wrapper.setBalance(0);
 					}
 				}
 			}
-
+			setBalanceText(balance);
 		}
 	}
 
@@ -356,10 +371,10 @@ public class TransactionEditActivity extends Activity {
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
-			case DATE_PICK_DIALOG_ID :
-				return new DatePickerDialog(this, dateSetListener,
-						myTransaction.getYear(), myTransaction.getMonth(),
-						myTransaction.getDayOfMonth());
+		case DATE_PICK_DIALOG_ID:
+			return new DatePickerDialog(this, dateSetListener,
+					myTransaction.getYear(), myTransaction.getMonth(),
+					myTransaction.getDayOfMonth());
 		}
 		return null;
 	}
@@ -380,18 +395,17 @@ public class TransactionEditActivity extends Activity {
 		}
 	}
 
-    public void onParticipantCheckedChange(long participantId, boolean isChecked) {
-        if (isChecked != myTransaction.isParticipantMarked(participantId)) {
-            myTransaction.setParticipantMark(participantId, isChecked);
-            if (isChecked) {
-                ++ numberOfChecks;
-            }
-            else {
-                db.updateTransactionParticipantValue(myEventId, myTransactionId,
-                        participantId, 0, false);
-                -- numberOfChecks;
-            }
-            recomputeValues();
-        }
-    }
+	public void onParticipantCheckedChange(long participantId, boolean isChecked) {
+		if (isChecked != myTransaction.isParticipantMarked(participantId)) {
+			myTransaction.setParticipantMark(participantId, isChecked);
+			if (isChecked) {
+				++numberOfChecks;
+			} else {
+				db.updateTransactionParticipantValue(myEventId,
+						myTransactionId, participantId, 0, false);
+				--numberOfChecks;
+			}
+			recomputeValues();
+		}
+	}
 }

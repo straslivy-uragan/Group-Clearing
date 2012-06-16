@@ -63,7 +63,7 @@ public class TransactionsListActivity extends FragmentActivity
    {
       Intent intent = new Intent(this, TransactionEditActivity.class);
       ClearingTransaction aTransaction = null;
-      if (position >= transactionsListAdapter.getCount())
+      if (id < 0)
       {
          aTransaction = transactionsListAdapter.createTransaction();
          refreshData();
@@ -99,7 +99,7 @@ public class TransactionsListActivity extends FragmentActivity
       {
       case R.id.menu_add_transaction:
       {
-         onTransactionClicked(transactionsListAdapter.getCount(), 0);
+         onTransactionClicked(transactionsListAdapter.getNumberOfTransactions(), -1);
          return true;
       }
       default:
