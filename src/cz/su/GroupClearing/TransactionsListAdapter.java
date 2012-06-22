@@ -148,10 +148,15 @@ public class TransactionsListAdapter implements ListAdapter {
 	}
 
 	public ClearingTransaction createTransaction() {
-		ClearingTransaction aTransaction = db.createNewTransaction(myEventId);
-		transactions.add(aTransaction);
-		notifyDataSetChanged();
-		return aTransaction;
+		ClearingTransaction aTransaction = null;
+        try {
+            aTransaction = db.createNewTransaction(myEventId);
+            transactions.add(aTransaction);
+            notifyDataSetChanged();
+        } catch (GCEventDoesNotExistException e) {
+            // TODO: We should warn user somehow.
+        }
+        return aTransaction;
 	}
 
 	public void removeTransactionAtPosition(int position) {

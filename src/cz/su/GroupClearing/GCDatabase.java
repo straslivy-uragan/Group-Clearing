@@ -362,7 +362,7 @@ public class GCDatabase {
 		db.delete(GCDatabaseHelper.TABLE_TRANSACTIONS, whereClause, null);
 	}
 
-	public ClearingTransaction createNewTransaction(long eventId) {
+	public ClearingTransaction createNewTransaction(long eventId) throws GCEventDoesNotExistException {
 		// Get default currency of the event
 		String whereClause = String.format("%s=%d", GCDatabaseHelper.TE_ID,
 				eventId);
@@ -371,8 +371,7 @@ public class GCDatabase {
 				currencyColumn, whereClause, null, null, null, null);
 		currencyCursor.moveToFirst();
 		if (currencyCursor.isAfterLast()) {
-			// TODO: throw something?
-			return null;
+			throw new GCEventDoesNotExistException("Cannot create transaction.");
 		}
 		String transactionCurrency = currencyCursor.getString(0);
 
@@ -395,7 +394,7 @@ public class GCDatabase {
 					GCDatabaseHelper.TABLE_PERSONS, participantIdColumn,
 					whereClause, null, null, null, null);
 			participantsCursor.moveToFirst();
-			while (!currencyCursor.isAfterLast()) {
+			while (!participantsCursor.isAfterLast()) {
 				ContentValues participantValues = new ContentValues(5);
 				participantValues.put(GCDatabaseHelper.TTP_EVENT_ID, eventId);
 				participantValues.put(GCDatabaseHelper.TTP_TRANSACTION_ID, id);
@@ -405,7 +404,7 @@ public class GCDatabase {
 				participantValues.put(GCDatabaseHelper.TTP_MARK, 1);
 				db.insert(GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
 						null, participantValues);
-				currencyCursor.moveToNext();
+				participantsCursor.moveToNext();
 			}
 			return readTransactionWithId(id);
 		}
@@ -425,7 +424,6 @@ public class GCDatabase {
 		values.put(GCDatabaseHelper.TT_SPLIT_EVENLY,
 				aTransaction.getSplitEvenly());
 		values.put(GCDatabaseHelper.TT_NOTE, aTransaction.getNote());
-		// TODO: update participants values and marks (??)
 		String whereClause = String.format("%s=%d", GCDatabaseHelper.TT_ID,
 				aTransaction.getId());
 		db.update(GCDatabaseHelper.TABLE_TRANSACTIONS, values, whereClause,

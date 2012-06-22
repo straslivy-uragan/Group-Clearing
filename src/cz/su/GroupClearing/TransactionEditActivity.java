@@ -4,29 +4,35 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Vector;
 
-import android.app.Activity;
-import android.os.Bundle;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.view.View.OnFocusChangeListener;
-import android.view.inputmethod.EditorInfo;
-import android.view.LayoutInflater;
 
-public class TransactionEditActivity extends Activity {
+public class TransactionEditActivity extends FragmentActivity {
 	private LayoutInflater inflater;
 	private EditText nameEdit = null;
 	private EditText noteEdit = null;
@@ -48,16 +54,19 @@ public class TransactionEditActivity extends Activity {
 
 	private static final int DATE_PICK_DIALOG_ID = 0;
 
-	private DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
+	private final DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
 
+		@Override
 		public void onDateSet(DatePicker view, int year, int monthOfYear,
 				int dayOfMonth) {
 			onDateChanged(year, monthOfYear, dayOfMonth);
 		}
 	};
 
-	public class ReceiverSpinnerOnItemSelected implements
-			OnItemSelectedListener {
+	public class ReceiverSpinnerOnItemSelected
+			implements
+				OnItemSelectedListener {
+		@Override
 		public void onItemSelected(AdapterView<?> parent, View view, int pos,
 				long id) {
 			onReceiverChanged(pos, id);
@@ -75,19 +84,32 @@ public class TransactionEditActivity extends Activity {
 		private TextView balanceText;
 		private long balance = 0;
 		private long participantId = 0;
+        private int position = 0;
 
-		public ParticipantItemWrapper(View v, long aParticipantId, String name,
+		public ParticipantItemWrapper(View v, int aPosition,
+                long aParticipantId, String name,
 				boolean state, long aBalance) {
 			base = v;
 			participantId = aParticipantId;
+            position = aPosition;
 			check = (CheckBox) base.findViewById(R.id.trans_part_name);
 			setCheckState(state);
 			check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+				@Override
 				public void onCheckedChanged(CompoundButton button,
 						boolean isChecked) {
 					onParticipantCheckedChange(participantId, isChecked);
 				}
 			});
+			View.OnLongClickListener longClickListener = new View.OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					onParticipantLongClick(position, participantId);
+					return true;
+				}
+			};
+			base.setOnLongClickListener(longClickListener);
+			// check.setOnLongClickListener(longClickListener);
 			balance = aBalance;
 			balanceText = (TextView) base.findViewById(R.id.trans_part_balance);
 			check.setText(name);
@@ -113,6 +135,86 @@ public class TransactionEditActivity extends Activity {
 		}
 	}
 
+	public class EditParticipantValueDialog extends DialogFragment {
+		String name = "";
+		long value = 0;
+		TextView nameTextView = null;
+		EditText valueEdit = null;
+		long participantId = 0;
+		int position = 0;
+
+        public EditParticipantValueDialog(String aName, int aPosition,
+                long anId, long aValue) {
+            participantId = anId;
+            position = aPosition;
+            name = aName;
+            value = aValue;
+        }
+
+		@Override
+		public void onActivityCreated(Bundle savedInstanceState) {
+			super.onActivityCreated(savedInstanceState);
+			setStyle(DialogFragment.STYLE_NO_TITLE, 0);
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			getDialog().setTitle(getString(R.string.app_name));
+			View v = inflater.inflate(R.layout.participant_value_edit,
+					container, false);
+			nameTextView = (TextView) v.findViewById(R.id.pev_name);
+			if (name != null) {
+				nameTextView.setText(name);
+			}
+            valueEdit = (EditText) v.findViewById(R.id.pev_value);
+            valueEdit.setText(myApp.formatCurrencyValue(value,
+                        myTransaction.getCurrency()));
+			Button okButton = (Button) v.findViewById(R.id.pev_ok);
+			okButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					onOkButtonClicked(v);
+				}
+			});
+			Button cancelButton = (Button)v.findViewById(R.id.pev_cancel);
+			cancelButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					onCancelButtonClicked(v);
+				}
+			});
+            Button computeButton = (Button) v.findViewById(R.id.pev_compute);
+			computeButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					onComputeButtonClicked(v);
+				}
+			});
+			return v;
+		}
+
+		public void onOkButtonClicked(View v) {
+			dismiss();
+			onValueEditorOK(position, participantId, value);
+		}
+
+        public void onCancelButtonClicked(View v) {
+            dismiss();
+			onValueEditorCancelled(position, participantId);
+        }
+
+		@Override
+		public void onCancel(DialogInterface dialog) {
+			super.onCancel(dialog);
+			onValueEditorCancelled(position, participantId);
+		}
+        public void onComputeButtonClicked(View v) {
+        }
+	}
+
+	public final static String EDIT_PARTICIPANT_VALUE_DLG_TAG = "edit_participant_value_dialog";
+
 	Vector<ParticipantItemWrapper> participantWrappers = null;
 
 	/** Called when the activity is first created. */
@@ -137,6 +239,7 @@ public class TransactionEditActivity extends Activity {
 			}
 		});
 		nameEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
+			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
 				if (!hasFocus) {
 					onNameChanged();
@@ -156,6 +259,7 @@ public class TransactionEditActivity extends Activity {
 			}
 		});
 		noteEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
+			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
 				if (!hasFocus) {
 					onNoteChanged();
@@ -175,6 +279,7 @@ public class TransactionEditActivity extends Activity {
 					}
 				});
 		amountEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
+			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
 				if (!hasFocus) {
 					onAmountChanged();
@@ -206,7 +311,11 @@ public class TransactionEditActivity extends Activity {
 			db = new GCDatabase(this);
 		}
 		if (myTransactionId < 0) {
-			myTransaction = db.createNewTransaction(myEventId);
+			try {
+				myTransaction = db.createNewTransaction(myEventId);
+			} catch (GCEventDoesNotExistException e) {
+				return;
+			}
 		} else {
 			myTransaction = db.readTransactionWithId(myTransactionId);
 		}
@@ -266,7 +375,7 @@ public class TransactionEditActivity extends Activity {
 					R.layout.trans_participants_list_item, null);
 			long value = myTransaction.getParticipantValue(participant.getId());
 			ParticipantItemWrapper wrapper = new ParticipantItemWrapper(
-					rowView, participant.getId(), participant.getName(),
+					rowView, i, participant.getId(), participant.getName(),
 					myTransaction.isParticipantMarked(participant.getId()),
 					value);
 			if (myTransaction.isParticipantMarked(participant.getId())) {
@@ -371,10 +480,10 @@ public class TransactionEditActivity extends Activity {
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
-		case DATE_PICK_DIALOG_ID:
-			return new DatePickerDialog(this, dateSetListener,
-					myTransaction.getYear(), myTransaction.getMonth(),
-					myTransaction.getDayOfMonth());
+			case DATE_PICK_DIALOG_ID :
+				return new DatePickerDialog(this, dateSetListener,
+						myTransaction.getYear(), myTransaction.getMonth(),
+						myTransaction.getDayOfMonth());
 		}
 		return null;
 	}
@@ -391,7 +500,7 @@ public class TransactionEditActivity extends Activity {
 		if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
 			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
 			db.updateTransactionSplitEvenly(myTransaction);
-			// TODO: Also, do some necessary computations here.
+			recomputeValues();
 		}
 	}
 
@@ -407,5 +516,28 @@ public class TransactionEditActivity extends Activity {
 			}
 			recomputeValues();
 		}
+	}
+
+	public void onParticipantLongClick(int position, long participantId) {
+		FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction ft = fm.beginTransaction();
+		Fragment prev = getSupportFragmentManager().findFragmentByTag(
+				EDIT_PARTICIPANT_VALUE_DLG_TAG);
+		if (prev != null) {
+			ft.remove(prev);
+		}
+		ft.addToBackStack(null);
+        ClearingPerson participant = participants.get(position);
+        EditParticipantValueDialog editParticipantValueDialog
+            = new EditParticipantValueDialog(participant.getName(),
+                    position, participantId,
+                    myTransaction.getParticipantValue(participantId));
+		editParticipantValueDialog.show(ft, EDIT_PARTICIPANT_VALUE_DLG_TAG);
+	}
+
+	public void onValueEditorOK(int position, long participantId, long value) {
+	}
+
+	public void onValueEditorCancelled(int position, long participantId) {
 	}
 }

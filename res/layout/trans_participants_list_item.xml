@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:longClickable="true"
     android:orientation="vertical" >
 
     <CheckBox
@@ -15,8 +16,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="left"
-        android:textStyle="italic"
         android:paddingLeft="40dip"
-        android:text="@string/number_hint" />
+        android:text="@string/number_hint"
+        android:textStyle="italic" />
 
 </LinearLayout>

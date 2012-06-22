@@ -39,4 +39,6 @@
 	<string name="transaction_no_receiver">--</string>
 	<string name="number_hint">0.00</string>
 	<string name="balance">Balance:</string>
+	<string name="transaction_participant_value">Value:</string>
+	<string name="pev_compute">Compute</string>
 </resources>

@@ -3,10 +3,23 @@
  */
 package cz.su.GroupClearing;
 
-import android.app.Application;
-
 import java.text.NumberFormat;
 import java.util.Currency;
+
+import android.app.Application;
+
+/*
+ * 
+ * TODO: Obecná transakce (longclick on transaction participant shall
+ * trigger value modification and in case the value is modified, split
+ * evenly checkbox shall be unchecked).
+ * TODO: Návrh vyrovnání 
+ * TODO: Umožnit změnu měny události 
+ * TODO: Umožnit zvolit měny jednotlivých transakcí s podporou
+ * přepočtu, a to jednak s ručním nastavením kurzů, případně s jejich
+ * stažením, ale pal by asi chtělo pamatovat si u každé transakce
+ * kurz aktuální v době zadání, stačí k měně události.  
+ */
 
 /**
  * @author su

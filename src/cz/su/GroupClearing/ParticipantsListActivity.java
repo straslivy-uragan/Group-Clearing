@@ -35,6 +35,11 @@ public class ParticipantsListActivity extends FragmentActivity {
       TextView nameTextView = null;
       int position = 0;
 
+        public EditParticipantDialog(String aName, int aPosition) {
+            name = aName;
+            position = aPosition;
+        }
+
       @Override
          public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
@@ -74,25 +79,11 @@ public class ParticipantsListActivity extends FragmentActivity {
 
       public void onCancel(DialogInterface dialog) {
          super.onCancel(dialog);
-         nameTextView.setText(name);
          onNameEditorCancelled(position);
       }
-
-      public String getName() {
-         return name;
-      }
-
-      public void setName(String nameString) {
-         name = nameString;
-         if (nameTextView != null) {
-            nameTextView.setText(name);
-         }
-      }
-
-      public void setPosition(int newPosition) {
-         position = newPosition;
-      }
    }
+
+   public final static String EDIT_PARTICIPANT_DLG_TAG = "edit_participant_dialog";
 
    @Override
       public void onCreate(Bundle savedInstanceState) {
@@ -131,22 +122,20 @@ public class ParticipantsListActivity extends FragmentActivity {
       FragmentManager fm = getSupportFragmentManager();
       FragmentTransaction ft = fm.beginTransaction();
       Fragment prev = getSupportFragmentManager().findFragmentByTag(
-            "edit_participant_dialog");
+            EDIT_PARTICIPANT_DLG_TAG);
       if (prev != null) {
          ft.remove(prev);
       }
       ft.addToBackStack(null);
-      EditParticipantDialog editParticipantDialog = new EditParticipantDialog();
-      
-
-      editParticipantDialog.setPosition(position);
+      EditParticipantDialog editParticipantDialog = null;
       if (position >= participantsListAdapter.getNumberOfParticipants()) {
-         editParticipantDialog.setName("");
+          editParticipantDialog = new EditParticipantDialog("", position);
       } else {
-         editParticipantDialog.setName(
-               ((ClearingPerson)participantsListAdapter.getItem(position)).getName());
+          editParticipantDialog = new EditParticipantDialog(
+                  ((ClearingPerson)participantsListAdapter
+                   .getItem(position)).getName(), position);
       }
-      editParticipantDialog.show(ft, "edit_participant_dialog");
+      editParticipantDialog.show(ft, EDIT_PARTICIPANT_DLG_TAG);
    }
 
    public void onNameEditorOK(final int position, String name) {
