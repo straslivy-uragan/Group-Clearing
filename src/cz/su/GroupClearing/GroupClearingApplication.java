@@ -75,6 +75,18 @@ public class GroupClearingApplication extends Application
       // fraction digits separators.
       long value = 0;
       int index = 0;
+      long sign= 1;
+      while (index < valueString.length() 
+              && Character.isSpace(valueString.charAt(index))) {
+          ++ index;
+      }
+      if (index >= valueString.length()) {
+          return 0;
+      }
+      if (valueString.charAt(index) == '-') {
+          sign = -1;
+          ++ index;
+      }
       while (index < valueString.length() 
             && Character.isDigit(valueString.charAt(index)))
       {
@@ -110,6 +122,6 @@ public class GroupClearingApplication extends Application
          value *= 10;
          ++ fractionIndex;
       }
-      return value;
+      return sign * value;
    }
 }

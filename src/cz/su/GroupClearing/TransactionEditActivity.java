@@ -49,7 +49,6 @@ public class TransactionEditActivity extends FragmentActivity {
 	private GCDatabase db = null;
 	private ClearingPerson noReceiver = null;
 	private GroupClearingApplication myApp = null;
-	private int numberOfChecks = 0;
 	private TextView balanceText = null;
 
 	private static final int DATE_PICK_DIALOG_ID = 0;
@@ -81,24 +80,24 @@ public class TransactionEditActivity extends FragmentActivity {
 	public class ParticipantItemWrapper {
 		private View base;
 		private CheckBox check;
-		private TextView balanceText;
+		private TextView participantBalanceText;
 		private long balance = 0;
 		private long participantId = 0;
-        private int position = 0;
+		private int position = 0;
 
 		public ParticipantItemWrapper(View v, int aPosition,
-                long aParticipantId, String name,
-				boolean state, long aBalance) {
+				long aParticipantId, String name, boolean state, long aBalance) {
 			base = v;
 			participantId = aParticipantId;
-            position = aPosition;
+			position = aPosition;
 			check = (CheckBox) base.findViewById(R.id.trans_part_name);
 			setCheckState(state);
 			check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 				@Override
 				public void onCheckedChanged(CompoundButton button,
 						boolean isChecked) {
-					onParticipantCheckedChange(participantId, isChecked);
+					onParticipantCheckedChange(position, participantId,
+							isChecked);
 				}
 			});
 			View.OnLongClickListener longClickListener = new View.OnLongClickListener() {
@@ -111,7 +110,7 @@ public class TransactionEditActivity extends FragmentActivity {
 			base.setOnLongClickListener(longClickListener);
 			// check.setOnLongClickListener(longClickListener);
 			balance = aBalance;
-			balanceText = (TextView) base.findViewById(R.id.trans_part_balance);
+			participantBalanceText = (TextView) base.findViewById(R.id.trans_part_balance);
 			check.setText(name);
 			setBalance(aBalance);
 		}
@@ -126,12 +125,24 @@ public class TransactionEditActivity extends FragmentActivity {
 
 		void setBalance(long aBalance) {
 			balance = aBalance;
-			balanceText.setText(myApp.formatCurrencyValueWithSymbol(balance,
+			participantBalanceText.setText(myApp.formatCurrencyValueWithSymbol(balance,
 					myTransaction.getCurrency()) + " ");
+            if (balance > 0) {
+                participantBalanceText.setTextColor(android.graphics.Color.GREEN);
+            } else if (balance < 0) {
+                participantBalanceText.setTextColor(android.graphics.Color.RED);
+            } else {
+                participantBalanceText.setTextColor(getResources().getColor(
+                            android.R.color.primary_text_dark));
+            }
 		}
 
 		long getBalance() {
 			return balance;
+		}
+
+		public long getParticipantId() {
+			return participantId;
 		}
 	}
 
@@ -143,13 +154,13 @@ public class TransactionEditActivity extends FragmentActivity {
 		long participantId = 0;
 		int position = 0;
 
-        public EditParticipantValueDialog(String aName, int aPosition,
-                long anId, long aValue) {
-            participantId = anId;
-            position = aPosition;
-            name = aName;
-            value = aValue;
-        }
+		public EditParticipantValueDialog(String aName, int aPosition,
+				long anId, long aValue) {
+			participantId = anId;
+			position = aPosition;
+			name = aName;
+			value = aValue;
+		}
 
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
@@ -167,9 +178,9 @@ public class TransactionEditActivity extends FragmentActivity {
 			if (name != null) {
 				nameTextView.setText(name);
 			}
-            valueEdit = (EditText) v.findViewById(R.id.pev_value);
-            valueEdit.setText(myApp.formatCurrencyValue(value,
-                        myTransaction.getCurrency()));
+			valueEdit = (EditText) v.findViewById(R.id.pev_value);
+			valueEdit.setText(myApp.formatCurrencyValue(value,
+					myTransaction.getCurrency()));
 			Button okButton = (Button) v.findViewById(R.id.pev_ok);
 			okButton.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -177,14 +188,14 @@ public class TransactionEditActivity extends FragmentActivity {
 					onOkButtonClicked(v);
 				}
 			});
-			Button cancelButton = (Button)v.findViewById(R.id.pev_cancel);
+			Button cancelButton = (Button) v.findViewById(R.id.pev_cancel);
 			cancelButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					onCancelButtonClicked(v);
 				}
 			});
-            Button computeButton = (Button) v.findViewById(R.id.pev_compute);
+			Button computeButton = (Button) v.findViewById(R.id.pev_compute);
 			computeButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -196,21 +207,31 @@ public class TransactionEditActivity extends FragmentActivity {
 
 		public void onOkButtonClicked(View v) {
 			dismiss();
-			onValueEditorOK(position, participantId, value);
+			try {
+				value = myApp.parseCurrencyValue(
+						valueEdit.getText().toString(),
+						myTransaction.getCurrency());
+				onValueEditorOK(position, participantId, value);
+			} catch (GCSyntaxException e) {
+				onValueEditorCancelled(position, participantId);
+			}
 		}
 
-        public void onCancelButtonClicked(View v) {
-            dismiss();
+		public void onCancelButtonClicked(View v) {
+			dismiss();
 			onValueEditorCancelled(position, participantId);
-        }
+		}
 
 		@Override
 		public void onCancel(DialogInterface dialog) {
 			super.onCancel(dialog);
 			onValueEditorCancelled(position, participantId);
 		}
-        public void onComputeButtonClicked(View v) {
-        }
+		public void onComputeButtonClicked(View v) {
+			valueEdit.setText(myApp.formatCurrencyValue(
+					value + myTransaction.getBalance(),
+					myTransaction.getCurrency()));
+		}
 	}
 
 	public final static String EDIT_PARTICIPANT_VALUE_DLG_TAG = "edit_participant_value_dialog";
@@ -320,6 +341,7 @@ public class TransactionEditActivity extends FragmentActivity {
 			myTransaction = db.readTransactionWithId(myTransactionId);
 		}
 		nameEdit.setText(myTransaction.getName());
+		nameEdit.clearFocus();
 		noteEdit.setText(myTransaction.getNote());
 		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
 				myTransaction.getCurrency()));
@@ -331,6 +353,9 @@ public class TransactionEditActivity extends FragmentActivity {
 			dateButton.setText("--");
 		}
 		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
+		amountEdit.setEnabled(myTransaction.getSplitEvenly());
+        // amountEdit.setFocusable(myTransaction.getSplitEvenly());
+        receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
 		refreshParticipants();
 	}
 
@@ -362,9 +387,7 @@ public class TransactionEditActivity extends FragmentActivity {
 		receiversAdapter.clear();
 		receiversAdapter.add(noReceiver);
 		int selectedPosition = 0;
-		numberOfChecks = 0;
 		participantsList.removeAllViews();
-		long participantsBalancesSum = 0;
 		for (int i = 0; i < participants.size(); ++i) {
 			ClearingPerson participant = participants.get(i);
 			if (participant.getId() == myTransaction.getReceiverId()) {
@@ -378,24 +401,20 @@ public class TransactionEditActivity extends FragmentActivity {
 					rowView, i, participant.getId(), participant.getName(),
 					myTransaction.isParticipantMarked(participant.getId()),
 					value);
-			if (myTransaction.isParticipantMarked(participant.getId())) {
-				++numberOfChecks;
-				participantsBalancesSum += value;
-			}
 			participantWrappers.add(wrapper);
 			participantsList.addView(rowView);
 		}
 		receiverSpinner.setSelection(selectedPosition);
-		setBalanceText(participantsBalancesSum - myTransaction.getAmount());
-
+		setBalanceText();
 	}
 
-	public void setBalanceText(long balance) {
-		balanceText.setText(myApp.formatCurrencyValueWithSymbol(balance,
-				myTransaction.getCurrency()) + " ");
-		if (balance > 0) {
+	public void setBalanceText() {
+		balanceText.setText(myApp.formatCurrencyValueWithSymbol(
+				myTransaction.getBalance(), myTransaction.getCurrency())
+				+ " ");
+		if (myTransaction.getBalance() > 0) {
 			balanceText.setTextColor(android.graphics.Color.GREEN);
-		} else if (balance < 0) {
+		} else if (myTransaction.getBalance() < 0) {
 			balanceText.setTextColor(android.graphics.Color.RED);
 		} else {
 			balanceText.setTextColor(getResources().getColor(
@@ -420,33 +439,16 @@ public class TransactionEditActivity extends FragmentActivity {
 	}
 
 	private void recomputeValues() {
-		if (myTransaction.getSplitEvenly()) {
-			long balance = -myTransaction.getAmount();
-			if (numberOfChecks > 0) {
-				long share = myTransaction.getAmount() / numberOfChecks;
-				balance += share * numberOfChecks;
-				for (int i = 0; i < participants.size(); ++i) {
-					ParticipantItemWrapper wrapper = participantWrappers.get(i);
-					ClearingPerson participant = participants.get(i);
-					if (myTransaction.isParticipantMarked(participant.getId())) {
-						long value = share;
-						if (balance < 0) {
-							++value;
-							++balance;
-						}
-						wrapper.setBalance(value);
-						myTransaction.setParticipantValue(participant.getId(),
-								value);
-						db.updateTransactionParticipantValue(myEventId,
-								myTransaction.getId(), participant.getId(),
-								value, true);
-					} else {
-						wrapper.setBalance(0);
-					}
-				}
-			}
-			setBalanceText(balance);
+		myTransaction.recomputeAndSaveChanges(db);
+		for (ParticipantItemWrapper wrapper : participantWrappers) {
+			long participantId = wrapper.getParticipantId();
+			wrapper.setBalance(myTransaction.getParticipantValue(participantId));
+			wrapper.setCheckState(myTransaction
+					.isParticipantMarked(participantId));
 		}
+        amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
+				myTransaction.getCurrency()));
+		setBalanceText();
 	}
 
 	public void onAmountChanged() {
@@ -499,26 +501,27 @@ public class TransactionEditActivity extends FragmentActivity {
 	public void onSplitEvenlyChanged(View v) {
 		if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
 			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
+			amountEdit.setEnabled(myTransaction.getSplitEvenly());
+			//amountEdit.setFocusable(myTransaction.getSplitEvenly());
+            receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
 			db.updateTransactionSplitEvenly(myTransaction);
 			recomputeValues();
 		}
 	}
 
-	public void onParticipantCheckedChange(long participantId, boolean isChecked) {
+	public void onParticipantCheckedChange(int position, long participantId,
+			boolean isChecked) {
 		if (isChecked != myTransaction.isParticipantMarked(participantId)) {
-			myTransaction.setParticipantMark(participantId, isChecked);
-			if (isChecked) {
-				++numberOfChecks;
+			if (!myTransaction.getSplitEvenly()) {
+				openValueEditor(position, participantId);
 			} else {
-				db.updateTransactionParticipantValue(myEventId,
-						myTransactionId, participantId, 0, false);
-				--numberOfChecks;
+				myTransaction.setParticipantMark(participantId, isChecked);
+				recomputeValues();
 			}
-			recomputeValues();
 		}
 	}
 
-	public void onParticipantLongClick(int position, long participantId) {
+	public void openValueEditor(int position, long participantId) {
 		FragmentManager fm = getSupportFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		Fragment prev = getSupportFragmentManager().findFragmentByTag(
@@ -527,17 +530,32 @@ public class TransactionEditActivity extends FragmentActivity {
 			ft.remove(prev);
 		}
 		ft.addToBackStack(null);
-        ClearingPerson participant = participants.get(position);
-        EditParticipantValueDialog editParticipantValueDialog
-            = new EditParticipantValueDialog(participant.getName(),
-                    position, participantId,
-                    myTransaction.getParticipantValue(participantId));
+		ClearingPerson participant = participants.get(position);
+		EditParticipantValueDialog editParticipantValueDialog = new EditParticipantValueDialog(
+				participant.getName(), position, participantId,
+				myTransaction.getParticipantValue(participantId));
 		editParticipantValueDialog.show(ft, EDIT_PARTICIPANT_VALUE_DLG_TAG);
 	}
 
+	public void onParticipantLongClick(int position, long participantId) {
+        if (! myTransaction.getSplitEvenly()) {
+            openValueEditor(position, participantId);
+        }
+	}
+
 	public void onValueEditorOK(int position, long participantId, long value) {
+		myTransaction.setAndSaveParticipantValue(participantId, value, db);
+		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
+				myTransaction.getCurrency()));
+		ParticipantItemWrapper wrapper = participantWrappers.get(position);
+		wrapper.setCheckState(myTransaction.isParticipantMarked(participantId));
+		wrapper.setBalance(myTransaction.getParticipantValue(participantId));
+        setBalanceText();
+		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
 	}
 
 	public void onValueEditorCancelled(int position, long participantId) {
+        ParticipantItemWrapper wrapper = participantWrappers.get(position);
+        wrapper.setCheckState(myTransaction.isParticipantMarked(participantId));
 	}
 }

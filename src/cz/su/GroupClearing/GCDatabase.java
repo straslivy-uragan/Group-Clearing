@@ -14,7 +14,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class GCDatabase {
 	private SQLiteDatabase db;
-	private SimpleDateFormat dateFormat;
+	private final SimpleDateFormat dateFormat;
 
 	public GCDatabase(Context context) {
 		db = (new GCDatabaseHelper(context)).getWritableDatabase();
@@ -192,7 +192,7 @@ public class GCDatabase {
 	public long computeBalanceOfPerson(long eventId, long personId) {
 		long amount = 0;
 		// Get all positive amounts
-		String query = String.format(
+		/* String query = String.format(
 				"SELECT SUM(%s) FROM %s WHERE %s=%d AND %s=%d",
 				GCDatabaseHelper.TT_AMOUNT,
 				GCDatabaseHelper.TABLE_TRANSACTIONS,
@@ -203,16 +203,16 @@ public class GCDatabase {
 		if (!sumCursor.isAfterLast()) {
 			amount = sumCursor.getLong(0);
 		}
-
-		// Get all negative amounts
-        query = String.format(
+         */
+		// Get values in all transactions
+        String query = String.format(
                 "SELECT SUM(%s) FROM %s WHERE %s=%d AND %s=%d AND %s<>0",
                 GCDatabaseHelper.TTP_VALUE,
                 GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
                 GCDatabaseHelper.TTP_EVENT_ID, eventId,
                 GCDatabaseHelper.TTP_PARTICIPANT_ID, personId,
                 GCDatabaseHelper.TTP_MARK);
-        sumCursor = db.rawQuery(query, null);
+        Cursor sumCursor = db.rawQuery(query, null);
         sumCursor.moveToFirst();
         if (!sumCursor.isAfterLast()) {
             amount -= sumCursor.getLong(0);

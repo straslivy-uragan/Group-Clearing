@@ -3,11 +3,11 @@
  */
 package cz.su.GroupClearing;
 
-import java.util.HashMap;
-import java.util.Currency;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Currency;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Locale;
 
 /**
@@ -19,10 +19,12 @@ public class ClearingTransaction {
 	public class ParticipantInfo {
 		long value;
 		boolean marked;
+        long id;
 
-		public ParticipantInfo(long aValue, boolean aMark) {
+		public ParticipantInfo(long anId, long aValue, boolean aMark) {
 			value = aValue;
 			marked = aMark;
+            id = anId;
 		}
 
 		public long getValue() {
@@ -40,10 +42,14 @@ public class ClearingTransaction {
 		public void setValue(long aValue) {
 			value = aValue;
 		}
-	}
+	
+        public long getId() {
+            return id;
+        }
+    }
 
-	private long id;
-	private long eventId;
+	private final long id;
+	private final long eventId;
 	/**
 	 * Amount value is stored as long in “smaller” currency.
 	 * 
@@ -71,9 +77,9 @@ public class ClearingTransaction {
 	 */
 	private long positiveAmount;
 	private String name;
-	private GregorianCalendar calendarDate;
+	private final GregorianCalendar calendarDate;
 	private Currency currency;
-	private HashMap<Long, ParticipantInfo> participantsInfo;
+	private final HashMap<Long, ParticipantInfo> participantsInfo;
 	private String note;
 	/**
 	 * If the amount should be split evenly among the participants.
@@ -99,7 +105,6 @@ public class ClearingTransaction {
 	 *        map.
 	 */
 	private long receiverId = -1;
-	private int numberOfMarkedParticipants = 0;
 
 	public ClearingTransaction(long anId, long anEventId) {
 		super();
@@ -158,6 +163,10 @@ public class ClearingTransaction {
 		return negativeAmount;
 	}
 
+    public long getBalance() {
+        return negativeAmount - positiveAmount;
+    }
+
 	public Currency getCurrency() {
 		return currency;
 	}
@@ -194,8 +203,44 @@ public class ClearingTransaction {
 		return splitEvenly;
 	}
 
+    /**@brief Sets the split evenly flag.
+     *
+     * @param split New value of splitEvenly flag.
+     *
+     * Note, that when changing the type of transaction, the values of
+     * participants and amount may change, this is because their
+     * meaning in each kind of transaction is different.
+     */
 	public void setSplitEvenly(boolean split) {
 		splitEvenly = split;
+        if (splitEvenly) {
+            // Mark all - we don't know which should have been marked
+            //and which not, so this is easist decision we can make.
+            positiveAmount = 0;
+            negativeAmount = 0;
+            for (ParticipantInfo info : participantsInfo.values()) {
+                info.setMarked(true);
+                if (info.getValue() < 0) {
+                    negativeAmount -= info.getValue();
+                } else {
+                    positiveAmount += info.getValue();
+                }
+                amount = positiveAmount;
+            }
+        }
+        else {
+            positiveAmount = 0;
+            negativeAmount = 0;
+            for (ParticipantInfo info : participantsInfo.values()) {
+                info.setMarked(info.getValue() != 0);
+                if (info.getValue() < 0) {
+                    negativeAmount -= info.getValue();
+                } else {
+                    positiveAmount += info.getValue();
+                }
+                amount = positiveAmount;
+            }
+}
 	}
 
 	public long getId() {
@@ -206,36 +251,46 @@ public class ClearingTransaction {
 		return eventId;
 	}
 
-	public int getNumberOfMarkedParticipants() {
-		return numberOfMarkedParticipants;
-	}
-
 	/**
 	 * @brief Sets value of participant with given id in this transaction.
-	 * 
-	 *        Does not modify marks. If participant with given id is not yet in
-	 *        the participantsInfo hash, then it is inserted with mark set to
-	 *        false.
 	 */
-	public void setParticipantValue(long participantId, long aValue) {
-		Long participantIdObject = new Long(participantId);
+	public void setAndSaveParticipantValue(long participantId, long aValue, GCDatabase db) {
+		Long participantIdObject = Long.valueOf(participantId);
 		ParticipantInfo info = participantsInfo.get(participantIdObject);
-		if (info != null) {
-			if (info.getValue() > 0) {
-				positiveAmount -= info.getValue();
-			} else {
-				negativeAmount -= info.getValue();
-			}
-			info.setValue(aValue);
-		} else {
-			info = new ParticipantInfo(aValue, false);
-			participantsInfo.put(participantIdObject, info);
-		}
-		if (aValue > 0) {
-			positiveAmount += aValue;
-		} else {
-			negativeAmount += aValue;
-		}
+        if (info == null) {
+            info = new ParticipantInfo(participantId, 0, false);
+            participantsInfo.put(participantIdObject, info);
+        }
+        if (aValue != info.getValue()) {
+            if (splitEvenly) {
+                splitEvenly = false;
+                db.updateTransactionSplitEvenly(this);
+            }
+            if (info.getValue() > 0) {
+                positiveAmount -= info.getValue();
+            } else {
+                negativeAmount += info.getValue();
+            }
+            if (aValue > 0) {
+                positiveAmount += aValue;
+            } else {
+                negativeAmount -= aValue;
+            }
+            if (positiveAmount < 0) {
+                positiveAmount = 0;
+            }
+            if (negativeAmount < 0) {
+                negativeAmount = 0;
+            }
+            info.setValue(aValue);
+            info.setMarked(info.getValue() != 0);
+            db.updateTransactionParticipantValue( eventId,
+                id, participantId, info.getValue(), info.isMarked());
+            if (amount != positiveAmount) {
+                amount = positiveAmount;
+                db.updateTransactionAmount(this);
+            }
+        }
 	}
 
 	/**
@@ -245,24 +300,20 @@ public class ClearingTransaction {
 	 *        with value 0 only in case aMark is true.
 	 */
 	public void setParticipantMark(long participantId, boolean aMark) {
-		Long participantIdObject = new Long(participantId);
+		Long participantIdObject = Long.valueOf(participantId);
 		ParticipantInfo info = participantsInfo.get(participantIdObject);
 		if (info != null) {
-			int oldMark = (info.isMarked() ? 1 : 0);
-			int newMark = (aMark ? 1 : 0);
 			info.setMarked(aMark);
-			numberOfMarkedParticipants += newMark - oldMark;
 		} else {
 			if (aMark) {
-				info = new ParticipantInfo(0, true);
-				++numberOfMarkedParticipants;
+				info = new ParticipantInfo(participantId, 0, true);
 				participantsInfo.put(participantIdObject, info);
 			}
 		}
 	}
 
 	public long getParticipantValue(long participantId) {
-		Long participantIdObject = new Long(participantId);
+		Long participantIdObject = Long.valueOf(participantId);
 		ParticipantInfo info = participantsInfo.get(participantIdObject);
 		if (info != null) {
 			return info.getValue();
@@ -271,7 +322,7 @@ public class ClearingTransaction {
 	}
 
 	public boolean isParticipantMarked(long participantId) {
-		Long participantIdObject = new Long(participantId);
+		Long participantIdObject = Long.valueOf(participantId);
 		ParticipantInfo info = participantsInfo.get(participantIdObject);
 		if (info != null) {
 			return info.isMarked();
@@ -280,9 +331,69 @@ public class ClearingTransaction {
 	}
 
 	public void addParticipant(long participantId, long aValue, boolean aMark) {
-		ParticipantInfo info = new ParticipantInfo(aValue, aMark);
-        participantsInfo.put(new Long(participantId), info);
+		ParticipantInfo info = new ParticipantInfo(participantId, aValue, aMark);
+        if (aMark) {
+            if (aValue > 0) {
+                positiveAmount += aValue;
+            }
+            else {
+                negativeAmount -= aValue;
+            }
+        }
+        participantsInfo.put(Long.valueOf(participantId), info);
 	}
+
+    public long recomputeAndSaveChanges(GCDatabase db) {
+        if (splitEvenly) {
+            positiveAmount = amount;
+            negativeAmount = 0;
+            long share = 0;
+            long numberOfMarkedParticipants = 0;
+            for (ParticipantInfo info : participantsInfo.values()) {
+                if (info.isMarked()) {
+                    ++ numberOfMarkedParticipants;
+                }
+            }
+			if (numberOfMarkedParticipants > 0) {
+				share = amount / numberOfMarkedParticipants;
+                negativeAmount = share * numberOfMarkedParticipants;
+            }
+            for (ParticipantInfo info : participantsInfo.values()) {
+                long value = 0;
+                if (info.isMarked()) {
+                    value = -share;
+                    if (negativeAmount < positiveAmount) {
+                        --value;
+                        ++negativeAmount;
+                    }
+                }
+                if (info.getId() == receiverId) {
+                    value += amount;
+                }
+                if (info.getValue() != value) {
+                    info.setValue(value);
+                    db.updateTransactionParticipantValue(eventId,
+                            id, info.getId(), value, info.isMarked());
+                }
+            }
+        }
+        else {
+            if (amount != positiveAmount) {
+                amount = positiveAmount;
+                db.updateTransactionAmount(this);
+                for (ParticipantInfo info : participantsInfo.values()) {
+                    boolean oldMark = info.isMarked();
+                    info.setMarked (info.getValue() != 0);
+                    if (oldMark != info.isMarked()) {
+                        db.updateTransactionParticipantValue(eventId,
+                                id, info.getId(), info.getValue(),
+                                info.isMarked());
+                    }
+                }
+            }
+        }
+        return negativeAmount - positiveAmount;
+    }
 	
 	@Override
 	public String toString() {
