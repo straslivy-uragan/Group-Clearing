@@ -235,6 +235,7 @@ public class TransactionEditActivity extends FragmentActivity {
 	}
 
 	public final static String EDIT_PARTICIPANT_VALUE_DLG_TAG = "edit_participant_value_dialog";
+	public final static String SPLIT_WARNING_TAG = "split_warning_dialog";
 
 	Vector<ParticipantItemWrapper> participantWrappers = null;
 
@@ -499,7 +500,37 @@ public class TransactionEditActivity extends FragmentActivity {
 	}
 
 	public void onSplitEvenlyChanged(View v) {
-		if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
+        if (myApp.getNoSplitChangeWarning()) {
+            onSplitEvenlyConfirmed(true);
+        } else {
+            FragmentManager fm = getSupportFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+            Fragment prev = getSupportFragmentManager().findFragmentByTag(
+                    SPLIT_WARNING_TAG);
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            ft.addToBackStack(null);
+            WarningDialogWithCheck dialog =
+                new WarningDialogWithCheck(getResources().getString(R.string.split_warning));
+            dialog.setOnWarningListener(
+                    new WarningDialogWithCheck.WarningDialogClickListener() {
+                    @Override
+                    public void onWarningConfirmed(boolean checked) {
+                    onSplitEvenlyConfirmed(checked);
+                    }
+                    @Override
+                    public void onWarningCancelled(boolean checked) {
+                    onSplitEvenlyCancelled(checked);
+                    }
+                    });
+            dialog.show(ft, SPLIT_WARNING_TAG);
+        }
+	}
+
+    public void onSplitEvenlyConfirmed(boolean checked) {
+        myApp.setNoSplitChangeWarning(checked);
+    	if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
 			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
 			amountEdit.setEnabled(myTransaction.getSplitEvenly());
 			//amountEdit.setFocusable(myTransaction.getSplitEvenly());
@@ -507,7 +538,11 @@ public class TransactionEditActivity extends FragmentActivity {
 			db.updateTransactionSplitEvenly(myTransaction);
 			recomputeValues();
 		}
-	}
+    }
+
+    public void onSplitEvenlyCancelled(boolean checked) {
+        splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
+    }
 
 	public void onParticipantCheckedChange(int position, long participantId,
 			boolean isChecked) {

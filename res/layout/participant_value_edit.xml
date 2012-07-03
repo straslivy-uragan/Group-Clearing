@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minWidth="250dp"
+    android:paddingBottom="5dp"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:paddingTop="5dp" >
+
+    <TextView
+        android:id="@+id/pev_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:paddingBottom="10dp"
+        android:text="@string/participant_name"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/pev_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pev_name"
+        android:text="@string/transaction_participant_value" />
+
+    <EditText
+        android:id="@+id/pev_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pev_label"
+        android:digits="0123456789.,-"
+        android:ems="10"
+        android:hint="@string/number_hint"
+        android:inputType="numberDecimal" >
+
+        <requestFocus />
+    </EditText>
+
+    <Button
+        android:id="@+id/pev_ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/pev_value"
+        android:gravity="center"
+        android:minWidth="80dp"
+        android:text="@android:string/ok" />
+
+    <Button
+        android:id="@+id/pev_compute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/pev_ok"
+        android:layout_below="@id/pev_value"
+        android:layout_toLeftOf="@id/pev_ok"
+        android:gravity="center"
+        android:minWidth="80dp"
+        android:text="@string/pev_compute" />
+
+    <Button
+        android:id="@+id/pev_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/pev_ok"
+        android:layout_below="@id/pev_value"
+        android:layout_toLeftOf="@id/pev_compute"
+        android:minWidth="80dp"
+        android:text="@android:string/cancel" />
+
+</RelativeLayout>
