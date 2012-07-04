@@ -87,6 +87,14 @@ public class ParticipantsListAdapter implements ListAdapter {
 			wrapper.getBalance().setText(
 					myApp.formatCurrencyValueWithSymbol(person.getBalance(),
 							myEvent.getDefaultCurrency()) + " ");
+            if (person.getBalance() > 0) {
+                wrapper.getBalance().setTextColor(android.graphics.Color.GREEN);
+            } else if (person.getBalance() < 0) {
+                wrapper.getBalance().setTextColor(android.graphics.Color.RED);
+            } else {
+                wrapper.getBalance().setTextColor(context.getResources().getColor(
+                            android.R.color.primary_text_dark));
+            }
 		} else { // ADD_PARTICIPANT_TYPE
 			TextView text = (TextView) rowView.findViewById(R.id.add_item_text);
 			text.setText(context.getString(R.string.add_new_participant) + " ");
