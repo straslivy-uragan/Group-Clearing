@@ -215,7 +215,7 @@ public class GCDatabase {
         Cursor sumCursor = db.rawQuery(query, null);
         sumCursor.moveToFirst();
         if (!sumCursor.isAfterLast()) {
-            amount -= sumCursor.getLong(0);
+            amount += sumCursor.getLong(0);
         }
 		return amount;
 	}
@@ -296,8 +296,8 @@ public class GCDatabase {
 			aTransaction.setCurrency(Currency.getInstance(transactionsCursor
 					.getString(4)));
 			aTransaction.setAmount(transactionsCursor.getLong(5));
-			aTransaction.setReceiverId(transactionsCursor.getLong(6));
-			aTransaction.setSplitEvenly(transactionsCursor.getInt(7) != 0);
+			aTransaction.setReceiverId(transactionsCursor.getLong(6), null);
+			aTransaction.setSplitEvenly(transactionsCursor.getInt(7) != 0, null);
 			aTransaction.setNote(transactionsCursor.getString(8));
 			// Participants
 			while (!participantsCursor.isAfterLast()
@@ -341,8 +341,8 @@ public class GCDatabase {
 		aTransaction.setCurrency(Currency.getInstance(transactionCursor
 				.getString(4)));
 		aTransaction.setAmount(transactionCursor.getLong(5));
-		aTransaction.setReceiverId(transactionCursor.getLong(6));
-		aTransaction.setSplitEvenly(transactionCursor.getInt(7) != 0);
+		aTransaction.setReceiverId(transactionCursor.getLong(6), null);
+		aTransaction.setSplitEvenly(transactionCursor.getInt(7) != 0, null);
 		aTransaction.setNote(transactionCursor.getString(8));
 		while (!participantsCursor.isAfterLast()) {
 			aTransaction.addParticipant(participantsCursor.getInt(3),
@@ -500,4 +500,15 @@ public class GCDatabase {
 				GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS, null, values,
 				SQLiteDatabase.CONFLICT_REPLACE);
 	}
+
+    public void resetTransactionParticipantsValues(
+            ClearingTransaction aTransaction, boolean defaultMark) {
+        ContentValues values = new ContentValues(2);
+        values.put(GCDatabaseHelper.TTP_VALUE, 0);
+        values.put(GCDatabaseHelper.TTP_MARK, defaultMark);
+        String whereClause = String.format("%s=%d", 
+                GCDatabaseHelper.TTP_TRANSACTION_ID, aTransaction.getId());
+        db.update(GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                values, whereClause, null);
+    }
 }

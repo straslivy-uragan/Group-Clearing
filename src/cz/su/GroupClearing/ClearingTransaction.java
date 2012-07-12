@@ -167,6 +167,13 @@ public class ClearingTransaction {
         return negativeAmount - positiveAmount;
     }
 
+    public boolean hasNonzeroValues() {
+        return (positiveAmount != 0
+                || negativeAmount != 0
+                || amount != 0
+                || receiverId >= 0);
+    }
+
 	public Currency getCurrency() {
 		return currency;
 	}
@@ -179,8 +186,11 @@ public class ClearingTransaction {
 		return receiverId;
 	}
 
-	public void setReceiverId(long anId) {
+	public void setReceiverId(long anId, GCDatabase db) {
 		receiverId = anId;
+        if (db != null) {
+            db.updateTransactionReceiverId(this);
+        }
 	}
 
 	public String getName() {
@@ -211,36 +221,12 @@ public class ClearingTransaction {
      * participants and amount may change, this is because their
      * meaning in each kind of transaction is different.
      */
-	public void setSplitEvenly(boolean split) {
+	public void setSplitEvenly(boolean split, GCDatabase db) {
 		splitEvenly = split;
-        if (splitEvenly) {
-            // Mark all - we don't know which should have been marked
-            //and which not, so this is easist decision we can make.
-            positiveAmount = 0;
-            negativeAmount = 0;
-            for (ParticipantInfo info : participantsInfo.values()) {
-                info.setMarked(true);
-                if (info.getValue() < 0) {
-                    negativeAmount -= info.getValue();
-                } else {
-                    positiveAmount += info.getValue();
-                }
-                amount = positiveAmount;
-            }
+        if (db != null) {
+            db.updateTransactionSplitEvenly(this);
         }
-        else {
-            positiveAmount = 0;
-            negativeAmount = 0;
-            for (ParticipantInfo info : participantsInfo.values()) {
-                info.setMarked(info.getValue() != 0);
-                if (info.getValue() < 0) {
-                    negativeAmount -= info.getValue();
-                } else {
-                    positiveAmount += info.getValue();
-                }
-                amount = positiveAmount;
-            }
-}
+        resetValues(db);
 	}
 
 	public long getId() {
@@ -372,29 +358,49 @@ public class ClearingTransaction {
                 }
                 if (info.getValue() != value) {
                     info.setValue(value);
-                    db.updateTransactionParticipantValue(eventId,
-                            id, info.getId(), value, info.isMarked());
+                    if (db != null) {
+                        db.updateTransactionParticipantValue(eventId,
+                                id, info.getId(), value, info.isMarked());
+                    }
                 }
             }
         }
         else {
             if (amount != positiveAmount) {
                 amount = positiveAmount;
-                db.updateTransactionAmount(this);
+                if (db != null) {
+                    db.updateTransactionAmount(this);
+                }
                 for (ParticipantInfo info : participantsInfo.values()) {
                     boolean oldMark = info.isMarked();
                     info.setMarked (info.getValue() != 0);
                     if (oldMark != info.isMarked()) {
-                        db.updateTransactionParticipantValue(eventId,
-                                id, info.getId(), info.getValue(),
-                                info.isMarked());
+                        if (db != null) {
+                            db.updateTransactionParticipantValue(eventId,
+                                    id, info.getId(), info.getValue(),
+                                    info.isMarked());
+                        }
                     }
                 }
             }
         }
         return negativeAmount - positiveAmount;
     }
-	
+    
+    public void resetValues(GCDatabase db) {
+        for (ParticipantInfo info : participantsInfo.values()) {
+            info.setValue(0);
+            info.setMarked(splitEvenly);
+        }
+        positiveAmount = negativeAmount = amount = 0;
+        receiverId = -1;
+        if (db != null) {
+            db.resetTransactionParticipantsValues(this, splitEvenly);
+            db.updateTransactionAmount(this);
+            db.updateTransactionReceiverId(this);
+        }
+    }
+
 	@Override
 	public String toString() {
 		return "ClearingTransaction [id=" + id + ", eventId=" + eventId

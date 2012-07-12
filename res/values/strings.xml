@@ -41,7 +41,7 @@
 	<string name="balance">Balance:</string>
 	<string name="transaction_participant_value">Value:</string>
 	<string name="pev_compute">Compute</string>
-	<string name="split_warning">Note, that if you proceed, values in the transaction can change.</string>
+	<string name="split_warning">Note, that if you proceed, values in the transaction will be reseted.</string>
 	<string name="do_not_show">Do not show this message next time</string>
 	<string name="gc_warning_title">Group Clearing Warning</string>
 </resources>

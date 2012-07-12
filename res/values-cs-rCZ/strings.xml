@@ -44,7 +44,7 @@
     <string name="balance">Nezaúčtováno:</string>
 	<string name="transaction_participant_value">Částka:</string>
 	<string name="pev_compute">Dopočítat</string>
-	<string name="split_warning">Budete-li pokračovat, může dojít ke změně některých hodnot v transakci.</string>	
+	<string name="split_warning">Budete-li pokračovat, dojde k vynulování některých hodnot v transakci.</string>	
 	<string name="do_not_show">Příště již neupozorňovat.</string>
 	<string name="gc_warning_title">Varování Group Clearing</string>
 </resources>

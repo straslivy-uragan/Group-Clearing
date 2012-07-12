@@ -449,7 +449,21 @@ public class TransactionEditActivity extends FragmentActivity {
 		}
         amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
 				myTransaction.getCurrency()));
-		setBalanceText();
+        int selectedPosition = 0;
+        if (myTransaction.getReceiverId() >= 0) {
+            while (selectedPosition < participants.size()
+                    && participants.get(selectedPosition).getId()
+                    != myTransaction.getReceiverId()) {
+                ++ selectedPosition;
+            }
+            if (selectedPosition == participants.size()) {
+                selectedPosition = 0;
+            } else {
+                ++ selectedPosition;
+            }
+        }
+		receiverSpinner.setSelection(selectedPosition);
+        setBalanceText();
 	}
 
 	public void onAmountChanged() {
@@ -494,13 +508,14 @@ public class TransactionEditActivity extends FragmentActivity {
 	public void onReceiverChanged(int position, long id) {
 		ClearingPerson receiver = receiversAdapter.getItem(position);
 		if (receiver.getId() != myTransaction.getReceiverId()) {
-			myTransaction.setReceiverId(receiver.getId());
-			db.updateTransactionReceiverId(myTransaction);
+			myTransaction.setReceiverId(receiver.getId(), db);
 		}
+        recomputeValues();
 	}
 
 	public void onSplitEvenlyChanged(View v) {
-        if (myApp.getNoSplitChangeWarning()) {
+        if (//myApp.getNoSplitChangeWarning() ||
+                 !myTransaction.hasNonzeroValues()) {
             onSplitEvenlyConfirmed(true);
         } else {
             FragmentManager fm = getSupportFragmentManager();
@@ -531,11 +546,10 @@ public class TransactionEditActivity extends FragmentActivity {
     public void onSplitEvenlyConfirmed(boolean checked) {
         myApp.setNoSplitChangeWarning(checked);
     	if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
-			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
+			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked(), db);
 			amountEdit.setEnabled(myTransaction.getSplitEvenly());
 			//amountEdit.setFocusable(myTransaction.getSplitEvenly());
             receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
-			db.updateTransactionSplitEvenly(myTransaction);
 			recomputeValues();
 		}
     }
