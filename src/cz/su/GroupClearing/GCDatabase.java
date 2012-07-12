@@ -297,7 +297,7 @@ public class GCDatabase {
 					.getString(4)));
 			aTransaction.setAmount(transactionsCursor.getLong(5));
 			aTransaction.setReceiverId(transactionsCursor.getLong(6), null);
-			aTransaction.setSplitEvenly(transactionsCursor.getInt(7) != 0, null);
+			aTransaction.setSplitEvenly(transactionsCursor.getInt(7) != 0);
 			aTransaction.setNote(transactionsCursor.getString(8));
 			// Participants
 			while (!participantsCursor.isAfterLast()
@@ -342,7 +342,7 @@ public class GCDatabase {
 				.getString(4)));
 		aTransaction.setAmount(transactionCursor.getLong(5));
 		aTransaction.setReceiverId(transactionCursor.getLong(6), null);
-		aTransaction.setSplitEvenly(transactionCursor.getInt(7) != 0, null);
+		aTransaction.setSplitEvenly(transactionCursor.getInt(7) != 0);
 		aTransaction.setNote(transactionCursor.getString(8));
 		while (!participantsCursor.isAfterLast()) {
 			aTransaction.addParticipant(participantsCursor.getInt(3),

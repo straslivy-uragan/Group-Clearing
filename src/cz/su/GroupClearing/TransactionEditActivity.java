@@ -62,9 +62,8 @@ public class TransactionEditActivity extends FragmentActivity {
 		}
 	};
 
-	public class ReceiverSpinnerOnItemSelected
-			implements
-				OnItemSelectedListener {
+	public class ReceiverSpinnerOnItemSelected implements
+			OnItemSelectedListener {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View view, int pos,
 				long id) {
@@ -110,7 +109,8 @@ public class TransactionEditActivity extends FragmentActivity {
 			base.setOnLongClickListener(longClickListener);
 			// check.setOnLongClickListener(longClickListener);
 			balance = aBalance;
-			participantBalanceText = (TextView) base.findViewById(R.id.trans_part_balance);
+			participantBalanceText = (TextView) base
+					.findViewById(R.id.trans_part_balance);
 			check.setText(name);
 			setBalance(aBalance);
 		}
@@ -125,16 +125,17 @@ public class TransactionEditActivity extends FragmentActivity {
 
 		void setBalance(long aBalance) {
 			balance = aBalance;
-			participantBalanceText.setText(myApp.formatCurrencyValueWithSymbol(balance,
-					myTransaction.getCurrency()) + " ");
-            if (balance > 0) {
-                participantBalanceText.setTextColor(android.graphics.Color.GREEN);
-            } else if (balance < 0) {
-                participantBalanceText.setTextColor(android.graphics.Color.RED);
-            } else {
-                participantBalanceText.setTextColor(getResources().getColor(
-                            android.R.color.primary_text_dark));
-            }
+			participantBalanceText.setText(myApp.formatCurrencyValueWithSymbol(
+					balance, myTransaction.getCurrency()) + " ");
+			if (balance > 0) {
+				participantBalanceText
+						.setTextColor(android.graphics.Color.GREEN);
+			} else if (balance < 0) {
+				participantBalanceText.setTextColor(android.graphics.Color.RED);
+			} else {
+				participantBalanceText.setTextColor(getResources().getColor(
+						android.R.color.primary_text_dark));
+			}
 		}
 
 		long getBalance() {
@@ -227,6 +228,7 @@ public class TransactionEditActivity extends FragmentActivity {
 			super.onCancel(dialog);
 			onValueEditorCancelled(position, participantId);
 		}
+
 		public void onComputeButtonClicked(View v) {
 			valueEdit.setText(myApp.formatCurrencyValue(
 					value + myTransaction.getBalance(),
@@ -355,8 +357,8 @@ public class TransactionEditActivity extends FragmentActivity {
 		}
 		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
 		amountEdit.setEnabled(myTransaction.getSplitEvenly());
-        // amountEdit.setFocusable(myTransaction.getSplitEvenly());
-        receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
+		// amountEdit.setFocusable(myTransaction.getSplitEvenly());
+		receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
 		refreshParticipants();
 	}
 
@@ -447,23 +449,23 @@ public class TransactionEditActivity extends FragmentActivity {
 			wrapper.setCheckState(myTransaction
 					.isParticipantMarked(participantId));
 		}
-        amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
+		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
 				myTransaction.getCurrency()));
-        int selectedPosition = 0;
-        if (myTransaction.getReceiverId() >= 0) {
-            while (selectedPosition < participants.size()
-                    && participants.get(selectedPosition).getId()
-                    != myTransaction.getReceiverId()) {
-                ++ selectedPosition;
-            }
-            if (selectedPosition == participants.size()) {
-                selectedPosition = 0;
-            } else {
-                ++ selectedPosition;
-            }
-        }
+		int selectedPosition = 0;
+		if (myTransaction.getReceiverId() >= 0) {
+			while (selectedPosition < participants.size()
+					&& participants.get(selectedPosition).getId() != myTransaction
+							.getReceiverId()) {
+				++selectedPosition;
+			}
+			if (selectedPosition == participants.size()) {
+				selectedPosition = 0;
+			} else {
+				++selectedPosition;
+			}
+		}
 		receiverSpinner.setSelection(selectedPosition);
-        setBalanceText();
+		setBalanceText();
 	}
 
 	public void onAmountChanged() {
@@ -497,10 +499,10 @@ public class TransactionEditActivity extends FragmentActivity {
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
-			case DATE_PICK_DIALOG_ID :
-				return new DatePickerDialog(this, dateSetListener,
-						myTransaction.getYear(), myTransaction.getMonth(),
-						myTransaction.getDayOfMonth());
+		case DATE_PICK_DIALOG_ID:
+			return new DatePickerDialog(this, dateSetListener,
+					myTransaction.getYear(), myTransaction.getMonth(),
+					myTransaction.getDayOfMonth());
 		}
 		return null;
 	}
@@ -510,53 +512,55 @@ public class TransactionEditActivity extends FragmentActivity {
 		if (receiver.getId() != myTransaction.getReceiverId()) {
 			myTransaction.setReceiverId(receiver.getId(), db);
 		}
-        recomputeValues();
+		recomputeValues();
 	}
 
 	public void onSplitEvenlyChanged(View v) {
-        if (//myApp.getNoSplitChangeWarning() ||
-                 !myTransaction.hasNonzeroValues()) {
-            onSplitEvenlyConfirmed(true);
-        } else {
-            FragmentManager fm = getSupportFragmentManager();
-            FragmentTransaction ft = fm.beginTransaction();
-            Fragment prev = getSupportFragmentManager().findFragmentByTag(
-                    SPLIT_WARNING_TAG);
-            if (prev != null) {
-                ft.remove(prev);
-            }
-            ft.addToBackStack(null);
-            WarningDialogWithCheck dialog =
-                new WarningDialogWithCheck(getResources().getString(R.string.split_warning));
-            dialog.setOnWarningListener(
-                    new WarningDialogWithCheck.WarningDialogClickListener() {
-                    @Override
-                    public void onWarningConfirmed(boolean checked) {
-                    onSplitEvenlyConfirmed(checked);
-                    }
-                    @Override
-                    public void onWarningCancelled(boolean checked) {
-                    onSplitEvenlyCancelled(checked);
-                    }
-                    });
-            dialog.show(ft, SPLIT_WARNING_TAG);
-        }
+		if (// myApp.getNoSplitChangeWarning() ||
+		!myTransaction.hasNonzeroValues()) {
+			onSplitEvenlyConfirmed(true);
+		} else {
+			FragmentManager fm = getSupportFragmentManager();
+			FragmentTransaction ft = fm.beginTransaction();
+			Fragment prev = getSupportFragmentManager().findFragmentByTag(
+					SPLIT_WARNING_TAG);
+			if (prev != null) {
+				ft.remove(prev);
+			}
+			ft.addToBackStack(null);
+			WarningDialogWithCheck dialog = new WarningDialogWithCheck(
+					getResources().getString(R.string.split_warning));
+			dialog.setOnWarningListener(new WarningDialogWithCheck.WarningDialogClickListener() {
+				@Override
+				public void onWarningConfirmed(boolean checked) {
+					onSplitEvenlyConfirmed(checked);
+				}
+
+				@Override
+				public void onWarningCancelled(boolean checked) {
+					onSplitEvenlyCancelled(checked);
+				}
+			});
+			dialog.show(ft, SPLIT_WARNING_TAG);
+		}
 	}
 
-    public void onSplitEvenlyConfirmed(boolean checked) {
-        myApp.setNoSplitChangeWarning(checked);
-    	if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
-			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked(), db);
+	public void onSplitEvenlyConfirmed(boolean checked) {
+		myApp.setNoSplitChangeWarning(checked);
+		if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
+			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
+			db.updateTransactionSplitEvenly(myTransaction);
+			myTransaction.resetValues(db);
 			amountEdit.setEnabled(myTransaction.getSplitEvenly());
-			//amountEdit.setFocusable(myTransaction.getSplitEvenly());
-            receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
+			// amountEdit.setFocusable(myTransaction.getSplitEvenly());
+			receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
 			recomputeValues();
 		}
-    }
+	}
 
-    public void onSplitEvenlyCancelled(boolean checked) {
-        splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
-    }
+	public void onSplitEvenlyCancelled(boolean checked) {
+		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
+	}
 
 	public void onParticipantCheckedChange(int position, long participantId,
 			boolean isChecked) {
@@ -587,9 +591,9 @@ public class TransactionEditActivity extends FragmentActivity {
 	}
 
 	public void onParticipantLongClick(int position, long participantId) {
-        if (! myTransaction.getSplitEvenly()) {
-            openValueEditor(position, participantId);
-        }
+		if (!myTransaction.getSplitEvenly()) {
+			openValueEditor(position, participantId);
+		}
 	}
 
 	public void onValueEditorOK(int position, long participantId, long value) {
@@ -599,12 +603,12 @@ public class TransactionEditActivity extends FragmentActivity {
 		ParticipantItemWrapper wrapper = participantWrappers.get(position);
 		wrapper.setCheckState(myTransaction.isParticipantMarked(participantId));
 		wrapper.setBalance(myTransaction.getParticipantValue(participantId));
-        setBalanceText();
+		setBalanceText();
 		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
 	}
 
 	public void onValueEditorCancelled(int position, long participantId) {
-        ParticipantItemWrapper wrapper = participantWrappers.get(position);
-        wrapper.setCheckState(myTransaction.isParticipantMarked(participantId));
+		ParticipantItemWrapper wrapper = participantWrappers.get(position);
+		wrapper.setCheckState(myTransaction.isParticipantMarked(participantId));
 	}
 }

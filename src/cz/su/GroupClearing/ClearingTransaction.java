@@ -221,13 +221,9 @@ public class ClearingTransaction {
      * participants and amount may change, this is because their
      * meaning in each kind of transaction is different.
      */
-	public void setSplitEvenly(boolean split, GCDatabase db) {
+	public void setSplitEvenly(boolean split) {
 		splitEvenly = split;
-        if (db != null) {
-            db.updateTransactionSplitEvenly(this);
-        }
-        resetValues(db);
-	}
+    }
 
 	public long getId() {
 		return id;
