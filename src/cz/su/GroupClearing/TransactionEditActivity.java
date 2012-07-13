@@ -516,8 +516,8 @@ public class TransactionEditActivity extends FragmentActivity {
 	}
 
 	public void onSplitEvenlyChanged(View v) {
-		if (// myApp.getNoSplitChangeWarning() ||
-		!myTransaction.hasNonzeroValues()) {
+		if (myApp.getNoSplitChangeWarning()
+				|| !myTransaction.hasNonzeroValues()) {
 			onSplitEvenlyConfirmed(true);
 		} else {
 			FragmentManager fm = getSupportFragmentManager();

@@ -42,13 +42,14 @@ public final class R {
         public static final int linearLayout2=0x7f080008;
         public static final int linearLayout3=0x7f08000b;
         public static final int linearLayout4=0x7f080005;
-        public static final int menu_about=0x7f08003a;
-        public static final int menu_add_participant=0x7f08003c;
-        public static final int menu_add_transaction=0x7f08003e;
-        public static final int menu_event_delete=0x7f080038;
-        public static final int menu_new_event=0x7f080039;
-        public static final int menu_participant_delete=0x7f08003b;
-        public static final int menu_transaction_delete=0x7f08003d;
+        public static final int menu_about=0x7f08003e;
+        public static final int menu_add_participant=0x7f080040;
+        public static final int menu_add_transaction=0x7f080042;
+        public static final int menu_event_delete=0x7f08003b;
+        public static final int menu_event_suggest_receiver=0x7f08003c;
+        public static final int menu_new_event=0x7f08003d;
+        public static final int menu_participant_delete=0x7f08003f;
+        public static final int menu_transaction_delete=0x7f080041;
         public static final int participant_edit_cancel=0x7f080015;
         public static final int participant_edit_ok=0x7f080014;
         public static final int participant_name=0x7f080013;
@@ -89,6 +90,9 @@ public final class R {
         public static final int warning_text=0x7f080034;
         public static final int warning_with_check_cancel=0x7f080037;
         public static final int warning_with_check_ok=0x7f080036;
+        public static final int yesno_cancel=0x7f08003a;
+        public static final int yesno_ok=0x7f080039;
+        public static final int yesno_text=0x7f080038;
     }
     public static final class layout {
         public static final int about_dialog=0x7f030000;
@@ -105,6 +109,7 @@ public final class R {
         public static final int transactions_list=0x7f03000b;
         public static final int transactions_list_item=0x7f03000c;
         public static final int warning_with_check=0x7f03000d;
+        public static final int yes_no_dialog=0x7f03000e;
     }
     public static final class menu {
         public static final int event_properties_menu=0x7f070000;
@@ -125,8 +130,8 @@ public final class R {
         public static final int change=0x7f05000b;
         public static final int date_placeholder=0x7f050007;
         public static final int do_not_show=0x7f05002a;
-        public static final int event_add_participant=0x7f05002c;
-        public static final int event_add_transaction=0x7f05002d;
+        public static final int event_add_participant=0x7f050030;
+        public static final int event_add_transaction=0x7f050031;
         public static final int event_delete=0x7f05000d;
         public static final int event_from_date=0x7f050006;
         public static final int event_name=0x7f050004;
@@ -136,6 +141,7 @@ public final class R {
         public static final int event_view_participants=0x7f050009;
         public static final int event_view_transactions=0x7f05000a;
         public static final int gc_warning_title=0x7f05002b;
+        public static final int gc_yesno_title=0x7f05002f;
         public static final int hello=0x7f050000;
         public static final int info_author=0x7f050010;
         public static final int info_version=0x7f05000f;
@@ -148,6 +154,9 @@ public final class R {
         public static final int save_failed_alert=0x7f050012;
         public static final int split_evenly=0x7f050021;
         public static final int split_warning=0x7f050029;
+        public static final int suggest_receiver=0x7f05002c;
+        public static final int suggest_receiver_cond=0x7f05002d;
+        public static final int suggest_receiver_msg_format=0x7f05002e;
         public static final int syntax_error_alert=0x7f050015;
         public static final int trans_part_name_placeholder=0x7f05001f;
         public static final int trans_value_placeholder=0x7f050020;

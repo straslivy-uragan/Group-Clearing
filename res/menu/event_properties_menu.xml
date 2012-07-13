@@ -4,4 +4,9 @@
         android:id="@+id/menu_event_delete"
         android:title="@string/event_delete"
         android:titleCondensed="@string/event_delete"></item>
+    <item
+        android:id="@+id/menu_event_suggest_receiver"
+        android:title="@string/suggest_receiver"
+        android:titleCondensed="@string/suggest_receiver_cond"
+        ></item>
 </menu>

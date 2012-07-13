@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/yesno_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:paddingBottom="20dip"
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Button
+        android:id="@+id/yesno_ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/yesno_text"
+        android:minWidth="100dp"
+        android:text="@android:string/yes" />
+
+    <Button
+        android:id="@+id/yesno_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/yesno_ok"
+        android:layout_alignBottom="@+id/yesno_ok"
+        android:layout_alignParentLeft="true"
+        android:minWidth="100dp"
+        android:text="@android:string/no" />
+
+</RelativeLayout>

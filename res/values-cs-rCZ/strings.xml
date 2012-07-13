@@ -42,9 +42,14 @@
     <string name="transaction_no_receiver">--</string>
     <string name="number_hint">0,00</string>
     <string name="balance">Nezaúčtováno:</string>
-	<string name="transaction_participant_value">Částka:</string>
-	<string name="pev_compute">Dopočítat</string>
-	<string name="split_warning">Budete-li pokračovat, dojde k vynulování některých hodnot v transakci.</string>	
-	<string name="do_not_show">Příště již neupozorňovat.</string>
-	<string name="gc_warning_title">Varování Group Clearing</string>
+    <string name="transaction_participant_value">Částka:</string>
+    <string name="pev_compute">Dopočítat</string>
+    <string name="split_warning">Budete-li pokračovat, dojde k vynulování některých hodnot v transakci.</string>
+    <string name="do_not_show">Příště již neupozorňovat.</string>
+    <string name="gc_warning_title">Varování Group Clearing</string>
+    <string name="suggest_receiver">Kdo má platit</string>
+    <string name="suggest_receiver_cond">Plátce…</string>
+    <string name="suggest_receiver_msg_format" formatted="false">Navrhuji, aby platil %s, jehož bilance je %s. Mám jej nechat platit?</string>
+    <string name="gc_yesno_title">Group Clearing</string>
+
 </resources>

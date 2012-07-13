@@ -16,6 +16,24 @@ public class GCDatabase {
 	private SQLiteDatabase db;
 	private final SimpleDateFormat dateFormat;
 
+    public class ParticipantValue {
+        private long id;
+        private long value;
+
+        ParticipantValue(long anId, long aValue) {
+            id = anId;
+            value = aValue;
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public long getValue() {
+            return value;
+        }
+    }
+
 	public GCDatabase(Context context) {
 		db = (new GCDatabaseHelper(context)).getWritableDatabase();
 		dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -191,20 +209,7 @@ public class GCDatabase {
 
 	public long computeBalanceOfPerson(long eventId, long personId) {
 		long amount = 0;
-		// Get all positive amounts
-		/* String query = String.format(
-				"SELECT SUM(%s) FROM %s WHERE %s=%d AND %s=%d",
-				GCDatabaseHelper.TT_AMOUNT,
-				GCDatabaseHelper.TABLE_TRANSACTIONS,
-				GCDatabaseHelper.TT_EVENT_ID, eventId,
-				GCDatabaseHelper.TT_RECEIVER_ID, personId);
-		Cursor sumCursor = db.rawQuery(query, null);
-		sumCursor.moveToFirst();
-		if (!sumCursor.isAfterLast()) {
-			amount = sumCursor.getLong(0);
-		}
-         */
-		// Get values in all transactions
+        // Get values in all transactions
         String query = String.format(
                 "SELECT SUM(%s) FROM %s WHERE %s=%d AND %s=%d AND %s<>0",
                 GCDatabaseHelper.TTP_VALUE,
@@ -510,5 +515,31 @@ public class GCDatabase {
                 GCDatabaseHelper.TTP_TRANSACTION_ID, aTransaction.getId());
         db.update(GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
                 values, whereClause, null);
+    }
+    
+    public ParticipantValue findParticipantWithMinValue(long eventId) {
+        String whereClause = String.format("%s=%d",
+                GCDatabaseHelper.TP_EVENT_ID, eventId);
+        String[] tp_id_column = {GCDatabaseHelper.TP_ID};
+        Cursor result = db.query(GCDatabaseHelper.TABLE_PERSONS,
+                tp_id_column, whereClause, null,
+                null, null, null);
+        result.moveToFirst();
+        ParticipantValue valueInfo = null;
+        if (!result.isAfterLast()) {
+            long minId = result.getInt(0);
+            long minValue = computeBalanceOfPerson(eventId, minId);
+            result.moveToNext();
+            while (!result.isAfterLast()) {
+                long value = computeBalanceOfPerson(eventId, result.getInt(0));
+                if (value < minValue) {
+                    minId = result.getInt(0);
+                    minValue = value;
+                }
+                result.moveToNext();
+            }
+            valueInfo = new ParticipantValue(minId, minValue);
+        }
+        return valueInfo;
     }
 }

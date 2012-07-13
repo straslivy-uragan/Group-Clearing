@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="hello">Hello World, GroupClearingActivity!</string>
     <string name="app_name">Group Clearing</string>
     <string name="add_new_event">Add new event</string>
@@ -30,18 +31,22 @@
     <string name="transaction_value">Value:</string>
     <string name="transaction_date">Date:</string>
     <string name="transaction_note">Note:</string>
-	<string name="transaction_participants">Participants:</string>
-	<string name="trans_part_name_placeholder">Name of participant</string>
-	<string name="trans_value_placeholder">0,- </string>
-	<string name="split_evenly">Split evenly</string>
-	<string name="transaction_paid_by">Paid by:</string>
-	<string name="transaction_paid_by_prompt">Select transaction receiver:</string>
-	<string name="transaction_no_receiver">--</string>
-	<string name="number_hint">0.00</string>
-	<string name="balance">Balance:</string>
-	<string name="transaction_participant_value">Value:</string>
-	<string name="pev_compute">Compute</string>
-	<string name="split_warning">Note, that if you proceed, values in the transaction will be reseted.</string>
-	<string name="do_not_show">Do not show this message next time</string>
-	<string name="gc_warning_title">Group Clearing Warning</string>
+    <string name="transaction_participants">Participants:</string>
+    <string name="trans_part_name_placeholder">Name of participant</string>
+    <string name="trans_value_placeholder">0,- </string>
+    <string name="split_evenly">Split evenly</string>
+    <string name="transaction_paid_by">Paid by:</string>
+    <string name="transaction_paid_by_prompt">Select transaction receiver:</string>
+    <string name="transaction_no_receiver">--</string>
+    <string name="number_hint">0.00</string>
+    <string name="balance">Balance:</string>
+    <string name="transaction_participant_value">Value:</string>
+    <string name="pev_compute">Compute</string>
+    <string name="split_warning">Note, that if you proceed, values in the transaction will be reseted.</string>
+    <string name="do_not_show">Do not show this message next time</string>
+    <string name="gc_warning_title">Group Clearing Warning</string>
+    <string name="suggest_receiver">Who should pay</string>
+    <string name="suggest_receiver_cond">Payer…</string>
+    <string name="suggest_receiver_msg_format" formatted="false">I suggest that next pays %s, whose balance is %s. Should I make him pay?</string>
+	<string name="gc_yesno_title">Group Clearing</string>
 </resources>
