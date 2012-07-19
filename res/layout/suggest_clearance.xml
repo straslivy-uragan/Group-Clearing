@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TableLayout
+            android:id="@+id/sctable"
+            style="@style/sctable"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+        </TableLayout>
+
+        <Button
+            android:id="@+id/sc_create_transactions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dip"
+            android:onClick="onCreateTransactionsClicked"
+            android:text="@string/sc_create_transactions" />
+    </LinearLayout>
+
+</ScrollView>

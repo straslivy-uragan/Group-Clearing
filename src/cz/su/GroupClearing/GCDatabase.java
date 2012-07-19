@@ -16,25 +16,7 @@ public class GCDatabase {
 	private SQLiteDatabase db;
 	private final SimpleDateFormat dateFormat;
 
-    public class ParticipantValue {
-        private long id;
-        private long value;
-
-        ParticipantValue(long anId, long aValue) {
-            id = anId;
-            value = aValue;
-        }
-
-        public long getId() {
-            return id;
-        }
-
-        public long getValue() {
-            return value;
-        }
-    }
-
-	public GCDatabase(Context context) {
+    public GCDatabase(Context context) {
 		db = (new GCDatabaseHelper(context)).getWritableDatabase();
 		dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	}
@@ -301,7 +283,7 @@ public class GCDatabase {
 			aTransaction.setCurrency(Currency.getInstance(transactionsCursor
 					.getString(4)));
 			aTransaction.setAmount(transactionsCursor.getLong(5));
-			aTransaction.setReceiverId(transactionsCursor.getLong(6), null);
+			aTransaction.setReceiverId(transactionsCursor.getLong(6));
 			aTransaction.setSplitEvenly(transactionsCursor.getInt(7) != 0);
 			aTransaction.setNote(transactionsCursor.getString(8));
 			// Participants
@@ -346,7 +328,7 @@ public class GCDatabase {
 		aTransaction.setCurrency(Currency.getInstance(transactionCursor
 				.getString(4)));
 		aTransaction.setAmount(transactionCursor.getLong(5));
-		aTransaction.setReceiverId(transactionCursor.getLong(6), null);
+		aTransaction.setReceiverId(transactionCursor.getLong(6));
 		aTransaction.setSplitEvenly(transactionCursor.getInt(7) != 0);
 		aTransaction.setNote(transactionCursor.getString(8));
 		while (!participantsCursor.isAfterLast()) {
@@ -520,10 +502,9 @@ public class GCDatabase {
     public ParticipantValue findParticipantWithMinValue(long eventId) {
         String whereClause = String.format("%s=%d",
                 GCDatabaseHelper.TP_EVENT_ID, eventId);
-        String[] tp_id_column = {GCDatabaseHelper.TP_ID};
         Cursor result = db.query(GCDatabaseHelper.TABLE_PERSONS,
-                tp_id_column, whereClause, null,
-                null, null, null);
+                GCDatabaseHelper.TABLE_PERSONS_ID_COLUMN, whereClause,
+                null, null, null, null);
         result.moveToFirst();
         ParticipantValue valueInfo = null;
         if (!result.isAfterLast()) {
@@ -541,5 +522,23 @@ public class GCDatabase {
             valueInfo = new ParticipantValue(minId, minValue);
         }
         return valueInfo;
+    }
+
+    public Vector<ParticipantValue> readEventParticipantValues(long eventId) {
+        String whereClause = String.format("%s=%d",
+                GCDatabaseHelper.TP_EVENT_ID, eventId);
+        Cursor result = db.query(GCDatabaseHelper.TABLE_PERSONS,
+                GCDatabaseHelper.TABLE_PERSONS_ID_COLUMN, whereClause,
+                null, null, null, null);
+        Vector<ParticipantValue> values = new Vector<ParticipantValue>(result.getCount());
+        result.moveToFirst();
+        while (!result.isAfterLast()) {
+                long value = computeBalanceOfPerson(eventId, result.getInt(0));
+                ParticipantValue valueInfo =
+                    new ParticipantValue(result.getInt(0), value);
+                values.add(valueInfo);
+                result.moveToNext();
+        }
+        return values;
     }
 }

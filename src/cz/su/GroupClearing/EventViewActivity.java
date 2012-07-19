@@ -34,7 +34,7 @@ public class EventViewActivity extends FragmentActivity {
     private GCDatabase db;
 
     private long myEventId = -1;
-    private GroupClearingApplication myApp = GroupClearingApplication
+    private final GroupClearingApplication myApp = GroupClearingApplication
             .getInstance();
     private ClearingEvent myEvent;
     private EditText eventName;
@@ -45,17 +45,19 @@ public class EventViewActivity extends FragmentActivity {
     private static final int START_DATE_PICK_DIALOG_ID = 0;
     private static final int FINISH_DATE_PICK_DIALOG_ID = 1;
 
-    private DatePickerDialog.OnDateSetListener startDateSetListener = new DatePickerDialog.OnDateSetListener() {
+    private final DatePickerDialog.OnDateSetListener startDateSetListener = new DatePickerDialog.OnDateSetListener() {
 
-        public void onDateSet(DatePicker view, int year, int monthOfYear,
+        @Override
+		public void onDateSet(DatePicker view, int year, int monthOfYear,
                 int dayOfMonth) {
             startDateSet(year, monthOfYear, dayOfMonth);
         }
     };
 
-    private DatePickerDialog.OnDateSetListener finishDateSetListener = new DatePickerDialog.OnDateSetListener() {
+    private final DatePickerDialog.OnDateSetListener finishDateSetListener = new DatePickerDialog.OnDateSetListener() {
 
-        public void onDateSet(DatePicker view, int year, int monthOfYear,
+        @Override
+		public void onDateSet(DatePicker view, int year, int monthOfYear,
                 int dayOfMonth) {
             finishDateSet(year, monthOfYear, dayOfMonth);
         }
@@ -83,7 +85,8 @@ public class EventViewActivity extends FragmentActivity {
                     }
                 });
         eventName.setOnFocusChangeListener(new OnFocusChangeListener() {
-            public void onFocusChange(View v, boolean hasFocus) {
+            @Override
+			public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
                     onNameChanged();
                 }
@@ -109,18 +112,13 @@ public class EventViewActivity extends FragmentActivity {
                     }
                 });
         eventNote.setOnFocusChangeListener(new OnFocusChangeListener() {
-            public void onFocusChange(View v, boolean hasFocus) {
+            @Override
+			public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
                     onNoteChanged();
                 }
             }
         });
-        /*
-         * eventNote.setOnKeyListener(new View.OnKeyListener() { public boolean
-         * onKey(View v, int keyCode, KeyEvent event) { if ((event.getAction()
-         * == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-         * onNoteChanged(); } return false; } });
-         */
         startDateButton = (Button) findViewById(R.id.event_from_date_button);
         finishDateButton = (Button) findViewById(R.id.event_to_date_button);
         myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
@@ -181,6 +179,9 @@ public class EventViewActivity extends FragmentActivity {
             return true;
         case R.id.menu_event_suggest_receiver:
             suggestReceiver();
+            return true;
+        case R.id.menu_event_clearance:
+            suggestClearance();
             return true;
         default:
             return super.onOptionsItemSelected(item);
@@ -280,8 +281,7 @@ public class EventViewActivity extends FragmentActivity {
         ft.addToBackStack(null);
         String format = getResources().getString(
                 R.string.suggest_receiver_msg_format);
-        GCDatabase.ParticipantValue valueInfo = db
-                .findParticipantWithMinValue(myEventId);
+        ParticipantValue valueInfo = db.findParticipantWithMinValue(myEventId);
         ClearingPerson participant = db.readPersonWithId(valueInfo.getId());
         String message = String.format(format, participant.getName(), myApp
                 .formatCurrencyValueWithSymbol(valueInfo.getValue(),
@@ -307,7 +307,8 @@ public class EventViewActivity extends FragmentActivity {
             ClearingTransaction aTransaction = db
                     .createNewTransaction(myEventId);
             Long idObject = (Long) dlg.getDialogTag();
-            aTransaction.setReceiverId(idObject.longValue(), db);
+            aTransaction.setReceiverId(idObject.longValue());
+			db.updateTransactionReceiverId(aTransaction);
             Intent intent = new Intent(this, TransactionEditActivity.class);
             intent.putExtra("cz.su.GroupClearing.EventId", myEventId);
             intent.putExtra("cz.su.GroupClearing.TransactionId",
@@ -319,6 +320,12 @@ public class EventViewActivity extends FragmentActivity {
     }
 
     void onSuggestReceiverCancelled(YesNoDialog dlg) {
+    }
+
+    void suggestClearance() {
+        Intent intent = new Intent(this, SuggestClearanceActivity.class);
+        intent.putExtra("cz.su.GroupClearing.EventId", myEventId);
+        startActivity(intent);
     }
 
 }

@@ -51,5 +51,11 @@
     <string name="suggest_receiver_cond">Plátce…</string>
     <string name="suggest_receiver_msg_format" formatted="false">Navrhuji, aby platil %s, jehož bilance je %s. Mám jej nechat platit?</string>
     <string name="gc_yesno_title">Group Clearing</string>
-
+    <string name="suggest_clearance">Návrh vyrovnání</string>
+    <string name="suggest_clearance_cond">Vyrovnání…</string>
+    <string name="sctable_header_payer">Kdo</string>
+    <string name="sctable_header_receiver">Komu</string>
+    <string name="sctable_header_amount">Kolik</string>
+    <string name="sc_create_transactions">Vytvořit transakce</string>
+    <string name="sc_transaction_name">Vyrovnání</string>
 </resources>

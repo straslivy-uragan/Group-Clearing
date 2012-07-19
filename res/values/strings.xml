@@ -48,5 +48,12 @@
     <string name="suggest_receiver">Who should pay</string>
     <string name="suggest_receiver_cond">Payer…</string>
     <string name="suggest_receiver_msg_format" formatted="false">I suggest that next pays %s, whose balance is %s. Should I make him pay?</string>
-	<string name="gc_yesno_title">Group Clearing</string>
+    <string name="gc_yesno_title">Group Clearing</string>
+    <string name="suggest_clearance">Suggest clearance</string>
+    <string name="suggest_clearance_cond">Clearance…</string>
+    <string name="sctable_header_payer">Payer</string>
+    <string name="sctable_header_receiver">Receiver</string>
+    <string name="sctable_header_amount">Amount</string>
+    <string name="sc_create_transactions">Create transactions</string>
+    <string name="sc_transaction_name">Clearing</string>
 </resources>

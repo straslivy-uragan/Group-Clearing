@@ -1,5 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="GroupClearingTheme" parent="@android:style/Theme.Black">
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="GroupClearingTheme" parent="@android:style/Theme.Black"></style>
+
+    <style name="sctable" parent="@style/GroupClearingTheme">
+
+        <!-- item name="android:background">#FFFAFAD2</item> -->
+        <item name="android:background">#FF87A96B</item>
+        <item name="android:padding">1sp</item>
     </style>
+
+    <style name="sctable_header_row" parent="@style/GroupClearingTheme">
+        <item name="android:background">#FF87A96B</item>
+    </style>
+
+    <style name="sctable_header_data" parent="@style/GroupClearingTheme">
+        <item name="android:background">#FF87A96B</item>
+        <item name="android:textColor">#FF000000</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
+    <style name="sctable_even_row" parent="@style/GroupClearingTheme">
+        <item name="android:background">#FFFAFAD2</item>
+    </style>
+
+    <style name="sctable_even_data" parent="@style/GroupClearingTheme">
+        <item name="android:background">#FFFAFAD2</item>
+        <item name="android:textColor">#FF000000</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
+    <style name="sctable_odd_row" parent="@style/GroupClearingTheme">
+        <item name="android:background">#FFA9BA9D</item>
+    </style>
+
+    <style name="sctable_odd_data" parent="@style/GroupClearingTheme">
+        <item name="android:background">#FFA9BA9D</item>
+        <item name="android:textColor">#FF000000</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
 </resources>

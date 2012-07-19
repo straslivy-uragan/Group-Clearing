@@ -186,11 +186,8 @@ public class ClearingTransaction {
 		return receiverId;
 	}
 
-	public void setReceiverId(long anId, GCDatabase db) {
+	public void setReceiverId(long anId) {
 		receiverId = anId;
-        if (db != null) {
-            db.updateTransactionReceiverId(this);
-        }
 	}
 
 	public String getName() {
@@ -362,11 +359,9 @@ public class ClearingTransaction {
             }
         }
         else {
-            if (amount != positiveAmount) {
-                amount = positiveAmount;
-                if (db != null) {
-                    db.updateTransactionAmount(this);
-                }
+            // Go through all participants and unmark those with 0 value.
+           positiveAmount = 0;
+           negativeAmount = 0;
                 for (ParticipantInfo info : participantsInfo.values()) {
                     boolean oldMark = info.isMarked();
                     info.setMarked (info.getValue() != 0);
@@ -377,6 +372,17 @@ public class ClearingTransaction {
                                     info.isMarked());
                         }
                     }
+                    if (info.getValue() > 0) {
+                        positiveAmount += info.getValue();
+                    }
+                    else {
+                        negativeAmount -= info.getValue();
+                    }
+                }
+            if (amount != positiveAmount) {
+                amount = positiveAmount;
+                if (db != null) {
+                    db.updateTransactionAmount(this);
                 }
             }
         }

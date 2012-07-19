@@ -33,6 +33,7 @@ public class GCDatabaseHelper extends SQLiteOpenHelper
    public static final String[] TABLE_PERSONS_COLUMNS = {
       TP_ID, TP_EVENT_ID, TP_NAME, TP_NOTE
    };
+    public static final String[] TABLE_PERSONS_ID_COLUMN = {TP_ID};
 
    public static final String TT_ID = "id";
    public static final String TT_EVENT_ID = "event_id";

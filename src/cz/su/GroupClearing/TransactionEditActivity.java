@@ -510,7 +510,8 @@ public class TransactionEditActivity extends FragmentActivity {
 	public void onReceiverChanged(int position, long id) {
 		ClearingPerson receiver = receiversAdapter.getItem(position);
 		if (receiver.getId() != myTransaction.getReceiverId()) {
-			myTransaction.setReceiverId(receiver.getId(), db);
+			myTransaction.setReceiverId(receiver.getId());
+			db.updateTransactionReceiverId(myTransaction);
 		}
 		recomputeValues();
 	}
