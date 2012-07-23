@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
-import android.widget.TextView;
 
 public class TransactionsListAdapter implements ListAdapter {
 	LayoutInflater inflater;
@@ -21,7 +20,6 @@ public class TransactionsListAdapter implements ListAdapter {
 	GCDatabase db = null;
 
 	public static final int NORMAL_TRANSACTION_TYPE = 0;
-	public static final int ADD_TRANSACTION_TYPE = 1;
 
 	public TransactionsListAdapter(Context aContext, long eventId) {
 		myEventId = eventId;
@@ -34,7 +32,7 @@ public class TransactionsListAdapter implements ListAdapter {
 
 	@Override
 	public int getCount() {
-		return transactions.size() + 1;
+		return transactions.size();
 	}
 
 	public int getNumberOfTransactions() {
@@ -59,8 +57,7 @@ public class TransactionsListAdapter implements ListAdapter {
 
 	@Override
 	public int getItemViewType(int position) {
-		return (position < transactions.size() ? NORMAL_TRANSACTION_TYPE
-				: ADD_TRANSACTION_TYPE);
+		return NORMAL_TRANSACTION_TYPE;
 	}
 
 	@Override
@@ -71,36 +68,25 @@ public class TransactionsListAdapter implements ListAdapter {
 			rowView = convertView;
 			wrapper = (TransactionsListItemWrapper) (rowView.getTag());
 		} else {
-			if (getItemViewType(position) == NORMAL_TRANSACTION_TYPE) {
-				rowView = inflater.inflate(R.layout.transactions_list_item,
-						null);
-				wrapper = new TransactionsListItemWrapper(rowView);
-				rowView.setTag(wrapper);
-			} else { // ADD_TRANSACTION_TYPE
-				rowView = inflater.inflate(R.layout.add_item, null);
-			}
+			rowView = inflater.inflate(R.layout.transactions_list_item, null);
+			wrapper = new TransactionsListItemWrapper(rowView);
+			rowView.setTag(wrapper);
 		}
-		if (getItemViewType(position) == NORMAL_TRANSACTION_TYPE) {
-			ClearingTransaction transaction = transactions.get(position);
-			DateFormat df = DateFormat.getDateInstance();
-			wrapper.getName().setText(transaction.getName());
-			wrapper.getDate().setText(df.format(transaction.getDate()) + " ");
-			wrapper.getAmount().setText(
-					GroupClearingApplication.getInstance()
-							.formatCurrencyValueWithSymbol(
-									transaction.getAmount(),
-									transaction.getCurrency())
-							+ " ");
-		} else { // ADD_TRANSACTION_TYPE
-			TextView text = (TextView)rowView.findViewById(R.id.add_item_text);
-			text.setText(context.getString(R.string.add_new_transaction) + " ");
-		}
+		ClearingTransaction transaction = transactions.get(position);
+		DateFormat df = DateFormat.getDateInstance();
+		wrapper.getName().setText(transaction.getName());
+		wrapper.getDate().setText(df.format(transaction.getDate()) + " ");
+		wrapper.getAmount().setText(
+				GroupClearingApplication.getInstance()
+						.formatCurrencyValueWithSymbol(transaction.getAmount(),
+								transaction.getCurrency())
+						+ " ");
 		return rowView;
 	}
 
 	@Override
 	public int getViewTypeCount() {
-		return 2;
+		return 1;
 	}
 
 	@Override
@@ -149,14 +135,14 @@ public class TransactionsListAdapter implements ListAdapter {
 
 	public ClearingTransaction createTransaction() {
 		ClearingTransaction aTransaction = null;
-        try {
-            aTransaction = db.createNewTransaction(myEventId);
-            transactions.add(aTransaction);
-            notifyDataSetChanged();
-        } catch (GCEventDoesNotExistException e) {
-            // TODO: We should warn user somehow.
-        }
-        return aTransaction;
+		try {
+			aTransaction = db.createNewTransaction(myEventId);
+			transactions.add(aTransaction);
+			notifyDataSetChanged();
+		} catch (GCEventDoesNotExistException e) {
+			// TODO: We should warn user somehow.
+		}
+		return aTransaction;
 	}
 
 	public void removeTransactionAtPosition(int position) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/sctable_odd_row"
-    android:layout_width="match_parent"
+    android:layout_width="fill_parent"
     android:layout_height="wrap_content" >
 
     <TextView
@@ -9,7 +9,6 @@
         style="@style/sctable_odd_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:text="" />
 
     <TextView
@@ -17,7 +16,6 @@
         style="@style/sctable_odd_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:text="" />
 
     <TextView
@@ -25,7 +23,6 @@
         style="@style/sctable_odd_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:text="" />
 
 </TableRow>

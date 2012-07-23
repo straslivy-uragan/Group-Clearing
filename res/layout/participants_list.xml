@@ -1,9 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ListView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/participants_list_view"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
-    
+    <Button
+        android:id="@+id/pl_add_participant"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dip"
+        android:text="@string/add_new_participant"
+        android:onClick="onAddNewParticipantClicked" />
 
-</ListView>
+    <TextView
+        android:id="@+id/pl_sum_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/pl_add_participant"
+        android:layout_alignBottom="@+id/pl_add_participant"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dip"
+        android:layout_marginLeft="5sp"
+        android:text="@string/trans_value_placeholder"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/pl_sum_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/pl_sum_value"
+        android:layout_alignBottom="@+id/pl_sum_value"
+        android:layout_toLeftOf="@+id/pl_sum_value"
+        android:text="@string/pl_sum_label"
+        android:textStyle="italic" />
+
+    <View
+        android:id="@+id/pl_hline"
+        android:layout_width="fill_parent"
+        android:layout_height="1sp"
+        android:layout_below="@id/pl_add_participant"
+        android:background="#D3D3D3" />
+
+    <ListView
+        android:id="@+id/participants_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/pl_hline" >
+
+    </ListView>
+
+</RelativeLayout>

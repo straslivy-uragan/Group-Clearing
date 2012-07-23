@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
-import android.widget.TextView;
 
 public class ParticipantsListAdapter implements ListAdapter {
 	LayoutInflater inflater;
@@ -22,7 +21,6 @@ public class ParticipantsListAdapter implements ListAdapter {
 	GroupClearingApplication myApp = GroupClearingApplication.getInstance();
 
 	public static final int NORMAL_PARTICIPANT_TYPE = 0;
-	public static final int ADD_PARTICIPANT_TYPE = 1;
 
 	public ParticipantsListAdapter(Context aContext, long eventId) {
 		context = aContext;
@@ -35,7 +33,7 @@ public class ParticipantsListAdapter implements ListAdapter {
 
 	@Override
 	public int getCount() {
-		return participants.size() + 1;
+		return participants.size();
 	}
 
 	public int getNumberOfParticipants() {
@@ -60,8 +58,7 @@ public class ParticipantsListAdapter implements ListAdapter {
 
 	@Override
 	public int getItemViewType(int position) {
-		return (position < participants.size() ? NORMAL_PARTICIPANT_TYPE
-				: ADD_PARTICIPANT_TYPE);
+		return NORMAL_PARTICIPANT_TYPE;
 	}
 
 	@Override
@@ -72,39 +69,31 @@ public class ParticipantsListAdapter implements ListAdapter {
 			rowView = convertView;
 			wrapper = (ParticipantsListItemWrapper) (rowView.getTag());
 		} else {
-			if (getItemViewType(position) == NORMAL_PARTICIPANT_TYPE) {
-				rowView = inflater.inflate(R.layout.participants_list_item,
-						null);
-				wrapper = new ParticipantsListItemWrapper(rowView);
-				rowView.setTag(wrapper);
-			} else { // ADD_PARTICIPANT_TYPE
-				rowView = inflater.inflate(R.layout.add_item, null);
-			}
+            rowView = inflater.inflate(R.layout.participants_list_item,
+                    null);
+            wrapper = new ParticipantsListItemWrapper(rowView);
+            rowView.setTag(wrapper);
 		}
-		if (getItemViewType(position) == NORMAL_PARTICIPANT_TYPE) {
-			ClearingPerson person = participants.get(position);
-			wrapper.getName().setText(person.getName());
-			wrapper.getBalance().setText(
-					myApp.formatCurrencyValueWithSymbol(person.getBalance(),
-							myEvent.getDefaultCurrency()) + " ");
-            if (person.getBalance() > 0) {
-                wrapper.getBalance().setTextColor(android.graphics.Color.GREEN);
-            } else if (person.getBalance() < 0) {
-                wrapper.getBalance().setTextColor(android.graphics.Color.RED);
-            } else {
-                wrapper.getBalance().setTextColor(context.getResources().getColor(
-                            android.R.color.primary_text_dark));
-            }
-		} else { // ADD_PARTICIPANT_TYPE
-			TextView text = (TextView) rowView.findViewById(R.id.add_item_text);
-			text.setText(context.getString(R.string.add_new_participant) + " ");
-		}
+        ClearingPerson person = participants.get(position);
+        wrapper.getName().setText(person.getName());
+        wrapper.getBalance().setText(
+                myApp.formatCurrencyValueWithSymbol(person.getBalance(),
+                    myEvent.getDefaultCurrency()) + " ");
+        if (person.getBalance() > 0) {
+            wrapper.getBalance().setTextColor(android.graphics.Color.GREEN);
+        } else if (person.getBalance() < 0) {
+            wrapper.getBalance().setTextColor(android.graphics.Color.RED);
+        } else {
+            wrapper.getBalance().setTextColor(context.getResources().getColor(
+                        android.R.color.primary_text_dark));
+        }
+
 		return rowView;
 	}
 
 	@Override
 	public int getViewTypeCount() {
-		return 2;
+		return 1;
 	}
 
 	@Override
@@ -180,6 +169,18 @@ public class ParticipantsListAdapter implements ListAdapter {
 		participants = db.readParticipantsOfEvent(myEventId);
 		notifyDataSetChanged();
 	}
+
+    public long getParticipantsValuesSum() {
+        long value = 0;
+        for (ClearingPerson participant : participants) {
+            value += participant.getBalance();
+        }
+        return value;
+    }
+
+    public ClearingEvent getEvent() {
+        return myEvent;
+    }
 
 	public void closeDB() {
 		if (db != null) {

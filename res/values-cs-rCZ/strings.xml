@@ -58,4 +58,6 @@
     <string name="sctable_header_amount">Kolik</string>
     <string name="sc_create_transactions">Vytvořit transakce</string>
     <string name="sc_transaction_name">Vyrovnání</string>
+     <string name="pl_sum_label">Součet:</string>
+    
 </resources>

@@ -1,7 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ListView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/transactions_list_view"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
-</ListView>
+    <Button
+        android:id="@+id/tl_add_transaction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dip"
+        android:onClick="onAddNewTransactionClicked"
+        android:text="@string/add_new_transaction" />
+
+    <View
+        android:id="@+id/tl_hline"
+        android:layout_width="fill_parent"
+        android:layout_height="1sp"
+        android:background="#D3D3D3" />
+
+    <ListView
+        android:id="@+id/transactions_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+    </ListView>
+
+</LinearLayout>

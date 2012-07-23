@@ -22,12 +22,13 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import cz.su.GroupClearing.ParticipantsListAdapter;
-
 public class ParticipantsListActivity extends FragmentActivity {
 
    private long myEventId = -1;
    private ParticipantsListAdapter participantsListAdapter = null;
+   private TextView sumValueText = null;
+   private final GroupClearingApplication myApp
+       = GroupClearingApplication.getInstance();
    // private EditParticipantDialog editParticipantDialog = null;
 
    public class EditParticipantDialog extends DialogFragment {
@@ -58,13 +59,15 @@ public class ParticipantsListActivity extends FragmentActivity {
             }
             Button okButton = (Button) v.findViewById(R.id.participant_edit_ok);
             okButton.setOnClickListener(new View.OnClickListener() {
-                  public void onClick(View v) {
+                  @Override
+				public void onClick(View v) {
                   okButtonClicked(v);
                   }
                   });
             Button cancelButton = (Button) v.findViewById(R.id.participant_edit_cancel);
             cancelButton.setOnClickListener(new View.OnClickListener() {
-                  public void onClick(View v) {
+                  @Override
+				public void onClick(View v) {
                   dismiss();
                   }
                   });
@@ -77,7 +80,8 @@ public class ParticipantsListActivity extends FragmentActivity {
          onNameEditorOK(position, name);
       }
 
-      public void onCancel(DialogInterface dialog) {
+      @Override
+	public void onCancel(DialogInterface dialog) {
          super.onCancel(dialog);
          onNameEditorCancelled(position);
       }
@@ -91,7 +95,8 @@ public class ParticipantsListActivity extends FragmentActivity {
          setContentView(R.layout.participants_list);
          ListView lv = (ListView) findViewById(R.id.participants_list_view);
          lv.setOnItemClickListener(new OnItemClickListener() {
-               public void onItemClick(AdapterView<?> parent, View view,
+               @Override
+			public void onItemClick(AdapterView<?> parent, View view,
                   int position, long id) {
                onPersonClicked(position, id);
                }
@@ -100,6 +105,7 @@ public class ParticipantsListActivity extends FragmentActivity {
          participantsListAdapter = new ParticipantsListAdapter(this, myEventId);
          lv.setAdapter(participantsListAdapter);
          registerForContextMenu(lv);
+         sumValueText = (TextView) findViewById(R.id.pl_sum_value);
       }
 
    @Override
@@ -151,6 +157,18 @@ public class ParticipantsListActivity extends FragmentActivity {
 
    public void refreshData() {
       participantsListAdapter.readParticipantsFromDB();
+      long value = participantsListAdapter.getParticipantsValuesSum();
+      String text = myApp.formatCurrencyValueWithSymbol(value,
+              participantsListAdapter.getEvent().getDefaultCurrency());
+      sumValueText.setText(text + " ");
+      if (value > 0) {
+          sumValueText.setTextColor(android.graphics.Color.GREEN);
+      } else if (value < 0) {
+          sumValueText.setTextColor(android.graphics.Color.RED);
+      } else {
+          sumValueText.setTextColor(getResources().getColor(
+                      android.R.color.primary_text_dark));
+      }
    }
 
    @Override
@@ -195,5 +213,9 @@ public class ParticipantsListActivity extends FragmentActivity {
                return super.onContextItemSelected(item);
          }
       }
+
+   public void onAddNewParticipantClicked(View v) {
+       onPersonClicked(participantsListAdapter.getCount(), -1);
+   }
 
 }

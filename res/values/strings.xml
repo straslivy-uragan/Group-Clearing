@@ -56,4 +56,5 @@
     <string name="sctable_header_amount">Amount</string>
     <string name="sc_create_transactions">Create transactions</string>
     <string name="sc_transaction_name">Clearing</string>
+    <string name="pl_sum_label">Sum:</string>
 </resources>

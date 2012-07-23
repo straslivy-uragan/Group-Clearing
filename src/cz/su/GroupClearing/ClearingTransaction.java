@@ -324,8 +324,9 @@ public class ClearingTransaction {
 
     public long recomputeAndSaveChanges(GCDatabase db) {
         if (splitEvenly) {
-            positiveAmount = amount;
+            positiveAmount = 0;
             negativeAmount = 0;
+            long negAmount = 0;
             long share = 0;
             long numberOfMarkedParticipants = 0;
             for (ParticipantInfo info : participantsInfo.values()) {
@@ -335,19 +336,24 @@ public class ClearingTransaction {
             }
 			if (numberOfMarkedParticipants > 0) {
 				share = amount / numberOfMarkedParticipants;
-                negativeAmount = share * numberOfMarkedParticipants;
+                negAmount = share * numberOfMarkedParticipants;
             }
             for (ParticipantInfo info : participantsInfo.values()) {
                 long value = 0;
                 if (info.isMarked()) {
                     value = -share;
-                    if (negativeAmount < positiveAmount) {
+                    if (negAmount < amount) {
                         --value;
-                        ++negativeAmount;
+                        ++negAmount;
                     }
                 }
                 if (info.getId() == receiverId) {
                     value += amount;
+                }
+                if (value > 0) {
+                    positiveAmount += value;
+                } else {
+                    negativeAmount -= value;
                 }
                 if (info.getValue() != value) {
                     info.setValue(value);
@@ -357,8 +363,7 @@ public class ClearingTransaction {
                     }
                 }
             }
-        }
-        else {
+        } else {
             // Go through all participants and unmark those with 0 value.
            positiveAmount = 0;
            negativeAmount = 0;
