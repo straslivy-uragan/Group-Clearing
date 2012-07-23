@@ -44,12 +44,13 @@ public final class R {
         public static final int linearLayout4=0x7f080005;
         public static final int menu_about=0x7f08004e;
         public static final int menu_add_participant=0x7f080050;
-        public static final int menu_add_transaction=0x7f080052;
+        public static final int menu_add_transaction=0x7f080053;
         public static final int menu_event_clearance=0x7f08004c;
         public static final int menu_event_delete=0x7f08004a;
         public static final int menu_event_suggest_receiver=0x7f08004b;
         public static final int menu_new_event=0x7f08004d;
         public static final int menu_participant_delete=0x7f08004f;
+        public static final int menu_trans_delete=0x7f080052;
         public static final int menu_transaction_delete=0x7f080051;
         public static final int participant_edit_cancel=0x7f080015;
         public static final int participant_edit_ok=0x7f080014;
@@ -137,7 +138,8 @@ public final class R {
         public static final int participant_context_menu=0x7f070002;
         public static final int participants_list_menu=0x7f070003;
         public static final int transaction_context_menu=0x7f070004;
-        public static final int transactions_list_menu=0x7f070005;
+        public static final int transaction_edit_menu=0x7f070005;
+        public static final int transactions_list_menu=0x7f070006;
     }
     public static final class string {
         public static final int about=0x7f05000e;
@@ -150,8 +152,8 @@ public final class R {
         public static final int change=0x7f05000b;
         public static final int date_placeholder=0x7f050007;
         public static final int do_not_show=0x7f05002a;
-        public static final int event_add_participant=0x7f050038;
-        public static final int event_add_transaction=0x7f050039;
+        public static final int event_add_participant=0x7f050039;
+        public static final int event_add_transaction=0x7f05003a;
         public static final int event_delete=0x7f05000d;
         public static final int event_from_date=0x7f050006;
         public static final int event_name=0x7f050004;
@@ -190,6 +192,7 @@ public final class R {
         public static final int trans_value_placeholder=0x7f050020;
         public static final int transaction_date=0x7f05001c;
         public static final int transaction_delete=0x7f050018;
+        public static final int transaction_delete_cond=0x7f050038;
         public static final int transaction_name=0x7f05001a;
         public static final int transaction_no_receiver=0x7f050024;
         public static final int transaction_note=0x7f05001d;

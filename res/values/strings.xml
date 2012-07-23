@@ -57,4 +57,5 @@
     <string name="sc_create_transactions">Create transactions</string>
     <string name="sc_transaction_name">Clearing</string>
     <string name="pl_sum_label">Sum:</string>
+    <string name="transaction_delete_cond">Delete</string>
 </resources>

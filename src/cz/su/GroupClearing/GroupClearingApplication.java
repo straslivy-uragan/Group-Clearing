@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 /*
- * TODO: Návrh vyrovnání 
  * TODO: Do kolonek pro hodnoty transakce a platby účastníka transakce
  * umožnit zadat vzoreček (násobení konstantou, sčítání, možná závorky).
  * Mělo by stačit upravit GroupClearingApplication.parseCurrencyValue(String, Currency)
