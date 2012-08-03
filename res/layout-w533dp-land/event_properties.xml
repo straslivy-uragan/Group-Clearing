@@ -42,8 +42,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:onClick="startDateButtonClicked"
-                android:paddingLeft="20dip"
-                android:paddingRight="20dip"
                 android:text="@string/date_placeholder"
                 android:textSize="22sp" />
 
@@ -61,17 +59,9 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:onClick="finishDateButtonClicked"
-                android:paddingLeft="20dip"
-                android:paddingRight="20dip"
                 android:text="@string/date_placeholder"
                 android:textSize="22sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-
+       
             <TextView
                 android:id="@+id/event_currency_label"
                 android:layout_width="wrap_content"
@@ -86,13 +76,16 @@
                 android:layout_height="wrap_content"
                 android:minEms="4"
                 android:prompt="@string/currency_choose"
+                android:layout_gravity="center_vertical"
                 android:textSize="22sp" />
+
         </LinearLayout>
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingLeft="5dip"
             android:text="@string/event_note" />
 
         <EditText

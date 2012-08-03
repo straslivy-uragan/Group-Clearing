@@ -60,5 +60,7 @@
     <string name="sc_transaction_name">Vyrovnání</string>
     <string name="pl_sum_label">Součet:</string>
     <string name="transaction_delete_cond">Smazat</string>
+    <string name="currency_colon">Měna:</string>
+    <string name="currency_choose">Vybrat měnu</string>
 
 </resources>

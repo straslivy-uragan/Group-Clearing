@@ -77,11 +77,7 @@ public class ClearingEvent
 
    public void setDefaultCurrency(Currency newDefaultCurrency)
    {
-      if (defaultCurrency == null
-            || !defaultCurrency.equals(newDefaultCurrency))
-      {
-         defaultCurrency = newDefaultCurrency;
-      }
+       defaultCurrency = newDefaultCurrency;
    }
 
    public long getId()
