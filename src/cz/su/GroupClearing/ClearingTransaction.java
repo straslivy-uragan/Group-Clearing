@@ -81,6 +81,17 @@ public class ClearingTransaction {
 	private Currency currency;
 	private final HashMap<Long, ParticipantInfo> participantsInfo;
 	private String note;
+    /**
+     * Rate with respect to default currency of event.
+     *
+     * If default currency of event is A and currency of this
+     * transaction is B, then 1B = rate A. E.g. amount of transaction
+     * in A is obtained by multiplying rate * amount. Multiplication
+     * by rate should not be used when A is the same currency as B,
+     * rate is stored as a double, which should be enough in cases
+     * A!=B, but might not work in case A==B.
+     */
+    private double rate = 1.0;
 	/**
 	 * If the amount should be split evenly among the participants.
 	 */
@@ -393,7 +404,15 @@ public class ClearingTransaction {
         }
         return negativeAmount - positiveAmount;
     }
-    
+  
+    public void setRate(double rate) {
+        this.rate = rate;
+    }
+
+    public double getRate() {
+        return rate;
+    }
+
     public void resetValues(GCDatabase db) {
         for (ParticipantInfo info : participantsInfo.values()) {
             info.setValue(0);
