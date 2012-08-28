@@ -62,5 +62,6 @@
     <string name="transaction_delete_cond">Smazat</string>
     <string name="currency_colon">Měna:</string>
     <string name="currency_choose">Vybrat měnu</string>
+    <string name="change_rate">Kurz&#8230;</string>
 
 </resources>

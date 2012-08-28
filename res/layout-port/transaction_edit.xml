@@ -37,95 +37,131 @@
             android:inputType="text" >
         </EditText>
 
-        <TableLayout
-            android:id="@+id/tableLayout1"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:stretchColumns="1" >
+            android:orientation="horizontal" >
 
-            <TableRow>
+            <TextView
+                android:id="@+id/transaction_date_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|right"
+                android:paddingLeft="20dip"
+                android:paddingRight="10dip"
+                android:text="@string/transaction_date" />
 
-                <TextView
-                    android:id="@+id/transaction_date_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical|right"
-                    android:paddingLeft="20dip"
-                    android:paddingRight="10dip"
-                    android:text="@string/transaction_date" />
+            <Button
+                android:id="@+id/transaction_date_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onTransactionDateButtonClicked"
+                android:text="@string/date_placeholder"
+                android:textSize="22sp" />
+        </LinearLayout>
 
-                <Button
-                    android:id="@+id/transaction_date_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:onClick="onTransactionDateButtonClicked"
-                    android:text="@string/date_placeholder"
-                    android:textSize="22sp" />
-            </TableRow>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
 
-            <TableRow>
+            <TextView
+                android:id="@+id/trans_currency_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|right"
+                android:paddingLeft="20dip"
+                android:paddingRight="10dip"
+                android:text="@string/currency_colon" />
 
-                <TextView
-                    android:id="@+id/transaction_value_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical|right"
-                    android:paddingLeft="20dip"
-                    android:paddingRight="10dip"
-                    android:text="@string/transaction_value" />
+            <Spinner
+                android:id="@+id/trans_currency_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minEms="4"
+                android:prompt="@string/currency_choose" />
 
-                <EditText
-                    android:id="@+id/transaction_amount_edit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:digits="0123456789.,"
-                    android:hint="@string/number_hint"
-                    android:imeOptions="actionDone"
-                    android:inputType="numberDecimal" />
-            </TableRow>
+            <Button
+                android:id="@+id/trans_currency_rate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/change_rate" />
+        </LinearLayout>
 
-            <TableRow>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
 
-                <TextView
-                    android:id="@+id/transaction_balance_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical|right"
-                    android:paddingLeft="20dip"
-                    android:paddingRight="10dip"
-                    android:text="@string/balance"
-                    android:textStyle="italic" />
+            <TextView
+                android:id="@+id/transaction_receiver_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|right"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="@string/transaction_paid_by" />
 
-                <TextView
-                    android:id="@+id/transaction_balance"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical|left"
-                    android:paddingBottom="10dip"
-                    android:paddingLeft="12dip"
-                    android:text="@string/number_hint"
-                    android:textStyle="italic" />
-            </TableRow>
+            <Spinner
+                android:id="@+id/transaction_receiver_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minEms="6"
+                android:prompt="@string/transaction_paid_by_prompt" />
+        </LinearLayout>
 
-            <TableRow>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
-                <TextView
-                    android:id="@+id/transaction_receiver_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical|right"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp"
-                    android:text="@string/transaction_paid_by" />
+            <TextView
+                android:id="@+id/transaction_value_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|right"
+                android:paddingLeft="20dip"
+                android:paddingRight="10dip"
+                android:text="@string/transaction_value" />
 
-                <Spinner
-                    android:id="@+id/transaction_receiver_spinner"
-                    android:layout_width="0dip"
-                    android:layout_height="wrap_content"
-                    android:prompt="@string/transaction_paid_by_prompt" />
-            </TableRow>
-        </TableLayout>
+            <EditText
+                android:id="@+id/transaction_amount_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:digits="0123456789.,"
+                android:hint="@string/number_hint"
+                android:imeOptions="actionDone"
+                android:inputType="numberDecimal"
+                android:minEms="6" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/transaction_balance_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|right"
+                android:paddingLeft="20dip"
+                android:paddingRight="10dip"
+                android:text="@string/balance"
+                android:textStyle="italic" />
+
+            <TextView
+                android:id="@+id/transaction_balance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|left"
+                android:paddingBottom="10dip"
+                android:paddingLeft="12dip"
+                android:text="@string/number_hint"
+                android:textStyle="italic" />
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/transaction_split_check"

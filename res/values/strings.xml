@@ -60,5 +60,6 @@
     <string name="transaction_delete_cond">Delete</string>
     <string name="currency_colon">Currency:</string>
     <string name="currency_choose">Choose currency</string>
+    <string name="change_rate">Rate&#8230;</string>
 
 </resources>

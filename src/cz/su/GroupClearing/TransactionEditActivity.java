@@ -1,6 +1,7 @@
 package cz.su.GroupClearing;
 
 import java.text.DateFormat;
+import java.util.Currency;
 import java.util.Date;
 import java.util.Vector;
 
@@ -53,6 +54,7 @@ public class TransactionEditActivity extends FragmentActivity {
 	private ClearingPerson noReceiver = null;
 	private GroupClearingApplication myApp = null;
 	private TextView balanceText = null;
+    private Spinner currencySpinner = null;
 
 	private static final int DATE_PICK_DIALOG_ID = 0;
 
@@ -329,7 +331,25 @@ public class TransactionEditActivity extends FragmentActivity {
 				"cz.su.GroupClearing.TransactionId", -1);
 		noReceiver = new ClearingPerson(-1);
 		noReceiver.setName(getString(R.string.transaction_no_receiver));
-	}
+        currencySpinner = (Spinner) findViewById(R.id.trans_currency_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this, R.array.currency_names,
+                android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        currencySpinner.setAdapter(adapter);
+        currencySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, 
+                    View view, int pos, long id) {
+                onCurrencySelected(pos, id);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+                }
+                );
+    }
 
 	@Override
 	protected void onResume() {
@@ -362,7 +382,11 @@ public class TransactionEditActivity extends FragmentActivity {
 		amountEdit.setEnabled(myTransaction.getSplitEvenly());
 		// amountEdit.setFocusable(myTransaction.getSplitEvenly());
 		receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
-		refreshParticipants();
+		CurrencyList cl = CurrencyList.getInstance();
+        Currency cur = myTransaction.getCurrency();
+        String currencyCode = cur.toString();
+        currencySpinner.setSelection(cl.getPosition(currencyCode));
+        refreshParticipants();
 	}
 
 	@Override
@@ -639,4 +663,9 @@ public class TransactionEditActivity extends FragmentActivity {
          }
       }
 
+    void onCurrencySelected(int position, long id) {
+    }
+    
+	public void onRateButtonClicked(View v) {
+    }
 }
