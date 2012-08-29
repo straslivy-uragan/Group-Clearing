@@ -77,16 +77,19 @@
 
             <Spinner
                 android:id="@+id/trans_currency_spinner"
-                android:layout_width="wrap_content"
+                android:layout_width="0dip"
                 android:layout_height="wrap_content"
-                android:minEms="4"
+android:layout_weight="1"                android:minEms="4"
                 android:prompt="@string/currency_choose" />
 
+            
             <Button
                 android:id="@+id/trans_currency_rate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/change_rate" />
+                android:minEms="6"
+                android:text="@string/change_rate"
+                 />
         </LinearLayout>
 
         <LinearLayout
