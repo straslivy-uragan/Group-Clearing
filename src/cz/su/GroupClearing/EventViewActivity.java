@@ -360,8 +360,8 @@ public class EventViewActivity extends FragmentActivity {
         CurrencyList cl = CurrencyList.getInstance();
         Currency chosenCurrency = cl.getCurrency(position);
         Currency oldCurrency = myEvent.getDefaultCurrency();
-        myEvent.setDefaultCurrency(chosenCurrency);
         if (oldCurrency == null || !oldCurrency.equals(chosenCurrency)) {
+            myEvent.setDefaultCurrency(chosenCurrency);
             db.updateEventCurrency(myEvent);
         }
     }

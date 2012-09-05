@@ -61,5 +61,10 @@
     <string name="currency_colon">Currency:</string>
     <string name="currency_choose">Choose currency</string>
     <string name="change_rate">Rate&#8230;</string>
+    <string name="re_currency_left_plcholder">1EUR = </string>
+    <string name="re_currency_left_fmt" formatted="false">1%s = </string>
+    <string name="re_currency_right_plcholder"> CZK</string>
+    <string name="re_currency_right_fmt"> %s</string>
+    <string name="re_save_default">Save as default</string>
 
 </resources>

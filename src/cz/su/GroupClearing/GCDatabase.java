@@ -652,7 +652,7 @@ public class GCDatabase {
 	public Vector<ParticipantValue> readEventParticipantValues(long eventId) {
 		String whereClause = String.format("%s=%d",
 				GCDatabaseHelper.TPColumns.event_id.name(), eventId);
-		String[] TABLE_PERSONS_ID_COLUMN = {GCDatabaseHelper.TPColumns.id
+		final String[] TABLE_PERSONS_ID_COLUMN = {GCDatabaseHelper.TPColumns.id
 				.name()};
 		Cursor result = db.query(GCDatabaseHelper.TABLE_PERSONS,
 				TABLE_PERSONS_ID_COLUMN, whereClause, null, null, null, null);
@@ -668,4 +668,40 @@ public class GCDatabase {
 		}
 		return values;
 	}
+
+    public void setDefaultRate(Currency left, Currency right, double rate) {
+        String whereClause = String.format("%s=\"%s\" AND %s=\"%s\"",
+                GCDatabaseHelper.TRColumns.left_currency.name(),
+                left.toString(),
+                GCDatabaseHelper.TRColumns.right_currency.name(),
+                right.toString());
+        ContentValues values = new ContentValues(1);
+        values.put(GCDatabaseHelper.TRColumns.rate.name(), rate);
+        if (db.update(GCDatabaseHelper.TABLE_RATES, values, whereClause, null)
+                == 0) {
+            values.put(GCDatabaseHelper.TRColumns.left_currency.name(),
+                    left.toString());
+            values.put(GCDatabaseHelper.TRColumns.right_currency.name(),
+                    right.toString());
+            db.insert(GCDatabaseHelper.TABLE_RATES, null, values);
+        }
+    }
+
+    public double getDefaultRate(Currency left, Currency right) {
+        String whereClause = String.format("%s=\"%s\" AND %s=\"%s\"",
+                GCDatabaseHelper.TRColumns.left_currency.name(),
+                left.toString(),
+                GCDatabaseHelper.TRColumns.right_currency.name(),
+                right.toString());
+        final String[] RATE_COLUMN = {GCDatabaseHelper.TRColumns.rate.name()};
+        Cursor result = db.query(GCDatabaseHelper.TABLE_RATES,
+                RATE_COLUMN, whereClause, null, null, null, null);
+        result.moveToFirst();
+        double rate = 1.0;
+        if (!result.isAfterLast())
+        {
+            rate = result.getDouble(0);
+        }
+        return rate;
+    }
 }

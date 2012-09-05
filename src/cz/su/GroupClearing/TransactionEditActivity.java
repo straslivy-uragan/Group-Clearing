@@ -55,6 +55,8 @@ public class TransactionEditActivity extends FragmentActivity {
 	private GroupClearingApplication myApp = null;
 	private TextView balanceText = null;
     private Spinner currencySpinner = null;
+    private Button rateButton = null;
+    private ClearingEvent myEvent = null;
 
 	private static final int DATE_PICK_DIALOG_ID = 0;
 
@@ -329,6 +331,8 @@ public class TransactionEditActivity extends FragmentActivity {
 		myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
 		myTransactionId = getIntent().getLongExtra(
 				"cz.su.GroupClearing.TransactionId", -1);
+        db = new GCDatabase(this);
+		myEvent = db.readEventWithId(myEventId);
 		noReceiver = new ClearingPerson(-1);
 		noReceiver.setName(getString(R.string.transaction_no_receiver));
         currencySpinner = (Spinner) findViewById(R.id.trans_currency_spinner);
@@ -349,6 +353,7 @@ public class TransactionEditActivity extends FragmentActivity {
                 }
                 }
                 );
+        rateButton = (Button) findViewById(R.id.trans_currency_rate);
     }
 
 	@Override
@@ -380,12 +385,12 @@ public class TransactionEditActivity extends FragmentActivity {
 		}
 		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
 		amountEdit.setEnabled(myTransaction.getSplitEvenly());
-		// amountEdit.setFocusable(myTransaction.getSplitEvenly());
 		receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
 		CurrencyList cl = CurrencyList.getInstance();
         Currency cur = myTransaction.getCurrency();
-        String currencyCode = cur.toString();
+            String currencyCode = cur.toString();
         currencySpinner.setSelection(cl.getPosition(currencyCode));
+        rateButton.setEnabled(! cur.equals(myEvent.getDefaultCurrency()));
         refreshParticipants();
 	}
 
@@ -664,6 +669,15 @@ public class TransactionEditActivity extends FragmentActivity {
       }
 
     void onCurrencySelected(int position, long id) {
+        CurrencyList cl = CurrencyList.getInstance();
+        Currency chosenCurrency = cl.getCurrency(position);
+        Currency oldCurrency = myTransaction.getCurrency();
+        if (oldCurrency == null || !oldCurrency.equals(chosenCurrency)) {
+            myTransaction.setCurrency(chosenCurrency);
+            db.updateTransactionCurrencyAndRate(myTransaction);
+            rateButton.setEnabled(
+                    !chosenCurrency.equals(myEvent.getDefaultCurrency()));
+        }
     }
     
 	public void onRateButtonClicked(View v) {
