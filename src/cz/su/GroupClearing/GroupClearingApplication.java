@@ -14,7 +14,6 @@ import android.preference.PreferenceManager;
  * TODO: Do kolonek pro hodnoty transakce a platby účastníka transakce
  * umožnit zadat vzoreček (násobení konstantou, sčítání, možná závorky).
  * Mělo by stačit upravit GroupClearingApplication.parseCurrencyValue(String, Currency)
- * TODO: Umožnit změnu měny události 
  * TODO: Umožnit zvolit měny jednotlivých transakcí s podporou
  * přepočtu, a to jednak s ručním nastavením kurzů, případně s jejich
  * stažením, ale pak by asi chtělo pamatovat si u každé transakce

@@ -68,4 +68,5 @@
     <string name="re_currency_right_plcholder"> CZK</string>
     <string name="re_currency_right_fmt"> %s</string>
     <string name="re_save_default">Ulož jako defaultní</string>
+    <string name="re_label">Nastavte kurz měny&#8230;           </string>
 </resources>

@@ -242,9 +242,103 @@ public class TransactionEditActivity extends FragmentActivity {
 					myTransaction.getCurrency()));
 		}
 	}
+	
+    public class EditRateDialog extends DialogFragment {
+        Currency left = null;
+        Currency right = null;
+        double rate = 0.0;
+        EditText rateEdit = null;
+		
+		public EditRateDialog(Currency left, Currency right, double rate) {
+            this.left = left;
+            this.right = right;
+            this.rate = rate;
+        }
+
+		@Override
+		public void onActivityCreated(Bundle savedInstanceState) {
+			super.onActivityCreated(savedInstanceState);
+			setStyle(DialogFragment.STYLE_NO_TITLE, 0);
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			getDialog().setTitle(getString(R.string.app_name));
+			View v = inflater.inflate(R.layout.rate_edit,
+					container, false);
+            TextView leftText = (TextView) v.findViewById(R.id.re_left_text);
+            String text = String.format(getString(R.string.re_currency_left_fmt),
+                    left.toString());
+            leftText.setText(text);
+            TextView rightText = (TextView) v.findViewById(R.id.re_right_text);
+            text = String.format(getString(R.string.re_currency_right_fmt),
+                    right.toString());
+            rightText.setText(text);
+			rateEdit = (EditText) v.findViewById(R.id.re_edit);
+			rateEdit.setText(Double.toString(rate));
+
+			Button okButton = (Button) v.findViewById(R.id.re_ok_button);
+			okButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					onOkButtonClicked(v);
+				}
+			});
+			Button cancelButton = (Button) v.findViewById(R.id.re_cancel_button);
+			cancelButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					onCancelButtonClicked(v);
+				}
+			});
+			Button saveDefaultButton = (Button) v.findViewById(R.id.re_save_default_button);
+			saveDefaultButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					onSaveDefaultButtonClicked(v);
+				}
+			});
+			return v;
+		}
+
+		public void onOkButtonClicked(View v) {
+			dismiss();
+            String rateString = rateEdit.getText().toString();
+            rateString.replace(',', '.');
+            try {
+                rate = Double.parseDouble(rateString);
+                onRateEditOK(rate);
+            } catch (NumberFormatException e) {
+                onRateEditCancel();
+            }
+		}
+
+		public void onCancelButtonClicked(View v) {
+			dismiss();
+            onRateEditCancel();
+		}
+
+		@Override
+		public void onCancel(DialogInterface dialog) {
+			super.onCancel(dialog);
+            onRateEditCancel();
+		}
+
+		public void onSaveDefaultButtonClicked(View v) {
+            String rateString = rateEdit.getText().toString();
+            rateString.replace(',', '.');
+            try {
+                rate = Double.parseDouble(rateString);
+                onRateEditSaveDefault(rate);
+            } catch (NumberFormatException e) {
+            }
+        }
+	}
 
 	public final static String EDIT_PARTICIPANT_VALUE_DLG_TAG = "edit_participant_value_dialog";
 	public final static String SPLIT_WARNING_TAG = "split_warning_dialog";
+    public final static String EDIT_RATE_DLG_TAG = "edit_rate_dialog";
 
 	Vector<ParticipantItemWrapper> participantWrappers = null;
 
@@ -681,5 +775,30 @@ public class TransactionEditActivity extends FragmentActivity {
     }
     
 	public void onRateButtonClicked(View v) {
+        Currency left = myTransaction.getCurrency();
+        Currency right = myEvent.getDefaultCurrency();
+        double rate = myTransaction.getRate();
+        if (left.equals(right)) {
+            return;
+        }
+        FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction ft = fm.beginTransaction();
+		Fragment prev = getSupportFragmentManager().findFragmentByTag(
+				EDIT_RATE_DLG_TAG);
+		if (prev != null) {
+			ft.remove(prev);
+		}
+		ft.addToBackStack(null);
+        EditRateDialog editRateDialog = new EditRateDialog(left, right, rate);
+		editRateDialog.show(ft, EDIT_RATE_DLG_TAG);
+    }
+
+    public void onRateEditOK(double rate) {
+    }
+
+    public void onRateEditCancel() {
+    }
+
+    public void onRateEditSaveDefault(double rate) {
     }
 }
