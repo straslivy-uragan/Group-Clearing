@@ -63,8 +63,8 @@
     <string name="currency_colon">Měna:</string>
     <string name="currency_choose">Vybrat měnu</string>
     <string name="change_rate">Kurz&#8230;</string>
-    <string name="re_currency_left_plcholder">1EUR = </string>
-    <string name="re_currency_left_fmt" formatted="false">1%s = </string>
+    <string name="re_currency_left_plcholder">Rate: 1EUR = </string>
+    <string name="re_currency_left_fmt" formatted="false">Rate: 1%s = </string>
     <string name="re_currency_right_plcholder"> CZK</string>
     <string name="re_currency_right_fmt"> %s</string>
     <string name="re_save_default">Ulož jako defaultní</string>
