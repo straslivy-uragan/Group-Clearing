@@ -99,9 +99,9 @@ public class GCDatabaseHelper extends SQLiteOpenHelper {
 				+ TTPColumns.participant_id.name() + ")" + ");");
 
 		db.execSQL("CREATE TABLE " + TABLE_RATES + " ("
-				+ TRColumns.left_currency.name() + "TEXT, "
-				+ TRColumns.right_currency.name() + "TEXT, "
-				+ TRColumns.rate.name() + "REAL);");
+				+ TRColumns.left_currency.name() + " TEXT, "
+				+ TRColumns.right_currency.name() + " TEXT, "
+				+ TRColumns.rate.name() + " REAL);");
 	}
 
 	@Override

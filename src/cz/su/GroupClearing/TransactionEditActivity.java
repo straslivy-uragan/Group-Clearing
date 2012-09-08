@@ -57,6 +57,9 @@ public class TransactionEditActivity extends FragmentActivity {
     private Spinner currencySpinner = null;
     private ClearingEvent myEvent = null;
     private LinearLayout rateEditorLine = null;
+    private TextView rateLeftText = null;
+    private TextView rateRightText = null;
+    private EditText rateEdit = null;
 
 	private static final int DATE_PICK_DIALOG_ID = 0;
 
@@ -354,6 +357,29 @@ public class TransactionEditActivity extends FragmentActivity {
                 }
                 );
         rateEditorLine = (LinearLayout) findViewById(R.id.trans_rate_editor);
+        rateLeftText = (TextView) findViewById(R.id.trans_re_left_text);
+        rateRightText = (TextView) findViewById(R.id.trans_re_right_text);
+        rateEdit = (EditText) findViewById(R.id.trans_re_edit);
+        rateEdit
+				.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+					@Override
+					public boolean onEditorAction(TextView v, int actionId,
+							KeyEvent event) {
+						if (actionId == EditorInfo.IME_ACTION_DONE) {
+							onRateChanged();
+						}
+						return false;
+					}
+				});
+		rateEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					onRateChanged();
+				}
+			}
+		});
+
     }
 
 	@Override
@@ -392,6 +418,14 @@ public class TransactionEditActivity extends FragmentActivity {
         currencySpinner.setSelection(cl.getPosition(currencyCode));
         rateEditorLine.setVisibility(cur.equals(myEvent.getDefaultCurrency())
                 ? View.GONE : View.VISIBLE);
+        String leftText = String.format(getString(R.string.re_currency_left_fmt),
+                myTransaction.getCurrency().toString());
+        rateLeftText.setText(leftText);
+        String rightText = String.format(getString(R.string.re_currency_right_fmt),
+                myEvent.getDefaultCurrency().toString());
+        rateRightText.setText(rightText);
+        rateEdit.setText(Double.toString(myTransaction.getRate()));
+
         refreshParticipants();
 	}
 
@@ -675,10 +709,30 @@ public class TransactionEditActivity extends FragmentActivity {
         Currency oldCurrency = myTransaction.getCurrency();
         if (oldCurrency == null || !oldCurrency.equals(chosenCurrency)) {
             myTransaction.setCurrency(chosenCurrency);
-            db.updateTransactionCurrencyAndRate(myTransaction);
+            db.updateTransactionCurrency(myTransaction);
             rateEditorLine.setVisibility(
                     chosenCurrency.equals(myEvent.getDefaultCurrency())
                     ? View.GONE : View.VISIBLE);
+            String leftText = String.format(getString(R.string.re_currency_left_fmt),
+                    myTransaction.getCurrency().toString());
+            rateLeftText.setText(leftText);
+            double rate = db.getDefaultRate(chosenCurrency, myEvent.getDefaultCurrency());
+            myTransaction.setRate(rate);
+            rateEdit.setText(Double.toString(rate));
+        }
+    }
+
+    public void onRateChanged() {
+        String rateText = rateEdit.getText().toString();
+        rateText.replace(',', '.');
+        try {
+            double newRate = Double.parseDouble(rateText);
+            myTransaction.setRate(newRate);
+            db.updateTransactionRate(myTransaction);
+            db.setDefaultRate(myTransaction.getCurrency(),
+                    myEvent.getDefaultCurrency(), newRate);
+        } catch (NumberFormatException e) {
+            rateEdit.setText(Double.toString(myTransaction.getRate()));
         }
     }
 }

@@ -563,18 +563,26 @@ public class GCDatabase {
 				null);
 	}
 
-	public void updateTransactionCurrencyAndRate(
+	public void updateTransactionCurrency(
 			ClearingTransaction aTransaction) {
-		ContentValues values = new ContentValues(2);
+		ContentValues values = new ContentValues(1);
 		values.put(GCDatabaseHelper.TTColumns.currency.name(), aTransaction
 				.getCurrency().toString());
-		values.put(GCDatabaseHelper.TTColumns.rate.name(),
-				aTransaction.getRate());
-		String whereClause = String.format("%s=%d",
+        String whereClause = String.format("%s=%d",
 				GCDatabaseHelper.TTColumns.id.name(), aTransaction.getId());
 		db.update(GCDatabaseHelper.TABLE_TRANSACTIONS, values, whereClause,
 				null);
 	}
+
+    public void updateTransactionRate(ClearingTransaction aTransaction) {
+        ContentValues values = new ContentValues(1);
+		values.put(GCDatabaseHelper.TTColumns.rate.name(), aTransaction
+				.getRate());
+        String whereClause = String.format("%s=%d",
+				GCDatabaseHelper.TTColumns.id.name(), aTransaction.getId());
+		db.update(GCDatabaseHelper.TABLE_TRANSACTIONS, values, whereClause,
+				null);
+    }
 
 	public void updateTransactionReceiverId(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -688,6 +696,9 @@ public class GCDatabase {
     }
 
     public double getDefaultRate(Currency left, Currency right) {
+        if (left.equals(right)) {
+            return 1.0;
+        }
         String whereClause = String.format("%s=\"%s\" AND %s=\"%s\"",
                 GCDatabaseHelper.TRColumns.left_currency.name(),
                 left.toString(),
