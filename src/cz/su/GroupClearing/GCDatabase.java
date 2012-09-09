@@ -227,19 +227,51 @@ public class GCDatabase {
 	public long computeBalanceOfPerson(long eventId, long personId) {
 		long amount = 0;
 		// Get values in all transactions
-		// TODO: Rewrite to respect different currencies
-		// of transactions and their rates.
-		String query = String.format(
-				"SELECT SUM(%s) FROM %s WHERE %s=%d AND %s=%d AND %s<>0",
-				GCDatabaseHelper.TTPColumns.value.name(),
-				GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
-				GCDatabaseHelper.TTPColumns.event_id.name(), eventId,
-				GCDatabaseHelper.TTPColumns.participant_id.name(), personId,
-				GCDatabaseHelper.TTPColumns.marked.name());
-		Cursor sumCursor = db.rawQuery(query, null);
+        /* "SELECT value, currency, rate 
+           FROM TABLE_TRANSACTION_PARTICIPANTS INNER JOIN TABLE_TRANSACTIONS
+           ON TABLE_TRANSACTION_PARTICIPANTS.event_id=TABLE_TRANSACTIONS.event_id
+           AND TABLE_TRANSACTION_PARTICIPANTS.transaction_id=TABLE_TRANSACTIONS.id
+           WHERE TABLE_TRANSACTION_PARTICIPANTS.event_id=eventId 
+           AND TABLE_TRANSACTION_PARTICIPANTS.participant_id=personId
+           AND value<>0 AND marked<>0"
+         */
+        Currency eventCurrency = getCurrencyOfEvent(eventId);
+        String eventCurrencyName = eventCurrency.toString();
+        String query = String.format(
+                "SELECT %s, %s, %s FROM %s INNER JOIN %s ON %s.%s=%s.%s AND %s.%s=%s.%s WHERE %s.%s=%d AND %s.%s=%d AND %s<>0 AND %s<>0",
+                GCDatabaseHelper.TTPColumns.value.name(),
+                GCDatabaseHelper.TTColumns.currency.name(),
+                GCDatabaseHelper.TTColumns.rate.name(),
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TABLE_TRANSACTIONS,
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TTPColumns.event_id.name(),
+                GCDatabaseHelper.TABLE_TRANSACTIONS,
+                GCDatabaseHelper.TTColumns.event_id.name(),
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TTPColumns.transaction_id.name(),
+                GCDatabaseHelper.TABLE_TRANSACTIONS,
+                GCDatabaseHelper.TTColumns.id.name(),
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TTPColumns.event_id.name(),
+                eventId,
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TTPColumns.participant_id.name(),
+                personId,
+                GCDatabaseHelper.TTPColumns.value.name(),
+                GCDatabaseHelper.TTPColumns.marked.name());
+        Cursor sumCursor = db.rawQuery(query, null);
 		sumCursor.moveToFirst();
-		if (!sumCursor.isAfterLast()) {
-			amount += sumCursor.getLong(0);
+		while (!sumCursor.isAfterLast()) {
+            long value = sumCursor.getLong(0);
+            String currencyName = sumCursor.getString(1);
+            double rate = sumCursor.getDouble(2);
+            if (eventCurrencyName.compareTo(currencyName) == 0) {
+                amount += value;
+            } else {
+                amount += Math.round(value * rate);
+            }
+            sumCursor.moveToNext();
 		}
 		return amount;
 	}
@@ -460,7 +492,6 @@ public class GCDatabase {
 				dateFormat.format(new Date()));
 		values.put(GCDatabaseHelper.TTColumns.currency.name(),
 				transactionCurrency.toString());
-		/* TODO: Get default rate from database. */
 		values.put(GCDatabaseHelper.TTColumns.rate.name(), 1.0);
 		values.put(GCDatabaseHelper.TTColumns.amount.name(), 0);
 		values.put(GCDatabaseHelper.TTColumns.receiver_id.name(), -1);
