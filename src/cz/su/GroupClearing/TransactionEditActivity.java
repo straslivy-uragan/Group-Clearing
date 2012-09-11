@@ -223,7 +223,7 @@ public class TransactionEditActivity extends FragmentActivity {
 						valueEdit.getText().toString(),
 						myTransaction.getCurrency());
 				onValueEditorOK(position, participantId, value);
-			} catch (GCSyntaxException e) {
+			} catch (NumberFormatException e) {
 				onValueEditorCancelled(position, participantId);
 			}
 		}
@@ -544,7 +544,7 @@ public class TransactionEditActivity extends FragmentActivity {
 				db.updateTransactionAmount(myTransaction);
 				recomputeValues();
 			}
-		} catch (GCSyntaxException e) {
+		} catch (NumberFormatException e) {
 		}
 		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
 				myTransaction.getCurrency()));
@@ -724,7 +724,7 @@ public class TransactionEditActivity extends FragmentActivity {
 
     public void onRateChanged() {
         String rateText = rateEdit.getText().toString();
-        rateText.replace(',', '.');
+        rateText = rateText.replace(',', '.');
         try {
             double newRate = Double.parseDouble(rateText);
             myTransaction.setRate(newRate);

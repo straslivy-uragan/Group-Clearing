@@ -5,6 +5,7 @@ package cz.su.GroupClearing;
 
 import java.text.NumberFormat;
 import java.util.Currency;
+import java.math.BigDecimal;
 
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -73,53 +74,11 @@ public class GroupClearingApplication extends Application {
 	}
 
 	public long parseCurrencyValue(String valueString, Currency currency)
-			throws GCSyntaxException {
-		// We cannot use format, because there might be both , and . used as
-		// fraction digits separators.
-		long value = 0;
-		int index = 0;
-		long sign = 1;
-		while (index < valueString.length()
-				&& Character.isSpace(valueString.charAt(index))) {
-			++index;
-		}
-		if (index >= valueString.length()) {
-			return 0;
-		}
-		if (valueString.charAt(index) == '-') {
-			sign = -1;
-			++index;
-		}
-		while (index < valueString.length()
-				&& Character.isDigit(valueString.charAt(index))) {
-			value = value * 10 + (valueString.charAt(index) - '0');
-			++index;
-		}
-		if (index < valueString.length() && valueString.charAt(index) != '.'
-				&& valueString.charAt(index) != ',') {
-			throw new GCSyntaxException();
-		}
-		++index;
-		int fractionIndex = 0;
-		while (fractionIndex < currency.getDefaultFractionDigits()
-				&& index + fractionIndex < valueString.length()
-				&& Character.isDigit(valueString.charAt(index + fractionIndex))) {
-			value = value * 10
-					+ (valueString.charAt(index + fractionIndex) - '0');
-			++fractionIndex;
-		}
-		int restIndex = index + fractionIndex;
-		while (restIndex < valueString.length()) {
-			if (!Character.isDigit(valueString.charAt(index + fractionIndex))) {
-				throw new GCSyntaxException();
-			}
-			++restIndex;
-		}
-		while (fractionIndex < currency.getDefaultFractionDigits()) {
-			value *= 10;
-			++fractionIndex;
-		}
-		return sign * value;
+			throws NumberFormatException {
+            valueString = valueString.replace(',', '.');
+            BigDecimal value = new BigDecimal(valueString);
+            value = value.movePointRight(currency.getDefaultFractionDigits());
+            return value.longValue();
 	}
 
 	public boolean getNoSplitChangeWarning() {

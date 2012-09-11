@@ -68,6 +68,9 @@ public class GroupClearingActivity extends FragmentActivity
       startActivity(intent);
    }
 
+    public void showSettings() {
+    }
+
    public void onEventClicked(final int position, long id)
    {
       showEventProperties(id);
@@ -144,6 +147,11 @@ public class GroupClearingActivity extends FragmentActivity
       {
          showEventProperties(-1);
          return true;
+      }
+      case R.id.menu_settings:
+      {
+          showSettings();
+          return true;
       }
       default:
          return super.onOptionsItemSelected(item);

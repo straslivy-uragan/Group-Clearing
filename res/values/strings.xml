@@ -67,4 +67,5 @@
     <string name="re_currency_right_fmt"> %s</string>
     <string name="re_save_default">Save as default</string>
     <string name="re_label">Set currency rate&#8230;</string>
+    <string name="menu_settings">Settings</string>
 </resources>
