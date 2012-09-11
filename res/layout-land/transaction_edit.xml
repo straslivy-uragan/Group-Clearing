@@ -7,14 +7,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:orientation="vertical" >
 
         <TextView
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
             android:text="@string/transaction_name" />
 
         <EditText
@@ -142,7 +142,8 @@
                 android:text="@string/number_hint"
                 android:textStyle="italic" />
         </RelativeLayout>
- <LinearLayout
+
+        <LinearLayout
             android:id="@+id/trans_rate_editor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -160,11 +161,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:digits="0123456789.,"
+                android:ems="6"
                 android:hint="@string/number_hint"
                 android:imeOptions="actionDone"
                 android:inputType="numberDecimal"
-                android:lines="1"
-                android:ems="6" >
+                android:lines="1" >
             </EditText>
 
             <TextView
@@ -174,6 +175,7 @@
                 android:paddingRight="20dip"
                 android:text="@string/re_currency_right_plcholder" />
         </LinearLayout>
+
         <CheckBox
             android:id="@+id/transaction_split_check"
             android:layout_width="wrap_content"
