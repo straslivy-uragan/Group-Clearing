@@ -70,4 +70,7 @@
     <string name="re_save_default">Ulož jako defaultní</string>
     <string name="re_label">Nastavte kurz měny&#8230;</string>
     <string name="menu_settings">Nastavení</string>
+    <string name="settings">Nastavení</string>
+    <string name="support_multiple_currencies">Podporovat více měn</string>
+    <string name="convert_currencies">Přepočítávat hodnoty do měny transakce</string>
 </resources>

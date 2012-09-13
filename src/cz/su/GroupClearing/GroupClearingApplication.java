@@ -31,11 +31,15 @@ public class GroupClearingApplication extends Application {
 	private NumberFormat currencyFormatter = null;
 
 	private boolean noSplitChangeWarning = false;
+    private boolean supportMultipleCurrencies = false;
+    private boolean convertToEventCurrency = true;
 
 	private SharedPreferences preferences = null;
 	private SharedPreferences.Editor preferencesEditor = null;
 
 	public static final String SPLIT_CHANGE_WARNING_PREF = "split_change_warning";
+    public static final String SUPPORT_MULTIPLE_CURRENCIES = "support_multiple_currencies";
+    public static final String CONVERT_TO_EVENT_CURRENCY = "convert_to_event_currency";
 
 	public static GroupClearingApplication getInstance() {
 		return instance;
@@ -49,6 +53,10 @@ public class GroupClearingApplication extends Application {
 		preferencesEditor = preferences.edit();
 		noSplitChangeWarning = preferences.getBoolean(
 				SPLIT_CHANGE_WARNING_PREF, false);
+        supportMultipleCurrencies = preferences.getBoolean(
+                SUPPORT_MULTIPLE_CURRENCIES, false);
+        convertToEventCurrency = preferences.getBoolean(
+                CONVERT_TO_EVENT_CURRENCY, true);
 	}
 
 	public String formatCurrencyValue(long amount, Currency currency) {
@@ -90,4 +98,25 @@ public class GroupClearingApplication extends Application {
 		preferencesEditor.putBoolean(SPLIT_CHANGE_WARNING_PREF, checked);
 		preferencesEditor.apply();
 	}
+
+    public boolean getSupportMultipleCurrencies() {
+        return supportMultipleCurrencies;
+    }
+
+    public void setSupportMultipleCurrencies(boolean checked) {
+        supportMultipleCurrencies = checked;
+        preferencesEditor.putBoolean(SUPPORT_MULTIPLE_CURRENCIES, checked);
+        preferencesEditor.apply();
+    }
+
+    public boolean getConvertToEventCurrency() {
+        return convertToEventCurrency;
+    }
+
+    public void setConvertToEventCurrency(boolean checked) {
+        convertToEventCurrency = checked;
+        preferencesEditor.putBoolean(CONVERT_TO_EVENT_CURRENCY, checked);
+        preferencesEditor.apply();
+    }
+
 }

@@ -41,12 +41,13 @@ public class EventViewActivity extends FragmentActivity {
 	private long myEventId = -1;
 	private final GroupClearingApplication myApp = GroupClearingApplication
 			.getInstance();
-	private ClearingEvent myEvent;
-	private EditText eventName;
-	private EditText eventNote;
-	private Button startDateButton;
-	private Button finishDateButton;
-	private Spinner currencySpinner;
+	private ClearingEvent myEvent = null;
+	private EditText eventName = null;
+	private EditText eventNote = null;
+	private Button startDateButton = null;
+	private Button finishDateButton = null;
+	private Spinner currencySpinner = null;
+    private View currencyLayout = null;
 
 	private static final int START_DATE_PICK_DIALOG_ID = 0;
 	private static final int FINISH_DATE_PICK_DIALOG_ID = 1;
@@ -128,24 +129,27 @@ public class EventViewActivity extends FragmentActivity {
 		startDateButton = (Button) findViewById(R.id.event_from_date_button);
 		finishDateButton = (Button) findViewById(R.id.event_to_date_button);
 		myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
-		currencySpinner = (Spinner) findViewById(R.id.event_currency_spinner);
-		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-				this, R.array.currency_names,
-				android.R.layout.simple_spinner_item);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		currencySpinner.setAdapter(adapter);
-        currencySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-                @Override
-				public void onItemSelected(AdapterView<?> parent, 
-                    View view, int pos, long id) {
-                onCurrencySelected(pos, id);
-                }
+        if (myApp.getSupportMultipleCurrencies()) {
+            currencySpinner = (Spinner) findViewById(R.id.event_currency_spinner);
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                    this, R.array.currency_names,
+                    android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            currencySpinner.setAdapter(adapter);
+            currencySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, 
+                        View view, int pos, long id) {
+                    onCurrencySelected(pos, id);
+                    }
 
-                @Override
-				public void onNothingSelected(AdapterView<?> parent) {
-                }
-                }
-                );
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                    }
+                    );
+        }
+        currencyLayout = findViewById(R.id.currency_layout);
 	}
 
 	@Override
@@ -175,10 +179,15 @@ public class EventViewActivity extends FragmentActivity {
 		} else {
 			finishDateButton.setText("--");
 		}
-        CurrencyList cl = CurrencyList.getInstance();
-        Currency cur = myEvent.getDefaultCurrency();
-        String currencyCode = cur.toString();
-        currencySpinner.setSelection(cl.getPosition(currencyCode));
+        if (myApp.getSupportMultipleCurrencies()) {
+            CurrencyList cl = CurrencyList.getInstance();
+            Currency cur = myEvent.getDefaultCurrency();
+            String currencyCode = cur.toString();
+            currencySpinner.setSelection(cl.getPosition(currencyCode));
+            currencyLayout.setVisibility(View.VISIBLE);
+        } else {
+            currencyLayout.setVisibility(View.GONE);
+        }
 	}
 
 	@Override

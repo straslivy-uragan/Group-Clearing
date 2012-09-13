@@ -68,4 +68,7 @@
     <string name="re_save_default">Save as default</string>
     <string name="re_label">Set currency rate&#8230;</string>
     <string name="menu_settings">Settings</string>
+    <string name="settings">Settings</string>
+    <string name="support_multiple_currencies">Support multiple currencies</string>
+    <string name="convert_currencies">Convert values to event currency</string>
 </resources>
