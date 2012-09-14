@@ -1,11 +1,13 @@
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
+
 public class SimpleTransaction {
     private long receiverId;
     private long payerId;
-    private long value;
+    private BigDecimal value;
 
-    public SimpleTransaction(long receiverId, long payerId, long value) {
+    public SimpleTransaction(long receiverId, long payerId, BigDecimal value) {
         this.receiverId = receiverId;
         this.payerId = payerId;
         this.value = value;
@@ -19,7 +21,7 @@ public class SimpleTransaction {
         return payerId;
     }
 
-    public long getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 

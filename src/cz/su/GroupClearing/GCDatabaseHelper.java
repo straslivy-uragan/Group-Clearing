@@ -33,7 +33,9 @@ public class GCDatabaseHelper extends SQLiteOpenHelper {
 			TPColumns.note.name()};
 
 	public enum TTColumns {
-		id, event_id, name, date, currency, rate, amount, receiver_id, split_evenly, note
+        id, event_id, name, date, currency,
+            rate, amount, receiver_id,
+            split_evenly, note
 	}
 
 	public static final String[] TABLE_TRANSACTIONS_COLUMNS = {
@@ -82,8 +84,8 @@ public class GCDatabaseHelper extends SQLiteOpenHelper {
 				+ TTColumns.event_id.name() + " INTEGER, "
 				+ TTColumns.name.name() + " TEXT, " + TTColumns.date.name()
 				+ " TEXT, " + TTColumns.currency.name() + " TEXT, "
-				+ TTColumns.rate.name() + " REAL, " + TTColumns.amount.name()
-				+ " INTEGER, " + TTColumns.receiver_id.name() + " INTEGER, "
+				+ TTColumns.rate.name() + " TEXT, " + TTColumns.amount.name()
+				+ " TEXT, " + TTColumns.receiver_id.name() + " INTEGER, "
 				+ TTColumns.split_evenly.name() + " INTEGER, "
 				+ TTColumns.note.name() + " TEXT);");
 
@@ -92,7 +94,7 @@ public class GCDatabaseHelper extends SQLiteOpenHelper {
 				+ TTPColumns.event_id.name() + " INTEGER, "
 				+ TTPColumns.transaction_id.name() + " INTEGER, "
 				+ TTPColumns.participant_id.name() + " INTEGER, "
-				+ TTPColumns.value.name() + " INTEGER, "
+				+ TTPColumns.value.name() + " TEXT, "
 				+ TTPColumns.marked.name() + " INTEGER, " + "UNIQUE("
 				+ TTPColumns.event_id.name() + ", "
 				+ TTPColumns.transaction_id.name() + ", "
@@ -101,7 +103,7 @@ public class GCDatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL("CREATE TABLE " + TABLE_RATES + " ("
 				+ TRColumns.left_currency.name() + " TEXT, "
 				+ TRColumns.right_currency.name() + " TEXT, "
-				+ TRColumns.rate.name() + " REAL);");
+				+ TRColumns.rate.name() + " TEXT);");
 	}
 
 	@Override

@@ -4,6 +4,8 @@
  */
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
+
 /**
  * @author su
  * A class describing a person participating on a clearing event. A
@@ -19,12 +21,15 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
    private long id;
    private String name;
    private String note;
-   private long balance;
+   private BigDecimal balance;
 
-   public long getBalance() {
+   public BigDecimal getBalance() {
+       if (balance == null) {
+           balance = BigDecimal.ZERO;
+       }
       return balance;
    }
-   public void setBalance(long balance) {
+   public void setBalance(BigDecimal balance) {
       this.balance = balance;
    }
    /**
@@ -35,7 +40,7 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
       this.id = id;
       this.name = "";
       this.note = "";
-      this.balance = 0;
+      this.balance = BigDecimal.ZERO;
    }
    
    /**
@@ -45,7 +50,7 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
     * @param balance
     */
    public ClearingPerson(long id, String name,
-         long balance, String note) {
+         BigDecimal balance, String note) {
       super();
       this.id = id;
       this.name = (name != null ? name : "");

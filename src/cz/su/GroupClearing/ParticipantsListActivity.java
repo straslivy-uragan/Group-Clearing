@@ -1,5 +1,7 @@
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
+
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -157,13 +159,13 @@ public class ParticipantsListActivity extends FragmentActivity {
 
    public void refreshData() {
       participantsListAdapter.readParticipantsFromDB();
-      long value = participantsListAdapter.getParticipantsValuesSum();
+      BigDecimal value = participantsListAdapter.getParticipantsValuesSum();
       String text = myApp.formatCurrencyValueWithSymbol(value,
               participantsListAdapter.getEvent().getDefaultCurrency());
       sumValueText.setText(text + " ");
-      if (value > 0) {
+      if (value.signum() > 0) {
           sumValueText.setTextColor(android.graphics.Color.GREEN);
-      } else if (value < 0) {
+      } else if (value.signum() < 0) {
           sumValueText.setTextColor(android.graphics.Color.RED);
       } else {
           sumValueText.setTextColor(getResources().getColor(

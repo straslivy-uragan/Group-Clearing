@@ -3,9 +3,9 @@
  */
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Currency;
-import java.math.BigDecimal;
 
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -31,15 +31,15 @@ public class GroupClearingApplication extends Application {
 	private NumberFormat currencyFormatter = null;
 
 	private boolean noSplitChangeWarning = false;
-    private boolean supportMultipleCurrencies = false;
-    private boolean convertToEventCurrency = true;
+	private boolean supportMultipleCurrencies = false;
+	private boolean convertToEventCurrency = true;
 
 	private SharedPreferences preferences = null;
 	private SharedPreferences.Editor preferencesEditor = null;
 
 	public static final String SPLIT_CHANGE_WARNING_PREF = "split_change_warning";
-    public static final String SUPPORT_MULTIPLE_CURRENCIES = "support_multiple_currencies";
-    public static final String CONVERT_TO_EVENT_CURRENCY = "convert_to_event_currency";
+	public static final String SUPPORT_MULTIPLE_CURRENCIES = "support_multiple_currencies";
+	public static final String CONVERT_TO_EVENT_CURRENCY = "convert_to_event_currency";
 
 	public static GroupClearingApplication getInstance() {
 		return instance;
@@ -53,40 +53,42 @@ public class GroupClearingApplication extends Application {
 		preferencesEditor = preferences.edit();
 		noSplitChangeWarning = preferences.getBoolean(
 				SPLIT_CHANGE_WARNING_PREF, false);
-        supportMultipleCurrencies = preferences.getBoolean(
-                SUPPORT_MULTIPLE_CURRENCIES, false);
-        convertToEventCurrency = preferences.getBoolean(
-                CONVERT_TO_EVENT_CURRENCY, true);
+		supportMultipleCurrencies = preferences.getBoolean(
+				SUPPORT_MULTIPLE_CURRENCIES, false);
+		convertToEventCurrency = preferences.getBoolean(
+				CONVERT_TO_EVENT_CURRENCY, true);
 	}
 
-	public String formatCurrencyValue(long amount, Currency currency) {
+	public String formatCurrencyValue(BigDecimal amount, Currency currency) {
 		if (currencyFormatter == null) {
 			currencyFormatter = NumberFormat.getInstance();
 		}
 		currencyFormatter.setGroupingUsed(false);
 		currencyFormatter.setMaximumFractionDigits(currency
 				.getDefaultFractionDigits());
-		double value = amount
-				/ Math.pow(10, currency.getDefaultFractionDigits());
-		return currencyFormatter.format(value);
+		return currencyFormatter
+				.format(amount.setScale(currency.getDefaultFractionDigits(),
+						BigDecimal.ROUND_HALF_EVEN));
 	}
 
-	public String formatCurrencyValueWithSymbol(long amount, Currency currency) {
+	public String formatCurrencyValueWithSymbol(BigDecimal amount,
+			Currency currency) {
 		if (currencyFormatterWithSymbol == null) {
 			currencyFormatterWithSymbol = NumberFormat.getCurrencyInstance();
 		}
 		currencyFormatterWithSymbol.setCurrency(currency);
-		double value = amount
-				/ Math.pow(10, currency.getDefaultFractionDigits());
-		return currencyFormatterWithSymbol.format(value);
+		return currencyFormatterWithSymbol
+				.format(amount.setScale(currency.getDefaultFractionDigits(),
+						BigDecimal.ROUND_HALF_EVEN));
 	}
 
-	public long parseCurrencyValue(String valueString, Currency currency)
+	public BigDecimal parseCurrencyValue(String valueString, Currency currency)
 			throws NumberFormatException {
-            valueString = valueString.replace(',', '.');
-            BigDecimal value = new BigDecimal(valueString);
-            value = value.movePointRight(currency.getDefaultFractionDigits());
-            return value.longValue();
+		valueString = valueString.replace(',', '.');
+		BigDecimal value = new BigDecimal(valueString);
+		// value = value.movePointRight(currency.getDefaultFractionDigits());
+		return value.setScale(currency.getDefaultFractionDigits(),
+				BigDecimal.ROUND_HALF_EVEN);
 	}
 
 	public boolean getNoSplitChangeWarning() {
@@ -99,24 +101,24 @@ public class GroupClearingApplication extends Application {
 		preferencesEditor.apply();
 	}
 
-    public boolean getSupportMultipleCurrencies() {
-        return supportMultipleCurrencies;
-    }
+	public boolean getSupportMultipleCurrencies() {
+		return supportMultipleCurrencies;
+	}
 
-    public void setSupportMultipleCurrencies(boolean checked) {
-        supportMultipleCurrencies = checked;
-        preferencesEditor.putBoolean(SUPPORT_MULTIPLE_CURRENCIES, checked);
-        preferencesEditor.apply();
-    }
+	public void setSupportMultipleCurrencies(boolean checked) {
+		supportMultipleCurrencies = checked;
+		preferencesEditor.putBoolean(SUPPORT_MULTIPLE_CURRENCIES, checked);
+		preferencesEditor.apply();
+	}
 
-    public boolean getConvertToEventCurrency() {
-        return convertToEventCurrency;
-    }
+	public boolean getConvertToEventCurrency() {
+		return convertToEventCurrency;
+	}
 
-    public void setConvertToEventCurrency(boolean checked) {
-        convertToEventCurrency = checked;
-        preferencesEditor.putBoolean(CONVERT_TO_EVENT_CURRENCY, checked);
-        preferencesEditor.apply();
-    }
+	public void setConvertToEventCurrency(boolean checked) {
+		convertToEventCurrency = checked;
+		preferencesEditor.putBoolean(CONVERT_TO_EVENT_CURRENCY, checked);
+		preferencesEditor.apply();
+	}
 
 }

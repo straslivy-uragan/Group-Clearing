@@ -1,5 +1,6 @@
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Currency;
@@ -224,8 +225,7 @@ public class GCDatabase {
 		return person;
 	}
 
-	public long computeBalanceOfPerson(long eventId, long personId) {
-		long amount = 0;
+	public BigDecimal computeBalanceOfPerson(long eventId, long personId) {
 		// Get values in all transactions
         /* "SELECT value, currency, rate 
            FROM TABLE_TRANSACTION_PARTICIPANTS INNER JOIN TABLE_TRANSACTIONS
@@ -262,14 +262,16 @@ public class GCDatabase {
                 GCDatabaseHelper.TTPColumns.marked.name());
         Cursor sumCursor = db.rawQuery(query, null);
 		sumCursor.moveToFirst();
+        BigDecimal amount = BigDecimal.ZERO;
 		while (!sumCursor.isAfterLast()) {
-            long value = sumCursor.getLong(0);
+            BigDecimal value = new BigDecimal(sumCursor.getString(0));
             String currencyName = sumCursor.getString(1);
-            double rate = sumCursor.getDouble(2);
+            BigDecimal rate = new BigDecimal(sumCursor.getString(2));
             if (eventCurrencyName.compareTo(currencyName) == 0) {
-                amount += value;
+                amount = amount.add(value);
             } else {
-                amount += Math.round(value * rate);
+                BigDecimal mult = value.multiply(rate);
+                amount = amount.add(mult);
             }
             sumCursor.moveToNext();
 		}
@@ -362,10 +364,10 @@ public class GCDatabase {
 					new ParsePosition(0)));
 			aTransaction.setCurrency(Currency.getInstance(transactionsCursor
 					.getString(GCDatabaseHelper.TTColumns.currency.ordinal())));
-			aTransaction.setRate(transactionsCursor
-					.getDouble(GCDatabaseHelper.TTColumns.rate.ordinal()));
-			aTransaction.setAmount(transactionsCursor
-					.getLong(GCDatabaseHelper.TTColumns.amount.ordinal()));
+			aTransaction.setRate(new BigDecimal(transactionsCursor
+					.getString(GCDatabaseHelper.TTColumns.rate.ordinal())));
+			aTransaction.setAmount(new BigDecimal(transactionsCursor
+					.getLong(GCDatabaseHelper.TTColumns.amount.ordinal())));
 			aTransaction.setReceiverId(transactionsCursor
 					.getLong(GCDatabaseHelper.TTColumns.receiver_id.ordinal()));
 			aTransaction
@@ -382,8 +384,8 @@ public class GCDatabase {
 							.getLong(GCDatabaseHelper.TTColumns.id.ordinal())) {
 				aTransaction.addParticipant(participantsCursor
 						.getInt(GCDatabaseHelper.TTPColumns.participant_id
-								.ordinal()), participantsCursor
-						.getLong(GCDatabaseHelper.TTPColumns.value.ordinal()),
+								.ordinal()), new BigDecimal(participantsCursor
+						.getString(GCDatabaseHelper.TTPColumns.value.ordinal())),
 						participantsCursor
 								.getInt(GCDatabaseHelper.TTPColumns.marked
 										.ordinal()) != 0);
@@ -426,10 +428,10 @@ public class GCDatabase {
 				new ParsePosition(0)));
 		aTransaction.setCurrency(Currency.getInstance(transactionCursor
 				.getString(GCDatabaseHelper.TTColumns.currency.ordinal())));
-		aTransaction.setRate(transactionCursor
-				.getDouble(GCDatabaseHelper.TTColumns.rate.ordinal()));
-		aTransaction.setAmount(transactionCursor
-				.getLong(GCDatabaseHelper.TTColumns.amount.ordinal()));
+		aTransaction.setRate(new BigDecimal(transactionCursor
+				.getString(GCDatabaseHelper.TTColumns.rate.ordinal())));
+		aTransaction.setAmount(new BigDecimal(transactionCursor
+				.getString(GCDatabaseHelper.TTColumns.amount.ordinal())));
 		aTransaction.setReceiverId(transactionCursor
 				.getLong(GCDatabaseHelper.TTColumns.receiver_id.ordinal()));
 		aTransaction
@@ -443,8 +445,8 @@ public class GCDatabase {
 		while (!participantsCursor.isAfterLast()) {
 			aTransaction.addParticipant(participantsCursor
 					.getInt(GCDatabaseHelper.TTPColumns.participant_id
-							.ordinal()), participantsCursor
-					.getLong(GCDatabaseHelper.TTPColumns.value.ordinal()),
+							.ordinal()), new BigDecimal(participantsCursor
+					.getString(GCDatabaseHelper.TTPColumns.value.ordinal())),
 					participantsCursor
 							.getInt(GCDatabaseHelper.TTPColumns.marked
 									.ordinal()) != 0);
@@ -492,8 +494,8 @@ public class GCDatabase {
 				dateFormat.format(new Date()));
 		values.put(GCDatabaseHelper.TTColumns.currency.name(),
 				transactionCurrency.toString());
-		values.put(GCDatabaseHelper.TTColumns.rate.name(), 1.0);
-		values.put(GCDatabaseHelper.TTColumns.amount.name(), 0);
+		values.put(GCDatabaseHelper.TTColumns.rate.name(), "1");
+		values.put(GCDatabaseHelper.TTColumns.amount.name(), "0");
 		values.put(GCDatabaseHelper.TTColumns.receiver_id.name(), -1);
 		values.put(GCDatabaseHelper.TTColumns.split_evenly.name(), true);
 		values.put(GCDatabaseHelper.TTColumns.note.name(), "");
@@ -518,7 +520,7 @@ public class GCDatabase {
 						GCDatabaseHelper.TTPColumns.participant_id.name(),
 						participantsCursor.getLong(0));
 				participantValues.put(GCDatabaseHelper.TTPColumns.value.name(),
-						0);
+						"0");
 				participantValues.put(
 						GCDatabaseHelper.TTPColumns.marked.name(), 1);
 				db.insert(GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
@@ -539,9 +541,9 @@ public class GCDatabase {
 		values.put(GCDatabaseHelper.TTColumns.currency.name(), aTransaction
 				.getCurrency().toString());
 		values.put(GCDatabaseHelper.TTColumns.rate.name(),
-				aTransaction.getRate());
+				aTransaction.getRate().toString());
 		values.put(GCDatabaseHelper.TTColumns.amount.name(),
-				aTransaction.getAmount());
+				aTransaction.getAmount().toString());
 		values.put(GCDatabaseHelper.TTColumns.receiver_id.name(),
 				aTransaction.getReceiverId());
 		values.put(GCDatabaseHelper.TTColumns.split_evenly.name(),
@@ -577,7 +579,7 @@ public class GCDatabase {
 	public void updateTransactionAmount(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
 		values.put(GCDatabaseHelper.TTColumns.amount.name(),
-				aTransaction.getAmount());
+				aTransaction.getAmount().toString());
 		String whereClause = String.format("%s=%d",
 				GCDatabaseHelper.TTColumns.id.name(), aTransaction.getId());
 		db.update(GCDatabaseHelper.TABLE_TRANSACTIONS, values, whereClause,
@@ -608,7 +610,7 @@ public class GCDatabase {
     public void updateTransactionRate(ClearingTransaction aTransaction) {
         ContentValues values = new ContentValues(1);
 		values.put(GCDatabaseHelper.TTColumns.rate.name(), aTransaction
-				.getRate());
+				.getRate().toString());
         String whereClause = String.format("%s=%d",
 				GCDatabaseHelper.TTColumns.id.name(), aTransaction.getId());
 		db.update(GCDatabaseHelper.TABLE_TRANSACTIONS, values, whereClause,
@@ -636,14 +638,14 @@ public class GCDatabase {
 	}
 
 	public void updateTransactionParticipantValue(long eventId,
-			long transactionId, long participantId, long value, boolean mark) {
+			long transactionId, long participantId, BigDecimal value, boolean mark) {
 		ContentValues values = new ContentValues(6);
 		values.put(GCDatabaseHelper.TTPColumns.event_id.name(), eventId);
 		values.put(GCDatabaseHelper.TTPColumns.transaction_id.name(),
 				transactionId);
 		values.put(GCDatabaseHelper.TTPColumns.participant_id.name(),
 				participantId);
-		values.put(GCDatabaseHelper.TTPColumns.value.name(), value);
+		values.put(GCDatabaseHelper.TTPColumns.value.name(), value.toString());
 		values.put(GCDatabaseHelper.TTPColumns.marked.name(), mark);
 		db.insertWithOnConflict(
 				GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS, null, values,
@@ -653,7 +655,7 @@ public class GCDatabase {
 	public void resetTransactionParticipantsValues(
 			ClearingTransaction aTransaction, boolean defaultMark) {
 		ContentValues values = new ContentValues(2);
-		values.put(GCDatabaseHelper.TTPColumns.value.name(), 0);
+		values.put(GCDatabaseHelper.TTPColumns.value.name(), "0");
 		values.put(GCDatabaseHelper.TTPColumns.marked.name(), defaultMark);
 		String whereClause = String.format("%s=%d",
 				GCDatabaseHelper.TTPColumns.transaction_id.name(),
@@ -673,11 +675,11 @@ public class GCDatabase {
 		ParticipantValue valueInfo = null;
 		if (!result.isAfterLast()) {
 			long minId = result.getInt(0);
-			long minValue = computeBalanceOfPerson(eventId, minId);
+			BigDecimal minValue = computeBalanceOfPerson(eventId, minId);
 			result.moveToNext();
 			while (!result.isAfterLast()) {
-				long value = computeBalanceOfPerson(eventId, result.getInt(0));
-				if (value < minValue) {
+				BigDecimal value = computeBalanceOfPerson(eventId, result.getInt(0));
+				if (value.compareTo(minValue) < 0) {
 					minId = result.getInt(0);
 					minValue = value;
 				}
@@ -699,7 +701,7 @@ public class GCDatabase {
 				result.getCount());
 		result.moveToFirst();
 		while (!result.isAfterLast()) {
-			long value = computeBalanceOfPerson(eventId, result.getInt(0));
+			BigDecimal value = computeBalanceOfPerson(eventId, result.getInt(0));
 			ParticipantValue valueInfo = new ParticipantValue(result.getInt(0),
 					value);
 			values.add(valueInfo);
@@ -708,14 +710,14 @@ public class GCDatabase {
 		return values;
 	}
 
-    public void setDefaultRate(Currency left, Currency right, double rate) {
+    public void setDefaultRate(Currency left, Currency right, BigDecimal rate) {
         String whereClause = String.format("%s=\"%s\" AND %s=\"%s\"",
                 GCDatabaseHelper.TRColumns.left_currency.name(),
                 left.toString(),
                 GCDatabaseHelper.TRColumns.right_currency.name(),
                 right.toString());
         ContentValues values = new ContentValues(1);
-        values.put(GCDatabaseHelper.TRColumns.rate.name(), rate);
+        values.put(GCDatabaseHelper.TRColumns.rate.name(), rate.toString());
         if (db.update(GCDatabaseHelper.TABLE_RATES, values, whereClause, null)
                 == 0) {
             values.put(GCDatabaseHelper.TRColumns.left_currency.name(),
@@ -726,9 +728,9 @@ public class GCDatabase {
         }
     }
 
-    public double getDefaultRate(Currency left, Currency right) {
+    public BigDecimal getDefaultRate(Currency left, Currency right) {
         if (left.equals(right)) {
-            return 1.0;
+            return BigDecimal.ONE;
         }
         String whereClause = String.format("%s=\"%s\" AND %s=\"%s\"",
                 GCDatabaseHelper.TRColumns.left_currency.name(),
@@ -739,10 +741,10 @@ public class GCDatabase {
         Cursor result = db.query(GCDatabaseHelper.TABLE_RATES,
                 RATE_COLUMN, whereClause, null, null, null, null);
         result.moveToFirst();
-        double rate = 1.0;
+        BigDecimal rate = BigDecimal.ONE;
         if (!result.isAfterLast())
         {
-            rate = result.getDouble(0);
+            rate = new BigDecimal(result.getString(0));
         }
         return rate;
     }

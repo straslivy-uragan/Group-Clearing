@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Vector;
+import java.math.BigDecimal;
 
 import android.app.Activity;
 import android.content.Context;
@@ -53,15 +54,15 @@ public class SuggestClearanceActivity extends Activity {
 			ClearingPerson receiverB = participants.get(Long.valueOf(B
 					.getReceiverId()));
 			int comp = payerA.getName().compareTo(payerB.getName());
-            if (comp == 0) {
-                comp = (int) (payerA.getId() - payerB.getId());
-                if (comp == 0) {
-                    comp = receiverA.getName().compareTo(receiverB.getName());
-                    if (comp == 0) {
-                        comp = (int) (receiverA.getId() - receiverB.getId());
-                    }
-                }
-            }
+			if (comp == 0) {
+				comp = (int) (payerA.getId() - payerB.getId());
+				if (comp == 0) {
+					comp = receiverA.getName().compareTo(receiverB.getName());
+					if (comp == 0) {
+						comp = (int) (receiverA.getId() - receiverB.getId());
+					}
+				}
+			}
 			return comp;
 		}
 	};
@@ -85,15 +86,15 @@ public class SuggestClearanceActivity extends Activity {
 			ClearingPerson receiverB = participants.get(Long.valueOf(B
 					.getReceiverId()));
 			int comp = receiverA.getName().compareTo(receiverB.getName());
-            if (comp == 0) {
-                comp = (int) (receiverA.getId() - receiverB.getId());
-                if (comp == 0) {
-                    comp = payerA.getName().compareTo(payerB.getName());
-                    if (comp == 0) {
-                        comp = (int) (payerA.getId() - payerB.getId());
-                    }
-                }
-            }
+			if (comp == 0) {
+				comp = (int) (receiverA.getId() - receiverB.getId());
+				if (comp == 0) {
+					comp = payerA.getName().compareTo(payerB.getName());
+					if (comp == 0) {
+						comp = (int) (payerA.getId() - payerB.getId());
+					}
+				}
+			}
 			return comp;
 		}
 	};
@@ -126,13 +127,13 @@ public class SuggestClearanceActivity extends Activity {
 		Comparator<ParticipantValue> positiveComparator = new Comparator<ParticipantValue>() {
 			@Override
 			public int compare(ParticipantValue A, ParticipantValue B) {
-				return (int) (B.getValue() - A.getValue());
+				return B.getValue().compareTo(A.getValue());
 			}
 		};
 		Comparator<ParticipantValue> negativeComparator = new Comparator<ParticipantValue>() {
 			@Override
 			public int compare(ParticipantValue A, ParticipantValue B) {
-				return (int) (A.getValue() - B.getValue());
+				return A.getValue().compareTo(B.getValue());
 			}
 		};
 		PriorityQueue<ParticipantValue> positiveValues = new PriorityQueue<ParticipantValue>(
@@ -140,9 +141,9 @@ public class SuggestClearanceActivity extends Activity {
 		PriorityQueue<ParticipantValue> negativeValues = new PriorityQueue<ParticipantValue>(
 				values.size(), negativeComparator);
 		for (ParticipantValue valueInfo : values) {
-			if (valueInfo.getValue() > 0) {
+			if (valueInfo.getValue().signum() > 0) {
 				positiveValues.offer(valueInfo);
-			} else if (valueInfo.getValue() < 0) {
+			} else if (valueInfo.getValue().signum() < 0) {
 				negativeValues.offer(valueInfo);
 			}
 		}
@@ -150,18 +151,19 @@ public class SuggestClearanceActivity extends Activity {
 		while (!negativeValues.isEmpty() && !positiveValues.isEmpty()) {
 			ParticipantValue positiveValue = positiveValues.poll();
 			ParticipantValue negativeValue = negativeValues.poll();
-			long value = 0;
-			if (positiveValue.getValue() > -negativeValue.getValue()) {
-				value = -negativeValue.getValue();
-				positiveValue.setValue(positiveValue.getValue()
-						+ negativeValue.getValue());
+			BigDecimal value = BigDecimal.ZERO;
+			BigDecimal negValueAbs = negativeValue.getValue().abs();
+			if (positiveValue.getValue().compareTo(negValueAbs) > 0) {
+				value = negValueAbs;
+				positiveValue.setValue(positiveValue.getValue().add(
+						negativeValue.getValue()));
 				positiveValues.offer(positiveValue);
-			} else if (positiveValue.getValue() == -negativeValue.getValue()) {
+			} else if (positiveValue.getValue().compareTo(negValueAbs) == 0) {
 				value = positiveValue.getValue();
 			} else /* < */{
 				value = positiveValue.getValue();
-				negativeValue.setValue(negativeValue.getValue()
-						+ positiveValue.getValue());
+				negativeValue.setValue(negativeValue.getValue().add(
+						positiveValue.getValue()));
 				negativeValues.offer(negativeValue);
 			}
 			SimpleTransaction simpleTrans = new SimpleTransaction(
@@ -171,7 +173,7 @@ public class SuggestClearanceActivity extends Activity {
 		while (!negativeValues.isEmpty()) {
 			ParticipantValue negativeValue = negativeValues.poll();
 			SimpleTransaction simpleTrans = new SimpleTransaction(-1,
-					negativeValue.getId(), -negativeValue.getValue());
+					negativeValue.getId(), negativeValue.getValue().abs());
 			simpleTransactions.add(simpleTrans);
 		}
 		while (!positiveValues.isEmpty()) {
@@ -198,7 +200,7 @@ public class SuggestClearanceActivity extends Activity {
 	ClearingPerson getParticipant(long id) {
 		ClearingPerson participant = participants.get(Long.valueOf(id));
 		if (participant == null) {
-			participant = new ClearingPerson(-1, "???", 0, "");
+			participant = new ClearingPerson(-1, "???", BigDecimal.ZERO, "");
 		}
 		return participant;
 	}
@@ -250,7 +252,7 @@ public class SuggestClearanceActivity extends Activity {
 						even = !even;
 						oldId = newId;
 					}
-                    break;
+					break;
 				}
 				case SORTED_BY_RECEIVER_ID :
 				case SORTED_BY_RECEIVER_NAME : {
@@ -259,7 +261,7 @@ public class SuggestClearanceActivity extends Activity {
 						even = !even;
 						oldId = newId;
 					}
-                    break;
+					break;
 				}
 
 			}
@@ -293,7 +295,7 @@ public class SuggestClearanceActivity extends Activity {
 		try {
 			long prevPayerId = -1;
 			ClearingTransaction transaction = null;
-			long value = 0;
+			BigDecimal value = BigDecimal.ZERO;
 			for (int index = 0; index < simpleTransactions.size(); ++index) {
 				SimpleTransaction trans = simpleTransactions.get(index);
 				long payerId = trans.getPayerId();
@@ -302,30 +304,32 @@ public class SuggestClearanceActivity extends Activity {
 					continue;
 				}
 				if (transaction == null || payerId != prevPayerId) {
-                    if (transaction != null) {
-                        transaction.recomputeAndSaveChanges(db);
-                    }
+					if (transaction != null) {
+						transaction.recomputeAndSaveChanges(db);
+					}
 					transaction = db.createNewTransaction(myEventId);
-                    ClearingPerson payer = participants.get(Long.valueOf(payerId));
-                    transaction.setName(getResources().getString(R.string.sc_transaction_name)
-                            + " " + payer.getName());
-                    db.updateTransactionName(transaction);
+					ClearingPerson payer = participants.get(Long
+							.valueOf(payerId));
+					transaction.setName(getResources().getString(
+							R.string.sc_transaction_name)
+							+ " " + payer.getName());
+					db.updateTransactionName(transaction);
 					transaction.setSplitEvenly(false);
 					db.updateTransactionSplitEvenly(transaction);
 					transaction.setReceiverId(payerId);
 					db.updateTransactionReceiverId(transaction);
 					prevPayerId = payerId;
-					value = 0;
+					value = BigDecimal.ZERO;
 				}
-				value += trans.getValue();
+				value = value.add(trans.getValue());
 				transaction.setAndSaveParticipantValue(receiverId,
-						-trans.getValue(), db);
+						trans.getValue().negate(), db);
 				transaction.setAndSaveParticipantValue(payerId, value, db);
 			}
-            if (transaction != null) {
-                transaction.recomputeAndSaveChanges(db);
-            }
-        } catch (GCEventDoesNotExistException e) {
+			if (transaction != null) {
+				transaction.recomputeAndSaveChanges(db);
+			}
+		} catch (GCEventDoesNotExistException e) {
 			// TODO: Warn the user???
 		}
 		finish();

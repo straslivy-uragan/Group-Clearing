@@ -1,23 +1,25 @@
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
+
 public class ParticipantValue {
-    private long id;
-    private long value;
+	private long id;
+	private BigDecimal value;
 
-    ParticipantValue(long id, long value) {
-        this.id = id;
-        this.value = value;
-    }
+	ParticipantValue(long id, BigDecimal value) {
+		this.id = id;
+		this.value = value;
+	}
 
-    public long getId() {
-        return id;
-    }
+	public long getId() {
+		return id;
+	}
 
-    public long getValue() {
-        return value;
-    }
+	public BigDecimal getValue() {
+		return value;
+	}
 
-    public void setValue(long value) {
-        this.value = value;
-    }
+	public void setValue(BigDecimal value) {
+		this.value = value;
+	}
 }

@@ -1,5 +1,6 @@
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Currency;
 import java.util.Date;
@@ -90,12 +91,12 @@ public class TransactionEditActivity extends FragmentActivity {
 		private View base;
 		private CheckBox check;
 		private TextView participantBalanceText;
-		private long balance = 0;
+		private BigDecimal balance = BigDecimal.ZERO;
 		private long participantId = 0;
 		private int position = 0;
 
 		public ParticipantItemWrapper(View v, int aPosition,
-				long aParticipantId, String name, boolean state, long aBalance) {
+				long aParticipantId, String name, boolean state, BigDecimal aBalance) {
 			base = v;
 			participantId = aParticipantId;
 			position = aPosition;
@@ -133,14 +134,14 @@ public class TransactionEditActivity extends FragmentActivity {
 			check.setChecked(state);
 		}
 
-		void setBalance(long aBalance) {
+		void setBalance(BigDecimal aBalance) {
 			balance = aBalance;
 			participantBalanceText.setText(myApp.formatCurrencyValueWithSymbol(
 					balance, myTransaction.getCurrency()) + " ");
-			if (balance > 0) {
+			if (balance.signum() > 0) {
 				participantBalanceText
 						.setTextColor(android.graphics.Color.GREEN);
-			} else if (balance < 0) {
+			} else if (balance.signum() < 0) {
 				participantBalanceText.setTextColor(android.graphics.Color.RED);
 			} else {
 				participantBalanceText.setTextColor(getResources().getColor(
@@ -148,7 +149,7 @@ public class TransactionEditActivity extends FragmentActivity {
 			}
 		}
 
-		long getBalance() {
+		BigDecimal getBalance() {
 			return balance;
 		}
 
@@ -159,14 +160,14 @@ public class TransactionEditActivity extends FragmentActivity {
 
 	public class EditParticipantValueDialog extends DialogFragment {
 		String name = "";
-		long value = 0;
+		BigDecimal value = BigDecimal.ZERO;
 		TextView nameTextView = null;
 		EditText valueEdit = null;
 		long participantId = 0;
 		int position = 0;
 
 		public EditParticipantValueDialog(String aName, int aPosition,
-				long anId, long aValue) {
+				long anId, BigDecimal aValue) {
 			participantId = anId;
 			position = aPosition;
 			name = aName;
@@ -241,7 +242,7 @@ public class TransactionEditActivity extends FragmentActivity {
 
 		public void onComputeButtonClicked(View v) {
 			valueEdit.setText(myApp.formatCurrencyValue(
-					value + myTransaction.getBalance(),
+					value.add(myTransaction.getBalance()),
 					myTransaction.getCurrency()));
 		}
 	}
@@ -429,7 +430,7 @@ public class TransactionEditActivity extends FragmentActivity {
             String rightText = String.format(getString(R.string.re_currency_right_fmt),
                     myEvent.getDefaultCurrency().toString());
             rateRightText.setText(rightText);
-            rateEdit.setText(Double.toString(myTransaction.getRate()));
+            rateEdit.setText(myTransaction.getRate().toString());
         }
         refreshParticipants();
 	}
@@ -471,7 +472,7 @@ public class TransactionEditActivity extends FragmentActivity {
 			receiversAdapter.add(participants.get(i));
 			View rowView = inflater.inflate(
 					R.layout.trans_participants_list_item, null);
-			long value = myTransaction.getParticipantValue(participant.getId());
+			BigDecimal value = myTransaction.getParticipantValue(participant.getId());
 			ParticipantItemWrapper wrapper = new ParticipantItemWrapper(
 					rowView, i, participant.getId(), participant.getName(),
 					myTransaction.isParticipantMarked(participant.getId()),
@@ -487,9 +488,9 @@ public class TransactionEditActivity extends FragmentActivity {
 		balanceText.setText(myApp.formatCurrencyValueWithSymbol(
 				myTransaction.getBalance(), myTransaction.getCurrency())
 				+ " ");
-		if (myTransaction.getBalance() > 0) {
+		if (myTransaction.getBalance().signum() > 0) {
 			balanceText.setTextColor(android.graphics.Color.GREEN);
-		} else if (myTransaction.getBalance() < 0) {
+		} else if (myTransaction.getBalance().signum() < 0) {
 			balanceText.setTextColor(android.graphics.Color.RED);
 		} else {
 			balanceText.setTextColor(getResources().getColor(
@@ -542,9 +543,9 @@ public class TransactionEditActivity extends FragmentActivity {
 
 	public void onAmountChanged() {
 		try {
-			long newAmount = myApp.parseCurrencyValue(amountEdit.getText()
+			BigDecimal newAmount = myApp.parseCurrencyValue(amountEdit.getText()
 					.toString(), myTransaction.getCurrency());
-			if (newAmount != myTransaction.getAmount()) {
+			if (newAmount.compareTo(myTransaction.getAmount()) != 0) {
 				myTransaction.setAmount(newAmount);
 				db.updateTransactionAmount(myTransaction);
 				recomputeValues();
@@ -669,7 +670,7 @@ public class TransactionEditActivity extends FragmentActivity {
 		}
 	}
 
-	public void onValueEditorOK(int position, long participantId, long value) {
+	public void onValueEditorOK(int position, long participantId, BigDecimal value) {
 		myTransaction.setAndSaveParticipantValue(participantId, value, db);
 		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
 				myTransaction.getCurrency()));
@@ -721,9 +722,9 @@ public class TransactionEditActivity extends FragmentActivity {
             String leftText = String.format(getString(R.string.re_currency_left_fmt),
                     myTransaction.getCurrency().toString());
             rateLeftText.setText(leftText);
-            double rate = db.getDefaultRate(chosenCurrency, myEvent.getDefaultCurrency());
+            BigDecimal rate = db.getDefaultRate(chosenCurrency, myEvent.getDefaultCurrency());
             myTransaction.setRate(rate);
-            rateEdit.setText(Double.toString(rate));
+            rateEdit.setText(rate.toString());
         }
     }
 
@@ -731,13 +732,13 @@ public class TransactionEditActivity extends FragmentActivity {
         String rateText = rateEdit.getText().toString();
         rateText = rateText.replace(',', '.');
         try {
-            double newRate = Double.parseDouble(rateText);
+            BigDecimal newRate = new BigDecimal(rateText);
             myTransaction.setRate(newRate);
             db.updateTransactionRate(myTransaction);
             db.setDefaultRate(myTransaction.getCurrency(),
                     myEvent.getDefaultCurrency(), newRate);
         } catch (NumberFormatException e) {
-            rateEdit.setText(Double.toString(myTransaction.getRate()));
+            rateEdit.setText(myTransaction.getRate().toString());
         }
     }
 }

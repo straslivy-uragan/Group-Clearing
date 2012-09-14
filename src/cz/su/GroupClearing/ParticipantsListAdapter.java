@@ -1,5 +1,6 @@
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -79,9 +80,9 @@ public class ParticipantsListAdapter implements ListAdapter {
         wrapper.getBalance().setText(
                 myApp.formatCurrencyValueWithSymbol(person.getBalance(),
                     myEvent.getDefaultCurrency()) + " ");
-        if (person.getBalance() > 0) {
+        if (person.getBalance().signum() > 0) {
             wrapper.getBalance().setTextColor(android.graphics.Color.GREEN);
-        } else if (person.getBalance() < 0) {
+        } else if (person.getBalance().signum() < 0) {
             wrapper.getBalance().setTextColor(android.graphics.Color.RED);
         } else {
             wrapper.getBalance().setTextColor(context.getResources().getColor(
@@ -170,10 +171,10 @@ public class ParticipantsListAdapter implements ListAdapter {
 		notifyDataSetChanged();
 	}
 
-    public long getParticipantsValuesSum() {
-        long value = 0;
+    public BigDecimal getParticipantsValuesSum() {
+        BigDecimal value = BigDecimal.ZERO;
         for (ClearingPerson participant : participants) {
-            value += participant.getBalance();
+            value = value.add(participant.getBalance());
         }
         return value;
     }
