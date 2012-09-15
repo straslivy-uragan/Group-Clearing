@@ -252,6 +252,11 @@ public class ClearingTransaction {
             db.updateTransactionParticipantValue(eventId,
                     id, participantId, info.getValue(), info.isMarked());
         } else {
+            if (info.getValue().signum() > 0) {
+                positiveAmount = positiveAmount.subtract(info.getValue());
+            } else {
+                negativeAmount = negativeAmount.add(info.getValue());
+            }
             info.setValue(aValue);
             info.setMarked(aValue.signum() != 0);
         }
@@ -260,11 +265,6 @@ public class ClearingTransaction {
         if (splitEvenly) {
             splitEvenly = false;
             db.updateTransactionSplitEvenly(this);
-        }
-        if (info.getValue().signum() > 0) {
-            positiveAmount = positiveAmount.subtract(info.getValue());
-        } else {
-            negativeAmount = negativeAmount.add(info.getValue());
         }
         if (aValue.signum() > 0) {
             positiveAmount = positiveAmount.add(aValue);

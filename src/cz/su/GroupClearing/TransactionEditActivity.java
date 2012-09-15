@@ -725,6 +725,7 @@ public class TransactionEditActivity extends FragmentActivity {
             BigDecimal rate = db.getDefaultRate(chosenCurrency, myEvent.getDefaultCurrency());
             myTransaction.setRate(rate);
             rateEdit.setText(rate.toString());
+            recomputeValues();
         }
     }
 
