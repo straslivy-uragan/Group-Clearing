@@ -5,6 +5,7 @@
 package cz.su.GroupClearing;
 
 import java.math.BigDecimal;
+import java.util.SortedMap;
 
 /**
  * @author su
@@ -18,10 +19,11 @@ import java.math.BigDecimal;
  * too. Among other it concerns current balance
  */
 public class ClearingPerson implements Comparable<ClearingPerson> {
-   private long id;
+   private final long id;
    private String name;
    private String note;
-   private BigDecimal balance;
+   private BigDecimal balance = BigDecimal.ZERO;
+   private SortedMap<String, BigDecimal> allBalances = null;
 
    public BigDecimal getBalance() {
        if (balance == null) {
@@ -32,6 +34,15 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
    public void setBalance(BigDecimal balance) {
       this.balance = balance;
    }
+   
+   public void setAllBalances(SortedMap<String, BigDecimal> allBalances) {
+       this.allBalances = allBalances;
+   }
+
+   public SortedMap<String, BigDecimal> getAllBalances() {
+       return allBalances;
+   }
+   
    /**
     * @param id
     */
@@ -57,6 +68,17 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
       this.note = (note != null ? note : "");
       this.balance = balance;
    }
+
+   public ClearingPerson(long id, String name,
+         SortedMap<String, BigDecimal> allBalances, String note) {
+      super();
+      this.id = id;
+      this.name = (name != null ? name : "");
+      this.note = (note != null ? note : "");
+      this.allBalances = allBalances;
+      balance = BigDecimal.ZERO;
+   }
+
    /**
     * @return the note
     */
@@ -93,7 +115,8 @@ public class ClearingPerson implements Comparable<ClearingPerson> {
          return name;
       }
 
-   public int compareTo(ClearingPerson otherPerson) {
+   @Override
+public int compareTo(ClearingPerson otherPerson) {
       if (otherPerson == null)
       {
          return 1;

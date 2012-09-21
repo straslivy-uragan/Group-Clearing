@@ -53,14 +53,15 @@ public class TransactionEditActivity extends FragmentActivity {
 	private ClearingTransaction myTransaction = null;
 	private GCDatabase db = null;
 	private ClearingPerson noReceiver = null;
-	private GroupClearingApplication myApp = GroupClearingApplication.getInstance();
+	private final GroupClearingApplication myApp = GroupClearingApplication
+			.getInstance();
 	private TextView balanceText = null;
-    private Spinner currencySpinner = null;
-    private ClearingEvent myEvent = null;
-    private LinearLayout rateEditorLine = null;
-    private TextView rateLeftText = null;
-    private TextView rateRightText = null;
-    private EditText rateEdit = null;
+	private Spinner currencySpinner = null;
+	private ClearingEvent myEvent = null;
+	private LinearLayout rateEditorLine = null;
+	private TextView rateLeftText = null;
+	private TextView rateRightText = null;
+	private EditText rateEdit = null;
 
 	private static final int DATE_PICK_DIALOG_ID = 0;
 
@@ -73,8 +74,9 @@ public class TransactionEditActivity extends FragmentActivity {
 		}
 	};
 
-	public class ReceiverSpinnerOnItemSelected implements
-			OnItemSelectedListener {
+	public class ReceiverSpinnerOnItemSelected
+			implements
+				OnItemSelectedListener {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View view, int pos,
 				long id) {
@@ -96,7 +98,8 @@ public class TransactionEditActivity extends FragmentActivity {
 		private int position = 0;
 
 		public ParticipantItemWrapper(View v, int aPosition,
-				long aParticipantId, String name, boolean state, BigDecimal aBalance) {
+				long aParticipantId, String name, boolean state,
+				BigDecimal aBalance) {
 			base = v;
 			participantId = aParticipantId;
 			position = aPosition;
@@ -246,7 +249,7 @@ public class TransactionEditActivity extends FragmentActivity {
 					myTransaction.getCurrency()));
 		}
 	}
-	
+
 	public final static String EDIT_PARTICIPANT_VALUE_DLG_TAG = "edit_participant_value_dialog";
 	public final static String SPLIT_WARNING_TAG = "split_warning_dialog";
 
@@ -256,11 +259,11 @@ public class TransactionEditActivity extends FragmentActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        if (myApp.getSupportMultipleCurrencies()) {
-            setContentView(R.layout.transaction_edit);
-        } else {
-            setContentView(R.layout.transaction_edit_nocurrency);
-        }
+		if (myApp.getSupportMultipleCurrencies()) {
+			setContentView(R.layout.transaction_edit);
+		} else {
+			setContentView(R.layout.transaction_edit_nocurrency);
+		}
 		inflater = (LayoutInflater) this
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		balanceText = (TextView) findViewById(R.id.transaction_balance);
@@ -338,54 +341,53 @@ public class TransactionEditActivity extends FragmentActivity {
 		myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
 		myTransactionId = getIntent().getLongExtra(
 				"cz.su.GroupClearing.TransactionId", -1);
-        db = new GCDatabase(this);
+		db = new GCDatabase(this);
 		myEvent = db.readEventWithId(myEventId);
 		noReceiver = new ClearingPerson(-1);
 		noReceiver.setName(getString(R.string.transaction_no_receiver));
-        if (myApp.getSupportMultipleCurrencies()) {
-            currencySpinner = (Spinner) findViewById(R.id.trans_currency_spinner);
-            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                    this, R.array.currency_names,
-                    android.R.layout.simple_spinner_item);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            currencySpinner.setAdapter(adapter);
-            currencySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, 
-                        View view, int pos, long id) {
-                    onCurrencySelected(pos, id);
-                    }
+		if (myApp.getSupportMultipleCurrencies()) {
+			currencySpinner = (Spinner) findViewById(R.id.trans_currency_spinner);
+			ArrayAdapter<CharSequence> adapter = ArrayAdapter
+					.createFromResource(this, R.array.currency_names,
+							android.R.layout.simple_spinner_item);
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			currencySpinner.setAdapter(adapter);
+			currencySpinner
+					.setOnItemSelectedListener(new OnItemSelectedListener() {
+						@Override
+						public void onItemSelected(AdapterView<?> parent,
+								View view, int pos, long id) {
+							onCurrencySelected(pos, id);
+						}
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                    }
-                    );
-            rateEditorLine = (LinearLayout) findViewById(R.id.trans_rate_editor);
-            rateLeftText = (TextView) findViewById(R.id.trans_re_left_text);
-            rateRightText = (TextView) findViewById(R.id.trans_re_right_text);
-            rateEdit = (EditText) findViewById(R.id.trans_re_edit);
-            rateEdit
-                .setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                        @Override
-                        public boolean onEditorAction(TextView v, int actionId,
-                            KeyEvent event) {
-                        if (actionId == EditorInfo.IME_ACTION_DONE) {
-                        onRateChanged();
-                        }
-                        return false;
-                        }
-                        });
-            rateEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
-                    @Override
-                    public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                    onRateChanged();
-                    }
-                    }
-                    });
-        }
-    }
+						@Override
+						public void onNothingSelected(AdapterView<?> parent) {
+						}
+					});
+			rateEditorLine = (LinearLayout) findViewById(R.id.trans_rate_editor);
+			rateLeftText = (TextView) findViewById(R.id.trans_re_left_text);
+			rateRightText = (TextView) findViewById(R.id.trans_re_right_text);
+			rateEdit = (EditText) findViewById(R.id.trans_re_edit);
+			rateEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+				@Override
+				public boolean onEditorAction(TextView v, int actionId,
+						KeyEvent event) {
+					if (actionId == EditorInfo.IME_ACTION_DONE) {
+						onRateChanged();
+					}
+					return false;
+				}
+			});
+			rateEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
+				@Override
+				public void onFocusChange(View v, boolean hasFocus) {
+					if (!hasFocus) {
+						onRateChanged();
+					}
+				}
+			});
+		}
+	}
 
 	@Override
 	protected void onResume() {
@@ -417,22 +419,24 @@ public class TransactionEditActivity extends FragmentActivity {
 		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
 		amountEdit.setEnabled(myTransaction.getSplitEvenly());
 		receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
-        if (myApp.getSupportMultipleCurrencies()) {
-            CurrencyList cl = CurrencyList.getInstance();
-            Currency cur = myTransaction.getCurrency();
-            String currencyCode = cur.toString();
-            currencySpinner.setSelection(cl.getPosition(currencyCode));
-            rateEditorLine.setVisibility(cur.equals(myEvent.getDefaultCurrency())
-                    ? View.GONE : View.VISIBLE);
-            String leftText = String.format(getString(R.string.re_currency_left_fmt),
-                    myTransaction.getCurrency().toString());
-            rateLeftText.setText(leftText);
-            String rightText = String.format(getString(R.string.re_currency_right_fmt),
-                    myEvent.getDefaultCurrency().toString());
-            rateRightText.setText(rightText);
-            rateEdit.setText(myTransaction.getRate().toString());
-        }
-        refreshParticipants();
+		if (myApp.getSupportMultipleCurrencies()) {
+			CurrencyList cl = CurrencyList.getInstance();
+			Currency cur = myTransaction.getCurrency();
+			String currencyCode = cur.toString();
+			currencySpinner.setSelection(cl.getPosition(currencyCode));
+			rateEditorLine.setVisibility(cur.equals(myEvent
+					.getDefaultCurrency()) ? View.GONE : View.VISIBLE);
+			String leftText = String.format(
+					getString(R.string.re_currency_left_fmt), myTransaction
+							.getCurrency().toString());
+			rateLeftText.setText(leftText);
+			String rightText = String.format(
+					getString(R.string.re_currency_right_fmt), myEvent
+							.getDefaultCurrency().toString());
+			rateRightText.setText(rightText);
+			rateEdit.setText(myTransaction.getRate().toString());
+		}
+		refreshParticipants();
 	}
 
 	@Override
@@ -457,7 +461,8 @@ public class TransactionEditActivity extends FragmentActivity {
 	}
 
 	public void refreshParticipants() {
-		participants = db.readParticipantsOfEvent(myEventId);
+		participants = db.readParticipantsOfEvent(myEventId,
+				GCDatabase.ComputeBalance.DO_NOT_COMPUTE);
 		participantWrappers = new Vector<ParticipantItemWrapper>(
 				participants.size());
 		receiversAdapter.clear();
@@ -472,7 +477,8 @@ public class TransactionEditActivity extends FragmentActivity {
 			receiversAdapter.add(participants.get(i));
 			View rowView = inflater.inflate(
 					R.layout.trans_participants_list_item, null);
-			BigDecimal value = myTransaction.getParticipantValue(participant.getId());
+			BigDecimal value = myTransaction.getParticipantValue(participant
+					.getId());
 			ParticipantItemWrapper wrapper = new ParticipantItemWrapper(
 					rowView, i, participant.getId(), participant.getName(),
 					myTransaction.isParticipantMarked(participant.getId()),
@@ -543,8 +549,8 @@ public class TransactionEditActivity extends FragmentActivity {
 
 	public void onAmountChanged() {
 		try {
-			BigDecimal newAmount = myApp.parseCurrencyValue(amountEdit.getText()
-					.toString(), myTransaction.getCurrency());
+			BigDecimal newAmount = myApp.parseCurrencyValue(amountEdit
+					.getText().toString(), myTransaction.getCurrency());
 			if (newAmount.compareTo(myTransaction.getAmount()) != 0) {
 				myTransaction.setAmount(newAmount);
 				db.updateTransactionAmount(myTransaction);
@@ -572,10 +578,10 @@ public class TransactionEditActivity extends FragmentActivity {
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
-		case DATE_PICK_DIALOG_ID:
-			return new DatePickerDialog(this, dateSetListener,
-					myTransaction.getYear(), myTransaction.getMonth(),
-					myTransaction.getDayOfMonth());
+			case DATE_PICK_DIALOG_ID :
+				return new DatePickerDialog(this, dateSetListener,
+						myTransaction.getYear(), myTransaction.getMonth(),
+						myTransaction.getDayOfMonth());
 		}
 		return null;
 	}
@@ -670,7 +676,8 @@ public class TransactionEditActivity extends FragmentActivity {
 		}
 	}
 
-	public void onValueEditorOK(int position, long participantId, BigDecimal value) {
+	public void onValueEditorOK(int position, long participantId,
+			BigDecimal value) {
 		myTransaction.setAndSaveParticipantValue(participantId, value, db);
 		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
 				myTransaction.getCurrency()));
@@ -686,60 +693,59 @@ public class TransactionEditActivity extends FragmentActivity {
 		wrapper.setCheckState(myTransaction.isParticipantMarked(participantId));
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.transaction_edit_menu, menu);
+		return true;
+	}
 
-   @Override
-      public boolean onCreateOptionsMenu(Menu menu) {
-         MenuInflater inflater = getMenuInflater();
-         inflater.inflate(R.menu.transaction_edit_menu, menu);
-         return true;
-      }
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+		switch (item.getItemId()) {
+			case R.id.menu_trans_delete : {
+				db.deleteTransactionWithId(myTransactionId);
+				finish();
+				return true;
+			}
+			default :
+				return super.onOptionsItemSelected(item);
+		}
+	}
 
-   @Override
-      public boolean onOptionsItemSelected(MenuItem item) {
-         // Handle item selection
-         switch (item.getItemId()) {
-             case R.id.menu_trans_delete:
-               {
-                  db.deleteTransactionWithId(myTransactionId); 
-                  finish();
-                  return true;
-               }
-            default:
-               return super.onOptionsItemSelected(item);
-         }
-      }
+	void onCurrencySelected(int position, long id) {
+		CurrencyList cl = CurrencyList.getInstance();
+		Currency chosenCurrency = cl.getCurrency(position);
+		Currency oldCurrency = myTransaction.getCurrency();
+		if (oldCurrency == null || !oldCurrency.equals(chosenCurrency)) {
+			myTransaction.setCurrency(chosenCurrency);
+			db.updateTransactionCurrency(myTransaction);
+			rateEditorLine.setVisibility(chosenCurrency.equals(myEvent
+					.getDefaultCurrency()) ? View.GONE : View.VISIBLE);
+			String leftText = String.format(
+					getString(R.string.re_currency_left_fmt), myTransaction
+							.getCurrency().toString());
+			rateLeftText.setText(leftText);
+			BigDecimal rate = db.getDefaultRate(chosenCurrency,
+					myEvent.getDefaultCurrency());
+			myTransaction.setRate(rate);
+			rateEdit.setText(rate.toString());
+			recomputeValues();
+		}
+	}
 
-    void onCurrencySelected(int position, long id) {
-        CurrencyList cl = CurrencyList.getInstance();
-        Currency chosenCurrency = cl.getCurrency(position);
-        Currency oldCurrency = myTransaction.getCurrency();
-        if (oldCurrency == null || !oldCurrency.equals(chosenCurrency)) {
-            myTransaction.setCurrency(chosenCurrency);
-            db.updateTransactionCurrency(myTransaction);
-            rateEditorLine.setVisibility(
-                    chosenCurrency.equals(myEvent.getDefaultCurrency())
-                    ? View.GONE : View.VISIBLE);
-            String leftText = String.format(getString(R.string.re_currency_left_fmt),
-                    myTransaction.getCurrency().toString());
-            rateLeftText.setText(leftText);
-            BigDecimal rate = db.getDefaultRate(chosenCurrency, myEvent.getDefaultCurrency());
-            myTransaction.setRate(rate);
-            rateEdit.setText(rate.toString());
-            recomputeValues();
-        }
-    }
-
-    public void onRateChanged() {
-        String rateText = rateEdit.getText().toString();
-        rateText = rateText.replace(',', '.');
-        try {
-            BigDecimal newRate = new BigDecimal(rateText);
-            myTransaction.setRate(newRate);
-            db.updateTransactionRate(myTransaction);
-            db.setDefaultRate(myTransaction.getCurrency(),
-                    myEvent.getDefaultCurrency(), newRate);
-        } catch (NumberFormatException e) {
-            rateEdit.setText(myTransaction.getRate().toString());
-        }
-    }
+	public void onRateChanged() {
+		String rateText = rateEdit.getText().toString();
+		rateText = rateText.replace(',', '.');
+		try {
+			BigDecimal newRate = new BigDecimal(rateText);
+			myTransaction.setRate(newRate);
+			db.updateTransactionRate(myTransaction);
+			db.setDefaultRate(myTransaction.getCurrency(),
+					myEvent.getDefaultCurrency(), newRate);
+		} catch (NumberFormatException e) {
+			rateEdit.setText(myTransaction.getRate().toString());
+		}
+	}
 }

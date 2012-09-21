@@ -1,11 +1,11 @@
 package cz.su.GroupClearing;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Vector;
-import java.math.BigDecimal;
 
 import android.app.Activity;
 import android.content.Context;
@@ -185,7 +185,8 @@ public class SuggestClearanceActivity extends Activity {
 	}
 
 	void readParticipants() {
-		Vector<ClearingPerson> persons = db.readParticipantsOfEvent(myEventId);
+		Vector<ClearingPerson> persons = db.readParticipantsOfEvent(myEventId,
+				GCDatabase.ComputeBalance.COMPUTE_CUMULATIVE);
 		if (participants == null) {
 			participants = new HashMap<Long, ClearingPerson>(persons.size());
 		} else {
@@ -322,8 +323,8 @@ public class SuggestClearanceActivity extends Activity {
 					value = BigDecimal.ZERO;
 				}
 				value = value.add(trans.getValue());
-				transaction.setAndSaveParticipantValue(receiverId,
-						trans.getValue().negate(), db);
+				transaction.setAndSaveParticipantValue(receiverId, trans
+						.getValue().negate(), db);
 				transaction.setAndSaveParticipantValue(payerId, value, db);
 			}
 			if (transaction != null) {

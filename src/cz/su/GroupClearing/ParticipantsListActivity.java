@@ -1,16 +1,22 @@
 package cz.su.GroupClearing;
 
 import java.math.BigDecimal;
+import java.util.Currency;
+import java.util.Map;
+import java.util.SortedMap;
 
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -29,6 +36,7 @@ public class ParticipantsListActivity extends FragmentActivity {
    private long myEventId = -1;
    private ParticipantsListAdapter participantsListAdapter = null;
    private TextView sumValueText = null;
+   private LinearLayout sumList = null;
    private final GroupClearingApplication myApp
        = GroupClearingApplication.getInstance();
    // private EditParticipantDialog editParticipantDialog = null;
@@ -94,7 +102,13 @@ public class ParticipantsListActivity extends FragmentActivity {
    @Override
       public void onCreate(Bundle savedInstanceState) {
          super.onCreate(savedInstanceState);
-         setContentView(R.layout.participants_list);
+         if (myApp.getConvertToEventCurrency()) {
+             setContentView(R.layout.participants_list);
+             sumValueText = (TextView) findViewById(R.id.pl_sum_value);
+         } else {
+             setContentView(R.layout.participants_list_multc);
+             sumList = (LinearLayout) findViewById(R.id.pl_sum_list);
+         }
          ListView lv = (ListView) findViewById(R.id.participants_list_view);
          lv.setOnItemClickListener(new OnItemClickListener() {
                @Override
@@ -107,7 +121,6 @@ public class ParticipantsListActivity extends FragmentActivity {
          participantsListAdapter = new ParticipantsListAdapter(this, myEventId);
          lv.setAdapter(participantsListAdapter);
          registerForContextMenu(lv);
-         sumValueText = (TextView) findViewById(R.id.pl_sum_value);
       }
 
    @Override
@@ -157,19 +170,71 @@ public class ParticipantsListActivity extends FragmentActivity {
    public void onNameEditorCancelled(final int position) {
    }
 
+   private void setBalanceText() {
+	   if (sumValueText == null) {
+		   return;
+	   }
+       BigDecimal value = participantsListAdapter.getParticipantsValuesSum();
+       String text = myApp.formatCurrencyValueWithSymbol(value,
+               participantsListAdapter.getEvent().getDefaultCurrency());
+       sumValueText.setText(text + " ");
+       if (value.signum() > 0) {
+           sumValueText.setTextColor(android.graphics.Color.GREEN);
+       } else if (value.signum() < 0) {
+           sumValueText.setTextColor(android.graphics.Color.RED);
+       } else {
+           sumValueText.setTextColor(getResources().getColor(
+                       android.R.color.primary_text_dark));
+       }
+   }
+
+   private void setAllBalanceTexts() {
+	   if (sumList == null) {
+		   return;
+	   }
+       SortedMap<String, BigDecimal> sums =
+           participantsListAdapter.getAllParticipantsValuesSums();
+       int index = 0;
+       for (Map.Entry<String, BigDecimal> entry : sums.entrySet()) {
+           TextView curText = null;
+           if (index < sumList.getChildCount()) {
+               curText = (TextView) sumList.getChildAt(index);
+           } else {
+               curText = new TextView(this);
+               curText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+               curText.setTypeface(Typeface.DEFAULT, Typeface.ITALIC);
+               LinearLayout.LayoutParams params = new
+                   LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                           ViewGroup.LayoutParams.MATCH_PARENT);
+               params.gravity = Gravity.RIGHT;
+               sumList.addView(curText, params);
+           }
+           String text = myApp.formatCurrencyValueWithSymbol(entry.getValue(),
+                   Currency.getInstance(entry.getKey()));
+           curText.setText(text + " ");
+           if (entry.getValue().signum() > 0) {
+               curText.setTextColor(android.graphics.Color.GREEN);
+           } else if (entry.getValue().signum() < 0) {
+               curText.setTextColor(android.graphics.Color.RED);
+           } else {
+               curText.setTextColor(getResources().getColor(
+                           android.R.color.primary_text_dark));
+           }
+           ++ index;
+       }
+       if (index + 1 < sumList.getChildCount()) {
+           sumList.removeViews(index + 1, sumList.getChildCount() - index
+                   - 1);
+
+       }
+   }
+
    public void refreshData() {
       participantsListAdapter.readParticipantsFromDB();
-      BigDecimal value = participantsListAdapter.getParticipantsValuesSum();
-      String text = myApp.formatCurrencyValueWithSymbol(value,
-              participantsListAdapter.getEvent().getDefaultCurrency());
-      sumValueText.setText(text + " ");
-      if (value.signum() > 0) {
-          sumValueText.setTextColor(android.graphics.Color.GREEN);
-      } else if (value.signum() < 0) {
-          sumValueText.setTextColor(android.graphics.Color.RED);
+      if (myApp.getConvertToEventCurrency()) {
+          setBalanceText();
       } else {
-          sumValueText.setTextColor(getResources().getColor(
-                      android.R.color.primary_text_dark));
+          setAllBalanceTexts();
       }
    }
 

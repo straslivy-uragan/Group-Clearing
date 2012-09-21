@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Currency;
 import java.util.Date;
 import java.util.Locale;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import android.content.ContentValues;
@@ -16,6 +18,9 @@ import android.database.sqlite.SQLiteDatabase;
 public class GCDatabase {
 	private SQLiteDatabase db;
 	private final SimpleDateFormat dateFormat;
+
+    public enum ComputeBalance {DO_NOT_COMPUTE, COMPUTE_CUMULATIVE,
+        COMPUTE_ALL};
 
 	public GCDatabase(Context context) {
 		db = (new GCDatabaseHelper(context)).getWritableDatabase();
@@ -260,25 +265,67 @@ public class GCDatabase {
                 personId,
                 GCDatabaseHelper.TTPColumns.value.name(),
                 GCDatabaseHelper.TTPColumns.marked.name());
-        Cursor sumCursor = db.rawQuery(query, null);
-		sumCursor.moveToFirst();
+        Cursor valuesCursor = db.rawQuery(query, null);
+		valuesCursor.moveToFirst();
         BigDecimal amount = BigDecimal.ZERO;
-		while (!sumCursor.isAfterLast()) {
-            BigDecimal value = new BigDecimal(sumCursor.getString(0));
-            String currencyName = sumCursor.getString(1);
-            BigDecimal rate = new BigDecimal(sumCursor.getString(2));
+		while (!valuesCursor.isAfterLast()) {
+            BigDecimal value = new BigDecimal(valuesCursor.getString(0));
+            String currencyName = valuesCursor.getString(1);
+            BigDecimal rate = new BigDecimal(valuesCursor.getString(2));
             if (eventCurrencyName.compareTo(currencyName) == 0) {
                 amount = amount.add(value);
             } else {
                 BigDecimal mult = value.multiply(rate);
                 amount = amount.add(mult);
             }
-            sumCursor.moveToNext();
+            valuesCursor.moveToNext();
 		}
 		return amount;
 	}
 
-	public Vector<ClearingPerson> readParticipantsOfEvent(long eventId) {
+    public SortedMap<String, BigDecimal>
+        computeAllBalancesOfPerson(long eventId, long personId) {
+        String query = String.format(
+                "SELECT %s, %s FROM %s INNER JOIN %s ON %s.%s=%s.%s AND %s.%s=%s.%s WHERE %s.%s=%d AND %s.%s=%d AND %s<>0 AND %s<>0",
+                GCDatabaseHelper.TTPColumns.value.name(),
+                GCDatabaseHelper.TTColumns.currency.name(),
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TABLE_TRANSACTIONS,
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TTPColumns.event_id.name(),
+                GCDatabaseHelper.TABLE_TRANSACTIONS,
+                GCDatabaseHelper.TTColumns.event_id.name(),
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TTPColumns.transaction_id.name(),
+                GCDatabaseHelper.TABLE_TRANSACTIONS,
+                GCDatabaseHelper.TTColumns.id.name(),
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TTPColumns.event_id.name(),
+                eventId,
+                GCDatabaseHelper.TABLE_TRANSACTION_PARTICIPANTS,
+                GCDatabaseHelper.TTPColumns.participant_id.name(),
+                personId,
+                GCDatabaseHelper.TTPColumns.value.name(),
+                GCDatabaseHelper.TTPColumns.marked.name());
+        Cursor valuesCursor = db.rawQuery(query, null);
+        TreeMap<String, BigDecimal> amounts = new TreeMap<String, BigDecimal>();
+		valuesCursor.moveToFirst();
+        while(!valuesCursor.isAfterLast()) {
+            BigDecimal value = new BigDecimal(valuesCursor.getString(0));
+            String currencyName = valuesCursor.getString(1);
+            BigDecimal oldValue = amounts.get(currencyName);
+            if (oldValue == null) {
+                amounts.put(currencyName, value);
+            } else {
+                amounts.put(currencyName, oldValue.add(value));
+            }
+            valuesCursor.moveToNext();
+        }
+        return amounts;
+    }
+
+	public Vector<ClearingPerson> readParticipantsOfEvent(long eventId,
+            ComputeBalance computeBalance) {
 		String whereClause = String.format("%s=%d",
 				GCDatabaseHelper.TPColumns.event_id.name(), eventId);
 		Cursor result = db.query(GCDatabaseHelper.TABLE_PERSONS,
@@ -288,11 +335,24 @@ public class GCDatabase {
 		result.moveToFirst();
 		while (!result.isAfterLast()) {
 			ClearingPerson person = new ClearingPerson(result
-					.getInt(GCDatabaseHelper.TPColumns.id.ordinal()), result
-					.getString(GCDatabaseHelper.TPColumns.name.ordinal()),
+					.getInt(GCDatabaseHelper.TPColumns.id.ordinal()));
+            person.setName(result
+					.getString(GCDatabaseHelper.TPColumns.name.ordinal()));
+            person.setNote(result.getString(GCDatabaseHelper.TPColumns.note.ordinal()));
+            switch(computeBalance) {
+                case DO_NOT_COMPUTE:
+                    break;
+                case COMPUTE_CUMULATIVE:
+                    person.setBalance(
 					computeBalanceOfPerson(eventId, result
-							.getInt(GCDatabaseHelper.TPColumns.id.ordinal())),
-					result.getString(GCDatabaseHelper.TPColumns.note.ordinal()));
+							.getInt(GCDatabaseHelper.TPColumns.id.ordinal())));
+                        break;
+                case COMPUTE_ALL:
+                        person.setAllBalances(
+                                computeAllBalancesOfPerson(eventId,
+                                    result.getInt(GCDatabaseHelper.TPColumns.id.ordinal())));
+                        break;
+            };
 			participants.add(person);
 			result.moveToNext();
 		}
