@@ -3,8 +3,11 @@ package cz.su.GroupClearing;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Currency;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.SortedMap;
 import java.util.Vector;
 
 import android.app.Activity;
@@ -38,6 +41,9 @@ public class SuggestClearanceActivity extends Activity {
 	Comparator<SimpleTransaction> payerIdComparator = new Comparator<SimpleTransaction>() {
 		@Override
 		public int compare(SimpleTransaction A, SimpleTransaction B) {
+            if (!A.getCurrency().equals(B.getCurrency())) {
+                return A.getCurrency().toString().compareTo(B.getCurrency().toString());
+            }
 			return (int) (A.getPayerId() - B.getPayerId());
 		}
 	};
@@ -45,6 +51,9 @@ public class SuggestClearanceActivity extends Activity {
 	Comparator<SimpleTransaction> payerNameComparator = new Comparator<SimpleTransaction>() {
 		@Override
 		public int compare(SimpleTransaction A, SimpleTransaction B) {
+            if (!A.getCurrency().equals(B.getCurrency())) {
+                return A.getCurrency().toString().compareTo(B.getCurrency().toString());
+            }
 			ClearingPerson payerA = participants.get(Long.valueOf(A
 					.getPayerId()));
 			ClearingPerson payerB = participants.get(Long.valueOf(B
@@ -70,6 +79,9 @@ public class SuggestClearanceActivity extends Activity {
 	Comparator<SimpleTransaction> receiverIdComparator = new Comparator<SimpleTransaction>() {
 		@Override
 		public int compare(SimpleTransaction A, SimpleTransaction B) {
+            if (!A.getCurrency().equals(B.getCurrency())) {
+                return A.getCurrency().toString().compareTo(B.getCurrency().toString());
+            }
 			return (int) (A.getReceiverId() - B.getReceiverId());
 		}
 	};
@@ -77,6 +89,9 @@ public class SuggestClearanceActivity extends Activity {
 	Comparator<SimpleTransaction> receiverNameComparator = new Comparator<SimpleTransaction>() {
 		@Override
 		public int compare(SimpleTransaction A, SimpleTransaction B) {
+            if (!A.getCurrency().equals(B.getCurrency())) {
+                return A.getCurrency().toString().compareTo(B.getCurrency().toString());
+            }
 			ClearingPerson payerA = participants.get(Long.valueOf(A
 					.getPayerId()));
 			ClearingPerson payerB = participants.get(Long.valueOf(B
@@ -106,6 +121,7 @@ public class SuggestClearanceActivity extends Activity {
 		myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
 		sctable = (TableLayout) findViewById(R.id.sctable);
 		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		simpleTransactions = new Vector<SimpleTransaction>();
 	}
 
 	@Override
@@ -115,15 +131,18 @@ public class SuggestClearanceActivity extends Activity {
 			db = new GCDatabase(this);
 		}
 		myEvent = db.readEventWithId(myEventId);
-		computeClearanceSuggestion();
+		if (myApp.getConvertToEventCurrency()) {
+			computeClearanceSuggestion();
+		} else {
+			computeClearPerCurrencySuggestion();
+		}
 		readParticipants();
 		sortByPayerName();
 		fillTableRows();
 	}
 
-	void computeClearanceSuggestion() {
-		Vector<ParticipantValue> values = db
-				.readEventParticipantValues(myEventId);
+	void computeClearanceWithCurrency(Currency currency,
+			Vector<ParticipantValue> values) {
 		Comparator<ParticipantValue> positiveComparator = new Comparator<ParticipantValue>() {
 			@Override
 			public int compare(ParticipantValue A, ParticipantValue B) {
@@ -147,7 +166,6 @@ public class SuggestClearanceActivity extends Activity {
 				negativeValues.offer(valueInfo);
 			}
 		}
-		simpleTransactions = new Vector<SimpleTransaction>();
 		while (!negativeValues.isEmpty() && !positiveValues.isEmpty()) {
 			ParticipantValue positiveValue = positiveValues.poll();
 			ParticipantValue negativeValue = negativeValues.poll();
@@ -167,21 +185,41 @@ public class SuggestClearanceActivity extends Activity {
 				negativeValues.offer(negativeValue);
 			}
 			SimpleTransaction simpleTrans = new SimpleTransaction(
-					positiveValue.getId(), negativeValue.getId(), value);
+					positiveValue.getId(), negativeValue.getId(), value,
+					currency);
 			simpleTransactions.add(simpleTrans);
 		}
 		while (!negativeValues.isEmpty()) {
 			ParticipantValue negativeValue = negativeValues.poll();
 			SimpleTransaction simpleTrans = new SimpleTransaction(-1,
-					negativeValue.getId(), negativeValue.getValue().abs());
+					negativeValue.getId(), negativeValue.getValue().abs(),
+					currency);
 			simpleTransactions.add(simpleTrans);
 		}
 		while (!positiveValues.isEmpty()) {
 			ParticipantValue positiveValue = positiveValues.poll();
 			SimpleTransaction simpleTrans = new SimpleTransaction(-1,
-					positiveValue.getId(), positiveValue.getValue());
+					positiveValue.getId(), positiveValue.getValue(), currency);
 			simpleTransactions.add(simpleTrans);
 		}
+	}
+
+	void computeClearPerCurrencySuggestion() {
+		SortedMap<String, Vector<ParticipantValue>> values = db
+				.readEventParticipantValuesPerCurrency(myEventId);
+		simpleTransactions.clear();
+		for (Map.Entry<String, Vector<ParticipantValue>> entry : values
+				.entrySet()) {
+			computeClearanceWithCurrency(Currency.getInstance(entry.getKey()),
+					entry.getValue());
+		}
+	}
+
+	void computeClearanceSuggestion() {
+		Vector<ParticipantValue> values = db
+				.readEventParticipantValues(myEventId);
+		simpleTransactions.clear();
+		computeClearanceWithCurrency(myEvent.getDefaultCurrency(), values);
 	}
 
 	void readParticipants() {
@@ -232,7 +270,7 @@ public class SuggestClearanceActivity extends Activity {
 		receiver_text.setText(receiver.getName());
 		TextView amount = (TextView) row.findViewById(R.id.sctable_row_amount);
 		amount.setText(myApp.formatCurrencyValueWithSymbol(
-				transaction.getValue(), myEvent.getDefaultCurrency()));
+				transaction.getValue(), transaction.getCurrency()));
 		return row;
 	}
 
@@ -295,6 +333,7 @@ public class SuggestClearanceActivity extends Activity {
 		sortByPayerId();
 		try {
 			long prevPayerId = -1;
+            Currency prevCurrency = null;
 			ClearingTransaction transaction = null;
 			BigDecimal value = BigDecimal.ZERO;
 			for (int index = 0; index < simpleTransactions.size(); ++index) {
@@ -304,21 +343,31 @@ public class SuggestClearanceActivity extends Activity {
 				if (payerId < 0 || receiverId < 0) {
 					continue;
 				}
-				if (transaction == null || payerId != prevPayerId) {
+				if (transaction == null || payerId != prevPayerId ||
+                        prevCurrency == null ||
+                        !prevCurrency.equals(trans.getCurrency())) {
 					if (transaction != null) {
 						transaction.recomputeAndSaveChanges(db);
 					}
 					transaction = db.createNewTransaction(myEventId);
 					ClearingPerson payer = participants.get(Long
 							.valueOf(payerId));
-					transaction.setName(getResources().getString(
-							R.string.sc_transaction_name)
-							+ " " + payer.getName());
-					db.updateTransactionName(transaction);
+                    if (myApp.getConvertToEventCurrency()) {
+                        transaction.setName(getResources().getString(
+                                    R.string.sc_transaction_name)
+                                + " " + payer.getName());
+                     } else {
+                         transaction.setName(getResources().getString(
+                                     R.string.sc_transaction_name)
+                                 + " " + trans.getCurrency().toString()
+                                 + ": " + payer.getName());
+                    }
 					transaction.setSplitEvenly(false);
-					db.updateTransactionSplitEvenly(transaction);
 					transaction.setReceiverId(payerId);
-					db.updateTransactionReceiverId(transaction);
+                    transaction.setCurrency(trans.getCurrency());
+                    transaction.setRate(db.getDefaultRate(trans.getCurrency(),
+                                myEvent.getDefaultCurrency()));
+                    db.updateTransaction(transaction);
 					prevPayerId = payerId;
 					value = BigDecimal.ZERO;
 				}

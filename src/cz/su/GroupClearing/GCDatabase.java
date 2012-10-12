@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Currency;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -753,8 +754,8 @@ public class GCDatabase {
 	public Vector<ParticipantValue> readEventParticipantValues(long eventId) {
 		String whereClause = String.format("%s=%d",
 				GCDatabaseHelper.TPColumns.event_id.name(), eventId);
-		final String[] TABLE_PERSONS_ID_COLUMN = {GCDatabaseHelper.TPColumns.id
-				.name()};
+		final String[] TABLE_PERSONS_ID_COLUMN = {
+            GCDatabaseHelper.TPColumns.id.name()};
 		Cursor result = db.query(GCDatabaseHelper.TABLE_PERSONS,
 				TABLE_PERSONS_ID_COLUMN, whereClause, null, null, null, null);
 		Vector<ParticipantValue> values = new Vector<ParticipantValue>(
@@ -769,6 +770,35 @@ public class GCDatabase {
 		}
 		return values;
 	}
+
+    public SortedMap<String, Vector<ParticipantValue> >
+        readEventParticipantValuesPerCurrency(long eventId) {
+        String whereClause = String.format("%s=%d",
+                GCDatabaseHelper.TPColumns.event_id.name(), eventId);
+        final String[] TABLE_PERSONS_ID_COLUMN = {
+            GCDatabaseHelper.TPColumns.id.name()};
+        Cursor result = db.query(GCDatabaseHelper.TABLE_PERSONS,
+            TABLE_PERSONS_ID_COLUMN, whereClause, null, null, null, null);
+		SortedMap<String, Vector<ParticipantValue> > values =
+            new TreeMap<String, Vector<ParticipantValue> >();
+		result.moveToFirst();
+		while (!result.isAfterLast()) {
+            SortedMap<String, BigDecimal> personValues =
+                computeAllBalancesOfPerson(eventId, result.getInt(0));
+            for (Map.Entry<String, BigDecimal> entry : personValues.entrySet()) {
+                ParticipantValue valueInfo = new ParticipantValue(result.getInt(0),
+                        entry.getValue());
+                Vector<ParticipantValue> curValues = values.get(entry.getKey());
+                if (curValues == null) {
+                    curValues = new Vector<ParticipantValue>();
+                    values.put(entry.getKey(), curValues); 
+                }
+                curValues.add(valueInfo);
+            }
+			result.moveToNext();
+		}
+		return values;
+}
 
     public void setDefaultRate(Currency left, Currency right, BigDecimal rate) {
         String whereClause = String.format("%s=\"%s\" AND %s=\"%s\"",
