@@ -21,6 +21,17 @@
         <item name="android:padding">5dp</item>
     </style>
 
+    <style name="sctable_currency_row" parent="@style/GroupClearingTheme">
+        <item name="android:background">#FF74C365</item>
+    </style>
+
+    <style name="sctable_currency_data" parent="@style/GroupClearingTheme">
+        <item name="android:background">#FF74C365</item>
+        <item name="android:textColor">#FF000000</item>
+        <item name="android:layout_marginRight">15dp</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
     <style name="sctable_even_row" parent="@style/GroupClearingTheme">
         <item name="android:background">#FFFAFAD2</item>
     </style>

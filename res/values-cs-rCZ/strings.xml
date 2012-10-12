@@ -73,4 +73,6 @@
     <string name="settings">Nastavení</string>
     <string name="support_multiple_currencies">Podporovat více měn</string>
     <string name="convert_currencies">Přepočítávat hodnoty do měny transakce</string>
+    <string name="sctable_currency">Vyrovnání</string>
+
 </resources>

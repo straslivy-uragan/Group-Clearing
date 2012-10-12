@@ -27,6 +27,7 @@ public class SuggestClearanceActivity extends Activity {
 	TableLayout sctable = null;
 	LayoutInflater inflater;
 	HashMap<Long, ClearingPerson> participants;
+	HashMap<String, TableRow> currencyRows;
 	ClearingEvent myEvent = null;
 	GroupClearingApplication myApp = GroupClearingApplication.getInstance();
 	TableRow headerRow = null;
@@ -41,9 +42,10 @@ public class SuggestClearanceActivity extends Activity {
 	Comparator<SimpleTransaction> payerIdComparator = new Comparator<SimpleTransaction>() {
 		@Override
 		public int compare(SimpleTransaction A, SimpleTransaction B) {
-            if (!A.getCurrency().equals(B.getCurrency())) {
-                return A.getCurrency().toString().compareTo(B.getCurrency().toString());
-            }
+			if (!A.getCurrency().equals(B.getCurrency())) {
+				return A.getCurrency().toString()
+						.compareTo(B.getCurrency().toString());
+			}
 			return (int) (A.getPayerId() - B.getPayerId());
 		}
 	};
@@ -51,9 +53,10 @@ public class SuggestClearanceActivity extends Activity {
 	Comparator<SimpleTransaction> payerNameComparator = new Comparator<SimpleTransaction>() {
 		@Override
 		public int compare(SimpleTransaction A, SimpleTransaction B) {
-            if (!A.getCurrency().equals(B.getCurrency())) {
-                return A.getCurrency().toString().compareTo(B.getCurrency().toString());
-            }
+			if (!A.getCurrency().equals(B.getCurrency())) {
+				return A.getCurrency().toString()
+						.compareTo(B.getCurrency().toString());
+			}
 			ClearingPerson payerA = participants.get(Long.valueOf(A
 					.getPayerId()));
 			ClearingPerson payerB = participants.get(Long.valueOf(B
@@ -79,9 +82,10 @@ public class SuggestClearanceActivity extends Activity {
 	Comparator<SimpleTransaction> receiverIdComparator = new Comparator<SimpleTransaction>() {
 		@Override
 		public int compare(SimpleTransaction A, SimpleTransaction B) {
-            if (!A.getCurrency().equals(B.getCurrency())) {
-                return A.getCurrency().toString().compareTo(B.getCurrency().toString());
-            }
+			if (!A.getCurrency().equals(B.getCurrency())) {
+				return A.getCurrency().toString()
+						.compareTo(B.getCurrency().toString());
+			}
 			return (int) (A.getReceiverId() - B.getReceiverId());
 		}
 	};
@@ -89,9 +93,10 @@ public class SuggestClearanceActivity extends Activity {
 	Comparator<SimpleTransaction> receiverNameComparator = new Comparator<SimpleTransaction>() {
 		@Override
 		public int compare(SimpleTransaction A, SimpleTransaction B) {
-            if (!A.getCurrency().equals(B.getCurrency())) {
-                return A.getCurrency().toString().compareTo(B.getCurrency().toString());
-            }
+			if (!A.getCurrency().equals(B.getCurrency())) {
+				return A.getCurrency().toString()
+						.compareTo(B.getCurrency().toString());
+			}
 			ClearingPerson payerA = participants.get(Long.valueOf(A
 					.getPayerId()));
 			ClearingPerson payerB = participants.get(Long.valueOf(B
@@ -122,6 +127,7 @@ public class SuggestClearanceActivity extends Activity {
 		sctable = (TableLayout) findViewById(R.id.sctable);
 		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		simpleTransactions = new Vector<SimpleTransaction>();
+		currencyRows = new HashMap<String, TableRow>();
 	}
 
 	@Override
@@ -252,6 +258,20 @@ public class SuggestClearanceActivity extends Activity {
 		return headerRow;
 	}
 
+	TableRow getCurrencyRow(Currency currency) {
+		TableRow row = currencyRows.get(currency.toString());
+		if (row == null) {
+			row = (TableRow) inflater.inflate(R.layout.sctable_currency_row,
+					null);
+			TextView currencyText = (TextView) row
+					.findViewById(R.id.sctable_currency_label);
+			currencyText.setText(getResources().getString(
+					R.string.sctable_currency)
+					+ " " + currency.toString());
+		}
+		return row;
+	}
+
 	TableRow createRow(int index, boolean even) {
 		SimpleTransaction transaction = simpleTransactions.get(index);
 		TableRow row = null;
@@ -261,13 +281,13 @@ public class SuggestClearanceActivity extends Activity {
 			row = (TableRow) inflater.inflate(R.layout.sctable_odd_row, null);
 		}
 		ClearingPerson payer = getParticipant(transaction.getPayerId());
-		TextView payer_text = (TextView) row
+		TextView payerText = (TextView) row
 				.findViewById(R.id.sctable_row_payer);
-		payer_text.setText(payer.getName());
+		payerText.setText(payer.getName());
 		ClearingPerson receiver = getParticipant(transaction.getReceiverId());
-		TextView receiver_text = (TextView) row
+		TextView receiverText = (TextView) row
 				.findViewById(R.id.sctable_row_receiver);
-		receiver_text.setText(receiver.getName());
+		receiverText.setText(receiver.getName());
 		TextView amount = (TextView) row.findViewById(R.id.sctable_row_amount);
 		amount.setText(myApp.formatCurrencyValueWithSymbol(
 				transaction.getValue(), transaction.getCurrency()));
@@ -279,14 +299,23 @@ public class SuggestClearanceActivity extends Activity {
 		boolean even = false;
 		long oldId = -1;
 		sctable.addView(getHeaderRow());
+        Currency oldCurrency = null;
 		for (int index = 0; index < simpleTransactions.size(); ++index) {
+            SimpleTransaction transaction = simpleTransactions.get(index);
+            if (!myApp.getConvertToEventCurrency() && 
+                    (oldCurrency == null || !oldCurrency.equals(transaction.getCurrency()))) {
+                oldCurrency = transaction.getCurrency();
+                sctable.addView(getCurrencyRow(oldCurrency));
+                oldId = -1;
+                even = false;
+            }
 			switch (sortedBy) {
 				case UNSORTED :
 					even = !even;
 					break;
 				case SORTED_BY_PAYER_ID :
 				case SORTED_BY_PAYER_NAME : {
-					long newId = simpleTransactions.get(index).getPayerId();
+					long newId = transaction.getPayerId();
 					if (newId != oldId) {
 						even = !even;
 						oldId = newId;
@@ -295,7 +324,7 @@ public class SuggestClearanceActivity extends Activity {
 				}
 				case SORTED_BY_RECEIVER_ID :
 				case SORTED_BY_RECEIVER_NAME : {
-					long newId = simpleTransactions.get(index).getReceiverId();
+					long newId = transaction.getReceiverId();
 					if (newId != oldId) {
 						even = !even;
 						oldId = newId;
@@ -333,7 +362,7 @@ public class SuggestClearanceActivity extends Activity {
 		sortByPayerId();
 		try {
 			long prevPayerId = -1;
-            Currency prevCurrency = null;
+			Currency prevCurrency = null;
 			ClearingTransaction transaction = null;
 			BigDecimal value = BigDecimal.ZERO;
 			for (int index = 0; index < simpleTransactions.size(); ++index) {
@@ -343,31 +372,33 @@ public class SuggestClearanceActivity extends Activity {
 				if (payerId < 0 || receiverId < 0) {
 					continue;
 				}
-				if (transaction == null || payerId != prevPayerId ||
-                        prevCurrency == null ||
-                        !prevCurrency.equals(trans.getCurrency())) {
+				if (transaction == null || payerId != prevPayerId
+						|| prevCurrency == null
+						|| !prevCurrency.equals(trans.getCurrency())) {
 					if (transaction != null) {
 						transaction.recomputeAndSaveChanges(db);
 					}
 					transaction = db.createNewTransaction(myEventId);
 					ClearingPerson payer = participants.get(Long
 							.valueOf(payerId));
-                    if (myApp.getConvertToEventCurrency()) {
-                        transaction.setName(getResources().getString(
-                                    R.string.sc_transaction_name)
-                                + " " + payer.getName());
-                     } else {
-                         transaction.setName(getResources().getString(
-                                     R.string.sc_transaction_name)
-                                 + " " + trans.getCurrency().toString()
-                                 + ": " + payer.getName());
-                    }
+					if (myApp.getConvertToEventCurrency()) {
+						transaction.setName(getResources().getString(
+								R.string.sc_transaction_name)
+								+ " " + payer.getName());
+					} else {
+						transaction.setName(getResources().getString(
+								R.string.sc_transaction_name)
+								+ " "
+								+ trans.getCurrency().toString()
+								+ ": "
+								+ payer.getName());
+					}
 					transaction.setSplitEvenly(false);
 					transaction.setReceiverId(payerId);
-                    transaction.setCurrency(trans.getCurrency());
-                    transaction.setRate(db.getDefaultRate(trans.getCurrency(),
-                                myEvent.getDefaultCurrency()));
-                    db.updateTransaction(transaction);
+					transaction.setCurrency(trans.getCurrency());
+					transaction.setRate(db.getDefaultRate(trans.getCurrency(),
+							myEvent.getDefaultCurrency()));
+					db.updateTransaction(transaction);
 					prevPayerId = payerId;
 					value = BigDecimal.ZERO;
 				}
