@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sctable_header_row"
+    style="@style/sctable_currency_row"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
+
+    <TextView
+        android:id="@+id/sctable_currency_label"
+        style="@style/sctable_currency_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_span="3"
+        android:text="@string/sctable_currency" />
+
+</TableRow>
