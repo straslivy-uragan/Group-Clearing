@@ -12,7 +12,9 @@
             android:id="@+id/sctable"
             style="@style/sctable"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:shrinkColumns="0,1"
+            android:stretchColumns="2" >
         </TableLayout>
 
         <Button

@@ -7,21 +7,21 @@
     <TextView
         android:id="@+id/sctable_row_payer"
         style="@style/sctable_odd_data"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="" />
 
     <TextView
         android:id="@+id/sctable_row_receiver"
         style="@style/sctable_odd_data"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="" />
 
     <TextView
         android:id="@+id/sctable_row_amount"
         style="@style/sctable_odd_data"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="" />
 
