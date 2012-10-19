@@ -20,14 +20,13 @@ public final class R {
     }
     public static final class drawable {
         public static final int gcicon=0x7f020000;
-        public static final int ic_add=0x7f020001;
-        public static final int ic_info=0x7f020002;
-        public static final int icon=0x7f020003;
-        public static final int icon_add=0x7f020004;
-        public static final int icon_checkbox=0x7f020005;
-        public static final int icon_checkbox_minus=0x7f020006;
-        public static final int icon_checkbox_plus=0x7f020007;
-        public static final int icon_info=0x7f020008;
+        public static final int icon=0x7f020001;
+        public static final int icon_add=0x7f020002;
+        public static final int icon_checkbox=0x7f020003;
+        public static final int icon_checkbox_minus=0x7f020004;
+        public static final int icon_checkbox_plus=0x7f020005;
+        public static final int icon_info=0x7f020006;
+        public static final int icon_settings=0x7f020007;
     }
     public static final class id {
         public static final int add_item_text=0x7f090002;
