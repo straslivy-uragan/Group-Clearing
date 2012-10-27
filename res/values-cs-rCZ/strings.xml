@@ -74,5 +74,5 @@
     <string name="support_multiple_currencies">Podporovat více měn</string>
     <string name="convert_currencies">Přepočítávat hodnoty do měny transakce</string>
     <string name="sctable_currency">Vyrovnání</string>
-
+   <string name="split_warning_settings_label">Varovat při změně typu transakce</string>
 </resources>

@@ -8,6 +8,7 @@ import android.widget.CheckBox;
 public class SettingsActivity extends Activity {
     CheckBox supportMultipleCurrencies = null;
     CheckBox convertToEventCurrency = null;
+    CheckBox splitWarningCheck = null;
     GroupClearingApplication myApp = GroupClearingApplication.getInstance();
 
 /** Called when the activity is first created. */
@@ -19,6 +20,8 @@ public class SettingsActivity extends Activity {
             (CheckBox)findViewById(R.id.mult_currencies_check);
         convertToEventCurrency =
             (CheckBox)findViewById(R.id.convert_check);
+        splitWarningCheck = 
+            (CheckBox)findViewById(R.id.split_warning_check);
     }
     
     @Override
@@ -31,6 +34,8 @@ public class SettingsActivity extends Activity {
                 ? View.VISIBLE : View.GONE);
         convertToEventCurrency.setChecked(
                 myApp.getConvertToEventCurrency());
+        splitWarningCheck.setChecked(
+                ! myApp.getNoSplitChangeWarning());
     }
 
     public void onSupportMultipleCurrenciesChanged(View v) {
@@ -44,5 +49,10 @@ public class SettingsActivity extends Activity {
     public void onConvertToEventCurrencyChanged(View v) {
         myApp.setConvertToEventCurrency(
                 convertToEventCurrency.isChecked());
+    }
+
+    public void onSplitWarningChanged(View v) {
+        myApp.setNoSplitChangeWarning(
+                ! splitWarningCheck.isChecked());
     }
 }

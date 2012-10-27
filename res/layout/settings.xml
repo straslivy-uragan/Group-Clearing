@@ -12,6 +12,13 @@
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <CheckBox
+        android:id="@+id/split_warning_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/split_warning_settings_label"
+        android:onClick="onSplitWarningChanged" />
+    
+    <CheckBox
         android:id="@+id/mult_currencies_check"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
