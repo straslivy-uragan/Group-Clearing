@@ -698,8 +698,12 @@ public class GCDatabase {
 				null);
 	}
 
-	public void updateTransactionParticipantValue(long eventId,
-			long transactionId, long participantId, BigDecimal value, boolean mark) {
+	public void updateTransactionParticipantValue(ClearingTransaction transaction,
+            long participantId) {
+        long eventId = transaction.getEventId();
+        long transactionId = transaction.getId();
+        BigDecimal value = transaction.getParticipantValue(participantId);
+        boolean mark = transaction.isParticipantMarked(participantId);
 		ContentValues values = new ContentValues(6);
 		values.put(GCDatabaseHelper.TTPColumns.event_id.name(), eventId);
 		values.put(GCDatabaseHelper.TTPColumns.transaction_id.name(),

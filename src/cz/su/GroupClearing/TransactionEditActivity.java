@@ -630,7 +630,11 @@ public class TransactionEditActivity extends FragmentActivity {
 		if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
 			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
 			db.updateTransactionSplitEvenly(myTransaction);
-			myTransaction.resetValues(db);
+			myTransaction.resetValues();
+            db.resetTransactionParticipantsValues(myTransaction,
+                    myTransaction.getSplitEvenly());
+            db.updateTransactionAmount(myTransaction);
+            db.updateTransactionReceiverId(myTransaction);
 			amountEdit.setEnabled(myTransaction.getSplitEvenly());
 			// amountEdit.setFocusable(myTransaction.getSplitEvenly());
 			receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
@@ -678,7 +682,10 @@ public class TransactionEditActivity extends FragmentActivity {
 
 	public void onValueEditorOK(int position, long participantId,
 			BigDecimal value) {
-		myTransaction.setAndSaveParticipantValue(participantId, value, db);
+		myTransaction.setParticipantValue(participantId, value);
+        db.updateTransactionParticipantValue(myTransaction, participantId);
+        db.updateTransactionSplitEvenly(myTransaction);
+        db.updateTransactionAmount(myTransaction);
 		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
 				myTransaction.getCurrency()));
 		ParticipantItemWrapper wrapper = participantWrappers.get(position);

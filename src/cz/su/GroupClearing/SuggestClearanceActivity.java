@@ -403,9 +403,11 @@ public class SuggestClearanceActivity extends Activity {
 					value = BigDecimal.ZERO;
 				}
 				value = value.add(trans.getValue());
-				transaction.setAndSaveParticipantValue(receiverId, trans
-						.getValue().negate(), db);
-				transaction.setAndSaveParticipantValue(payerId, value, db);
+				transaction.setParticipantValue(receiverId, trans
+						.getValue().negate());
+				db.updateTransactionParticipantValue(transaction, receiverId);
+				transaction.setParticipantValue(payerId, value);
+				db.updateTransactionParticipantValue(transaction, payerId);
 			}
 			if (transaction != null) {
 				transaction.recomputeAndSaveChanges(db);

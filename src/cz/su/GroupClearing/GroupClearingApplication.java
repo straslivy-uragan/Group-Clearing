@@ -9,13 +9,9 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 /**
- * @author Strašlivý Uragán <straslivy.uragan@gmail.com>
- * @version 1.0
- * @since 1.0
- * 
  * This class serves as an interface to application related
  * settings and tools. This class has only one instance which
- * can be obtained using @see getInstance method.
+ * can be obtained using <code>getInstance</code> method.
  *
  * As of now, there are three preferences, which can be set by the
  * user in Group Clearing.
@@ -80,6 +76,10 @@ import android.preference.PreferenceManager;
  * </td></tr>
  * </tbody>
  * </table>
+ *
+ * @author Strašlivý Uragán <straslivy.uragan@gmail.com>
+ * @version 1.0
+ * @since 1.0
  *
  * @see TransactionEditActivity
  * @see ParticipantsListActivity
