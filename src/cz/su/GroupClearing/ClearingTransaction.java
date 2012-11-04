@@ -1,6 +1,3 @@
-/**
- * 
- */
 package cz.su.GroupClearing;
 
 import java.math.BigDecimal;
@@ -23,7 +20,7 @@ import java.util.Locale;
  * participants are stored in <code>participantsInfo</code>, which is
  * a <code>HashMap</code> hashed using ids of participants (as a long
  * value). Each participant is then described using
- * <code>ParticipantInfo</code> object. In this object only neccessary
+ * <code>ParticipantInfo</code> object. In this object only necessary
  * values about each participant are stored, i.e. the id of
  * participant specifying person id. Value of the participant within
  * this transaction, the meaning of this value is a bit different
@@ -78,7 +75,7 @@ import java.util.Locale;
  */
 public class ClearingTransaction {
 
-    /** This class represents neccessary information about participant
+    /** This class represents necessary information about participant
      * of a transaction. The stored information consists of person's
      * id, value, and mark status. For more detailed information on
      * these fields see the outer <code>ClearingTransaction</code>
@@ -568,8 +565,10 @@ public class ClearingTransaction {
 	}
 
 	/** Returns the value of participant 
-	 * @param participantId
-	 * @return
+	 * @param participantId Id of participant whose value should be
+     * returned.
+	 * @return The value of participant with id equal to
+     * <code>participantId</code> in this transaction.
 	 */
 	public BigDecimal getParticipantValue(long participantId) {
 		Long participantIdObject = Long.valueOf(participantId);
@@ -615,7 +614,7 @@ public class ClearingTransaction {
 	}
 
     /** Recomputes the values to be consistent and stores changes to
-     * given database. To decrease the number of unneccessary database
+     * given database. To decrease the number of unnecessary database
      * updates, this method takes as a parameter database object and
      * uses its method to store changes into it. Only modified values
      * are updated. What is done by this function depends on the type

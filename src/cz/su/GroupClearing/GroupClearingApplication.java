@@ -143,23 +143,17 @@ public class GroupClearingApplication extends Application {
      * String tag used for storing application preference determining,
      * whether warning should be shown in case of split checkbox state
      * change.
-     *
-     * @see noSplitChangeWarning
      */
 	public static final String SPLIT_CHANGE_WARNING_PREF = "split_change_warning";
     /**
      * String tag used for storing application preference determining,
      * whether multiple currencies should be supported.
-     *
-     * @see supportMultipleCurrencies
      */
     public static final String SUPPORT_MULTIPLE_CURRENCIES = "support_multiple_currencies";
 	/**
      * String tag used for storing application preference determining,
      * whether values should be always converted to main event
      * currency.
-     *
-     * @see convertToEventCurrency
      */
     public static final String CONVERT_TO_EVENT_CURRENCY = "convert_to_event_currency";
 
@@ -278,8 +272,6 @@ public class GroupClearingApplication extends Application {
      * and computed values in transaction are about to change as a
      * result, then either warning dialog is shown to the user when
      * <code>noSpliChangeWarning</code> is true, or it is not shown otherwise.
-     *
-     * @see noSplitChangeWarning
      * @see TransactionEditActivity
      *
      * @return Value of <code>noSplitChangeWarning</code> preference value.
@@ -293,7 +285,6 @@ public class GroupClearingApplication extends Application {
      * @param checked New value of <code>noSplitChangeWarning</code> preference
      * value.
      *
-     * @see noSplitChangeWarning
      * @see TransactionEditActivity
      */
 	public void setNoSplitChangeWarning(boolean checked) {
@@ -306,7 +297,6 @@ public class GroupClearingApplication extends Application {
      * Returns value of preference specifying, whether multiple
      * currencies should be supported.
      *
-     * @see supportMultipleCurrencies
      *
      * @return Value of <code>supportMultipleCurrencies</code> preference value.
      */
@@ -321,8 +311,6 @@ public class GroupClearingApplication extends Application {
      * currencies should be supported.
      * @param checked New value of support multiple currencies
      * preference value.
-     *
-     * @see supportMultipleCurrencies
      */
 	public void setSupportMultipleCurrencies(boolean checked) {
 		supportMultipleCurrencies = checked;
@@ -337,8 +325,6 @@ public class GroupClearingApplication extends Application {
      * should be converted to main event currency before they are
      * presented to the user in participants list or before they are
      * used in further computation such as clearance suggestion.
-     *
-     * @see convertToEventCurrency
      *
      * @return Value of <code>convertToEventCurrency</code> preference.
      */
@@ -356,8 +342,6 @@ public class GroupClearingApplication extends Application {
      * suggestion.
      * @param checked New value of <code>convertToEventCurrency</code> preference
      * value.
-     *
-     * @see convertToEventCurrency
      */
 	public void setConvertToEventCurrency(boolean checked) {
 		convertToEventCurrency = checked;
