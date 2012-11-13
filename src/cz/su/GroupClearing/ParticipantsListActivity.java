@@ -99,6 +99,10 @@ public class ParticipantsListActivity extends FragmentActivity {
 
    public final static String EDIT_PARTICIPANT_DLG_TAG = "edit_participant_dialog";
 
+    /** Tag determining the event id parameter of the activity.
+     */
+    public static final String EVENT_ID_PARAM_TAG = "cz.su.GroupClearing.EventId";
+
    @Override
       public void onCreate(Bundle savedInstanceState) {
          super.onCreate(savedInstanceState);
@@ -117,7 +121,7 @@ public class ParticipantsListActivity extends FragmentActivity {
                onPersonClicked(position, id);
                }
                });
-         myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
+         myEventId = getIntent().getLongExtra(EVENT_ID_PARAM_TAG, -1);
          participantsListAdapter = new ParticipantsListAdapter(this, myEventId);
          lv.setAdapter(participantsListAdapter);
          registerForContextMenu(lv);

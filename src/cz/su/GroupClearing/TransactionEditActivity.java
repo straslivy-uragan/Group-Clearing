@@ -252,6 +252,8 @@ public class TransactionEditActivity extends FragmentActivity {
 
 	public final static String EDIT_PARTICIPANT_VALUE_DLG_TAG = "edit_participant_value_dialog";
 	public final static String SPLIT_WARNING_TAG = "split_warning_dialog";
+    public final static String EVENT_ID_PARAM_TAG = "cz.su.GroupClearing.EventId";
+    public final static String TRANSACTION_ID_PARAM_TAG = "cz.su.GroupClearing.TransactionId";
 
 	Vector<ParticipantItemWrapper> participantWrappers = null;
 
@@ -338,9 +340,8 @@ public class TransactionEditActivity extends FragmentActivity {
 		receiverSpinner
 				.setOnItemSelectedListener(new ReceiverSpinnerOnItemSelected());
 		participantsList = (LinearLayout) findViewById(R.id.transaction_participants_list);
-		myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
-		myTransactionId = getIntent().getLongExtra(
-				"cz.su.GroupClearing.TransactionId", -1);
+		myEventId = getIntent().getLongExtra(EVENT_ID_PARAM_TAG, -1);
+		myTransactionId = getIntent().getLongExtra(TRANSACTION_ID_PARAM_TAG, -1);
 		db = new GCDatabase(this);
 		myEvent = db.readEventWithId(myEventId);
 		noReceiver = new ClearingPerson(-1);

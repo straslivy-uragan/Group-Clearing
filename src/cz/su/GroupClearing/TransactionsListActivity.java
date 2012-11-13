@@ -18,6 +18,9 @@ public class TransactionsListActivity extends FragmentActivity {
 
 	private TransactionsListAdapter transactionsListAdapter = null;
 	private long myEventId = -1;
+    /** Tag determining the event id parameter of the activity.
+     */
+    public static final String EVENT_ID_PARAM_TAG = "cz.su.GroupClearing.EventId";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -32,7 +35,7 @@ public class TransactionsListActivity extends FragmentActivity {
 				onTransactionClicked(position, id);
 			}
 		});
-		myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
+		myEventId = getIntent().getLongExtra(EVENT_ID_PARAM_TAG, -1);
 		transactionsListAdapter = new TransactionsListAdapter(this, myEventId);
 		lv.setAdapter(transactionsListAdapter);
 		registerForContextMenu(lv);

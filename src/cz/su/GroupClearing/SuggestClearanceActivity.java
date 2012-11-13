@@ -33,6 +33,8 @@ public class SuggestClearanceActivity extends Activity {
 	TableRow headerRow = null;
 	int sortedBy = UNSORTED;
 
+    public final static String EVENT_ID_PARAM_TAG = "cz.su.GroupClearing.EventId";
+
 	public static final int UNSORTED = 0;
 	public static final int SORTED_BY_PAYER_ID = 1;
 	public static final int SORTED_BY_PAYER_NAME = 2;
@@ -123,7 +125,7 @@ public class SuggestClearanceActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.suggest_clearance);
-		myEventId = getIntent().getLongExtra("cz.su.GroupClearing.EventId", -1);
+		myEventId = getIntent().getLongExtra(EVENT_ID_PARAM_TAG, -1);
 		sctable = (TableLayout) findViewById(R.id.sctable);
 		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		simpleTransactions = new Vector<SimpleTransaction>();
