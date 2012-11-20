@@ -731,9 +731,13 @@ public class GCDatabase {
 		return transactions;
 	}
 
-	/**
-	 * @param id
-	 * @return
+	/** Reads transaction with given id from database. Note, that
+     * <code>id</code> of transaction is enough since it is unique for
+     * and two transaction from different events have never the same
+     * id.
+	 * @param id Id of transaction to be read.
+	 * @return Transaction with given id or null, if this transaction
+     * is not present in the database.
 	 */
 	public ClearingTransaction readTransactionWithId(long id) {
 		String whereClause = String.format("%s=%d",
@@ -757,8 +761,10 @@ public class GCDatabase {
 		return aTransaction;
 	}
 
-	/**
-	 * @param id
+	/** Deletes the transactions from database. Involves also deleting
+     * corresponding records from <code>TABLE_TRANSACTION_PARTICIPANTS</code>.
+     *
+	 * @param id Id if transaction to be deleted.
 	 */
 	public void deleteTransactionWithId(long id) {
 		String whereClause = String.format("%s=%d",
@@ -770,9 +776,10 @@ public class GCDatabase {
 		db.delete(GCDatabaseHelper.TABLE_TRANSACTIONS, whereClause, null);
 	}
 
-	/**
-	 * @param id
-	 * @return
+	/** Returns default currency of event with given id.
+	 * @param id Id of event
+	 * @return Default currency of event with id equal to
+     * <code>id</code>.
 	 */
 	public Currency getCurrencyOfEvent(long id) {
 		String whereClause = String.format("%s=%d",
@@ -787,10 +794,14 @@ public class GCDatabase {
 		return Currency.getInstance(currencyCursor.getString(0));
 	}
 
-	/**
-	 * @param eventId
-	 * @return
-	 * @throws GCEventDoesNotExistException
+	/** Creates new empty transaction within event with given id and
+     * stores it in database.
+	 * @param eventId Id of event
+	 * @return New empty transaction which has been created and stored
+     * in the database. The transaction belongs to event with id equal
+     * to <code>eventId</code>.
+	 * @throws GCEventDoesNotExistException If event with id equal to
+     * <code>eventId</code> does not exist.
 	 */
 	public ClearingTransaction createNewTransaction(long eventId)
 			throws GCEventDoesNotExistException {
@@ -845,8 +856,10 @@ public class GCDatabase {
 		return null;
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates the main data of given transaction. Only the main data
+     * are updated, i.e. values of participants are not updated in the
+     * database and has to be updated separately.
+	 * @param aTransaction Transaction to update in the database.
 	 */
 	public void updateTransaction(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(7);
@@ -872,8 +885,8 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates name of given transaction in the database.
+	 * @param aTransaction Transaction to update.
 	 */
 	public void updateTransactionName(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -885,8 +898,9 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates note associated with given transaction in the
+     * database.
+	 * @param aTransaction Transaction to update.
 	 */
 	public void updateTransactionNote(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -898,8 +912,8 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates amount of given transaction in the database.
+	 * @param aTransaction Transaction to update.
 	 */
 	public void updateTransactionAmount(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -911,8 +925,8 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates date of given transaction in the database.
+	 * @param aTransaction Transaction to update.
 	 */
 	public void updateTransactionDate(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -924,8 +938,8 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates currency of given transaction.
+	 * @param aTransaction Transaction to update.
 	 */
 	public void updateTransactionCurrency(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -937,8 +951,9 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates rate of transaction currency to default event
+     * currency.
+	 * @param aTransaction Transaction to update.
 	 */
 	public void updateTransactionRate(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -950,8 +965,8 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates receiver id of given transaction.
+	 * @param aTransaction Transaction to update.
 	 */
 	public void updateTransactionReceiverId(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -963,8 +978,8 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param aTransaction
+	/** Updates split evenly status of given transaction.
+	 * @param aTransaction Transaction to update.
 	 */
 	public void updateTransactionSplitEvenly(ClearingTransaction aTransaction) {
 		ContentValues values = new ContentValues(1);
@@ -976,9 +991,13 @@ public class GCDatabase {
 				null);
 	}
 
-	/**
-	 * @param transaction
-	 * @param participantId
+	/** Updates the value of given participant within given
+     * transaction. The value and mark status of the participant
+     * is retrieved from transaction.
+	 * @param transaction Transaction in which the value of
+     * participant with id equal to <code>participantId</code> should be changed.
+	 * @param participantId Id of the participant whose value should
+     * be changed.
 	 */
 	public void updateTransactionParticipantValue(
 			ClearingTransaction transaction, long participantId) {
@@ -999,7 +1018,12 @@ public class GCDatabase {
 				SQLiteDatabase.CONFLICT_REPLACE);
 	}
 
-	/**
+	/** Resets the values of all participants in given transactions.
+     * The value of all participants within <code>aTransaction</code>
+     * is set to 0 in the database. The mark status of all
+     * participants is set to <code>defaultMark</code>. Note, that
+     * this method does not modify the values and mark status within
+     * <code>aTransaction</code> object.
 	 * @param aTransaction
 	 * @param defaultMark
 	 */
@@ -1015,9 +1039,17 @@ public class GCDatabase {
 				whereClause, null);
 	}
 
-	/**
-	 * @param eventId
-	 * @return
+	/** Finds participants with minimum value within given event.
+     * Note, that right now, the <code>computeBalanceOfPerson</code>
+     * method is used to compute the value of the person. It means,
+     * that the value is always taken cumulatively over all
+     * transactions and all currencies (converted to the default
+     * currency of the event).
+	 * @param eventId Id of the event in which to look for the person
+     * with lowest value.
+	 * @return The <code>ParticipantValue</code> object representing
+     * the value of participant with minimum value among others within
+     * event with id equal to <code>eventId</code>.
 	 */
 	public ParticipantValue findParticipantWithMinValue(long eventId) {
 		String whereClause = String.format("%s=%d",
@@ -1046,9 +1078,16 @@ public class GCDatabase {
 		return valueInfo;
 	}
 
-	/**
-	 * @param eventId
-	 * @return
+	/** Returns all values of participants within given event. The
+     * balances are computed cumulatively over all currencies and
+     * transactions. Values in different currencies are converted to
+     * the default currency of the event. For that purpose,
+     * <code>computeBalanceOfPerson</code> is used to compute the
+     * value.
+	 * @param eventId Id of the event in which compute the values of
+     * participants.
+	 * @return Participant values in a <code>Vector</code>. They are
+     * not sorted in any special way.
 	 */
 	public Vector<ParticipantValue> readEventParticipantValues(long eventId) {
 		String whereClause = String.format("%s=%d",
@@ -1070,9 +1109,13 @@ public class GCDatabase {
 		return values;
 	}
 
-	/**
-	 * @param eventId
-	 * @return
+	/** Returns all values of participants within given event
+     * separately for each currency.
+	 * @param eventId Id of the event in which compute the values of
+     * participants.
+	 * @return The <code>SortedMap</code> which assigns the vector of
+     * values to every name of a currency, which is used in some
+     * transaction of the event.
 	 */
 	public SortedMap<String, Vector<ParticipantValue>> readEventParticipantValuesPerCurrency(
 			long eventId) {
@@ -1102,10 +1145,11 @@ public class GCDatabase {
 		return values;
 	}
 
-	/**
-	 * @param left
-	 * @param right
-	 * @param rate
+	/** Sets the default rate for given pair of currencies.
+	 * @param left First currency.
+	 * @param right Second currency.
+	 * @param rate The default rate, i.e. 1 value of first currency
+     * corresponds to <code>rate</code> values in the second currency.
 	 */
 	public void setDefaultRate(Currency left, Currency right, BigDecimal rate) {
 		String whereClause = String.format("%s=\"%s\" AND %s=\"%s\"",
@@ -1124,10 +1168,13 @@ public class GCDatabase {
 		}
 	}
 
-	/**
-	 * @param left
-	 * @param right
-	 * @return
+	/** Retrieves the default rate for given pair of currencies.
+	 * @param left First currency.
+	 * @param right Second currency.
+	 * @return The default rate between the first and the second
+     * currency. I.e. 1 value of first currency corresponds to
+     * <code>rate</code> values in the second currency, where
+     * <code>rate</code> denotes the value being returned.
 	 */
 	public BigDecimal getDefaultRate(Currency left, Currency right) {
 		if (left.equals(right)) {
