@@ -8,7 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
+/* TODO: Arguments pass using setArguments(Bundle)/getArguments. 
+ * TODO: OnClickListener should be associated in onAttach(Activity) function. */
 public class YesNoDialog extends DialogFragment {
     String message = null;
     boolean okClicked = false;
@@ -21,6 +22,9 @@ public class YesNoDialog extends DialogFragment {
         public void onCancelled(YesNoDialog dlg);
     }
 
+    /**
+     * @param aMessage
+     */
     public YesNoDialog(String aMessage) {
         message = aMessage;
     }

@@ -29,10 +29,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 /**
- * Class representing the activity showing event properties. This class
- * corresponds to activity showing event properties with possibility of
- * modifying them. This corresponds to layout stored in
- * <code>event_properties.xml</code>.
+ * Class representing the activity showing event properties. This
+ * class corresponds to activity showing event properties with
+ * possibility of modifying them. This corresponds to layout stored in
+ * <code>event_properties.xml</code>. The <code>id</code> of event
+ * whose properties should be shown/edited, is passed via
+ * <code>Intent</code> extra. If -1 is passed as the event
+ * <code>id</code>, new event is created using
+ * <code>GCDatabase.createNewEvent</code>.
  * 
  * @author Strašlivý Uragán <straslivy.uragan@gmail.com>
  * @version 1.0
