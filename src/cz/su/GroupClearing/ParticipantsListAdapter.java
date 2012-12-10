@@ -20,19 +20,55 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+/** Adapter for populating list of participants. Depending on the
+ * status of <code>convertToEventCurrency</code> flag, it either shows
+ * only one balance in an participant item, or it shows all balances
+ * in different currencies used in transactions within the event. The
+ * layout for item is described in
+ * <code>participants_list_item.xml</code>. The base widget in this
+ * layout is <code>LinearLayout</code> in case of multiple currency
+ * balances, these are added as <code>TextView</code> widget to this
+ * <code>LinearLayout</code>. In case of one balance, the
+ * <code>participantsListItemBalance</code> <code>TextView</code> is
+ * used. This is done in <code>getView</code> function.
+ *
+ * The list of participants is kept sorted lexicographically by their
+ * names.
+ *
+ * @author Strašlivý Uragán
+ * @version 1.0
+ * @since 1.0
+ */
 public class ParticipantsListAdapter implements ListAdapter {
+    /** Inflater used for inflating layouts from resources. */
 	LayoutInflater inflater;
+    /** Context of this adapter. */
 	Context context;
+    /** List of observers of this adapter. */
 	ArrayList<DataSetObserver> observers;
+    /** Array of participants in the list. */
 	Vector<ClearingPerson> participants;
+    /** Id of event containing the participants in the list. */
 	long myEventId = -1;
+    /** Event containing the participants in the list. */
 	ClearingEvent myEvent = null;
+    /** Database object representing connection to the database. */
 	GCDatabase db = null;
+    /** The application object for accessing global preferences and
+     * other shared data. */
 	GroupClearingApplication myApp = GroupClearingApplication.getInstance();
+    /** Maps sum values to string names of currencies. */
     SortedMap<String, BigDecimal> sums = null;
 
+	/** Constant determining normal participant item type.
+	 */
 	public static final int NORMAL_PARTICIPANT_TYPE = 0;
 
+	/** Constructs object with given context and event id.
+	 * @param aContext Context in which this adapter works.
+	 * @param eventId Id of event containing the participants in the
+     * list.
+	 */
 	public ParticipantsListAdapter(Context aContext, long eventId) {
 		context = aContext;
 		inflater = (LayoutInflater) context
@@ -42,15 +78,24 @@ public class ParticipantsListAdapter implements ListAdapter {
 		readParticipantsFromDB();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#getCount()
+	 */
 	@Override
 	public int getCount() {
 		return participants.size();
 	}
 
+	/** Returns the number of participants in this list.
+	 * @return The number of participants in the list.
+	 */
 	public int getNumberOfParticipants() {
 		return participants.size();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#getItem(int)
+	 */
 	@Override
 	public Object getItem(int position) {
 		if (position < participants.size()) {
@@ -59,6 +104,9 @@ public class ParticipantsListAdapter implements ListAdapter {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#getItemId(int)
+	 */
 	@Override
 	public long getItemId(int position) {
 		if (position < participants.size()) {
@@ -67,11 +115,17 @@ public class ParticipantsListAdapter implements ListAdapter {
 		return -1;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#getItemViewType(int)
+	 */
 	@Override
 	public int getItemViewType(int position) {
 		return NORMAL_PARTICIPANT_TYPE;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#getView(int, android.view.View, android.view.ViewGroup)
+	 */
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View rowView = null;
@@ -138,47 +192,75 @@ public class ParticipantsListAdapter implements ListAdapter {
 		return rowView;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#getViewTypeCount()
+	 */
 	@Override
 	public int getViewTypeCount() {
 		return 1;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#hasStableIds()
+	 */
 	@Override
 	public boolean hasStableIds() {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#isEmpty()
+	 */
 	@Override
 	public boolean isEmpty() {
 		return participants.isEmpty();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#registerDataSetObserver(android.database.DataSetObserver)
+	 */
 	@Override
 	public void registerDataSetObserver(DataSetObserver observer) {
 		observers.add(observer);
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.Adapter#unregisterDataSetObserver(android.database.DataSetObserver)
+	 */
 	@Override
 	public void unregisterDataSetObserver(DataSetObserver observer) {
 		observers.remove(observer);
 	}
 
+	/** Notifies observers of the adapter, that data set has changed.
+	 */
 	public void notifyDataSetChanged() {
 		for (DataSetObserver observer : observers) {
 			observer.onChanged();
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.ListAdapter#areAllItemsEnabled()
+	 */
 	@Override
 	public boolean areAllItemsEnabled() {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.widget.ListAdapter#isEnabled(int)
+	 */
 	@Override
 	public boolean isEnabled(int position) {
 		return true;
 	}
 
+	/** Sets name of the participant at given position. It also
+     * updates the name within database.
+	 * @param position Position of participant within the list.
+	 * @param name New name of participant.
+	 */
 	public void setNameOfParticipantAtPosition(int position, String name) {
 		if (position < participants.size()) {
 			ClearingPerson person = participants.get(position);
@@ -188,6 +270,13 @@ public class ParticipantsListAdapter implements ListAdapter {
 		}
 	}
 
+	/** Creates new participant with given name and adds it to the
+     * list. The participant is inserted into the list at position
+     * given by the name (the list is sorted lexicographically by
+     * names of participants). User is created using
+     * <code>GCDatabase.createNewParticipant(long,String)</code>
+	 * @param name Name of participant being created.
+	 */
 	public void createParticipantWithName(String name) {
 		ClearingPerson aParticipant = db.createNewParticipant(myEventId, name);
 		int index = 0;
@@ -201,6 +290,10 @@ public class ParticipantsListAdapter implements ListAdapter {
 		notifyDataSetChanged();
 	}
 
+	/** Deletes the participant at given position. The participant is
+     * also deleted in database.
+	 * @param position Position of participants to be deleted.
+	 */
 	public void removeParticipantAtPosition(int position) {
 		if (position < participants.size()) {
 			db.deleteParticipantWithId(participants.get(position).getId());
@@ -210,6 +303,8 @@ public class ParticipantsListAdapter implements ListAdapter {
 		}
 	}
 
+	/** Reads the participants from database.
+	 */
 	public void readParticipantsFromDB() {
 		if (db == null) {
 			db = new GCDatabase(context);
@@ -223,6 +318,11 @@ public class ParticipantsListAdapter implements ListAdapter {
 		notifyDataSetChanged();
 	}
 
+	/** Returns sum of balances of participants. Cumulative balances
+     * over all currencies as returned by
+     * <code>ClearingPerson.getBalance()</code> are summed.
+	 * @return
+	 */
 	public BigDecimal getParticipantsValuesSum() {
 		BigDecimal value = BigDecimal.ZERO;
 		for (ClearingPerson participant : participants) {
@@ -231,6 +331,13 @@ public class ParticipantsListAdapter implements ListAdapter {
 		return value;
 	}
 
+    /** Computes all balances per different currencies. Returns them
+     * as a <code>Map</code> mapping a value to a <code>String</code>
+     * code of currency. The balances are obtained using
+     * <code>ClearingPerson.getAllBalances()</code>.
+     * @return <code>SortedMap</code> mapping <code>BigDecimal</code>
+     * values to <code>String</code> currency codes.
+     */
     SortedMap<String, BigDecimal> getAllParticipantsValuesSums() {
         if (sums != null) {
             return sums;
@@ -250,10 +357,15 @@ public class ParticipantsListAdapter implements ListAdapter {
         return sums;
     }
 
+	/** Returns the event containing persons in the list.
+	 * @return Event containing persons in the list.
+	 */
 	public ClearingEvent getEvent() {
 		return myEvent;
 	}
 
+	/** Closes the database connection.
+	 */
 	public void closeDB() {
 		if (db != null) {
 			db.close();

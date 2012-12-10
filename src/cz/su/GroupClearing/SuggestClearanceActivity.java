@@ -19,13 +19,51 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+/** Class representing the activity which presents to the user a
+ * suggestion of how the values of participants within the event can
+ * be balanced (or cleared) off. In this activity, the values of
+ * participants are computed and then a suggestion is computed
+ * of who should pay whom in order to make the values participants as
+ * balanced as possible. It means that if the transactions would be
+ * performed, sum of the positive values or sum of the negative values
+ * of participants (or both) would be zero. The suggestion is then
+ * presented to the user in a form of a table. Depending on the status
+ * of <code>convertToEventCurrency</code> preference either a single
+ * suggestion is computed in the main event currency, or multiple
+ * suggestions are computed in all currencies used within the event.
+ * All these suggestions are nevertheless presented in one table.
+ *
+ * Each line of this table then corresponds to a
+ * <code>SimpleTransaction</code> object representing a simple
+ * transaction of giving money by one participant to another.
+ * After suggestion is presented user has the possibility to create
+ * the clearing transactions according to the suggestion with a click
+ * of a button. In this case the simple transactions are grouped in
+ * more complex transactions with one receiver and more payers. I.e.
+ * the simple transactions are grouped by their receiver and then the
+ * simple transactions with the same receiver are merged into one
+ * complex transaction.
+ *
+ * The object allows to sort simple transaction lines in the
+ * suggestion by payer id/name or receiver id/name, but not all of
+ * these possibilities are actually being used.
+ *
+ * @author Strašlivý Uragán
+ * @version 1.0
+ * @since 1.0
+ */
 public class SuggestClearanceActivity extends Activity {
-
+    /** Id of the event for which the suggestion should be computed. */
 	long myEventId = -1;
+    /** Simple transactions which together form the suggestion. */
 	Vector<SimpleTransaction> simpleTransactions = null;
+    /** Object representing the connection to the database. */
 	GCDatabase db = null;
+    /** Layout of the main suggestion table. */
 	TableLayout sctable = null;
+    /** Inflater used to inflate layouts and other UI elements. */
 	LayoutInflater inflater;
+    /** Participants hashed by their ids. */
 	HashMap<Long, ClearingPerson> participants;
 	HashMap<String, TableRow> currencyRows;
 	ClearingEvent myEvent = null;

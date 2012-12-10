@@ -61,7 +61,11 @@
                 android:onClick="finishDateButtonClicked"
                 android:text="@string/date_placeholder"
                 android:textSize="22sp" />
-       
+       </LinearLayout>
+       <LinearLayout
+           android:id="@+id/currency_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
             <TextView
                 android:id="@+id/event_currency_label"
                 android:layout_width="wrap_content"

@@ -27,7 +27,22 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-/** Activity with the list of participants of an event.
+/** Activity with the list of participants of an event. The activity
+ * maintains <code>ListView</code> populated by a
+ * <code>ParticipantsListAdapter</code>. An item of this list contains
+ * name of participant and its balance (either a single balance or
+ * balances in different currencies depending on the state of
+ * <code>convertToEventCurrency</code> preference, see
+ * <code>GroupClearingApplication</code>). Above the list a button for
+ * adding a new participant and a total balance (per currency balances
+ * respectively) are placed. When
+ * a participant item or button for creating new participant are
+ * clicked, <code>EditParticipantDialog</code> is shown for input of
+ * the name of the participant. When a participant is long-clicked,
+ * context menu with possibility of deleting the participant appears.
+ * Any creation/modification/deletion of participant is directly
+ * consulted with the associated <code>GCDatabase</code> object.
+ * 
  * @author Strašlivý Uragán
  * @version 1.0
  * @since 1.0
@@ -36,36 +51,40 @@ public class ParticipantsListActivity extends FragmentActivity
 		implements
 			EditParticipantDialog.EditParticipantListener {
 
-	/**
- * 
- */
+	/** Id of the event associated to this participants list.
+     */
 	private long myEventId = -1;
-	/**
- * 
- */
+	/** Adapter populating the <code>ListView</code> with
+     * participants.
+     */
 	private ParticipantsListAdapter participantsListAdapter = null;
-	/**
- * 
- */
+	/** <code>TextView</code> for showing total balance (sum of
+     * balances) over all participants. This <code>TextView</code> is
+     * used only if <code>convertToEventCurrency</code> flag is true.
+     * Otherwise <code>sumList</code> <code>LinearLayout</code> is
+     * used for showing different balancies in different currencies.
+     */
 	private TextView sumValueText = null;
-	/**
- * 
- */
+	/** <code>LinearLayout</code> which in the end contains list of
+     * <code>TextView</code> objects showing the balances per
+     * different currencies. This <code>LinearLayout</code> is used
+     * only if <code>convertToEventCurrency</code> flag is false.
+     * Otherwise <code>sumValueText</code> <code>TextView</code> is
+     * used for showing one single balance.
+     */
 	private LinearLayout sumList = null;
-	/**
- * 
- */
+	/** The application object for accessing global preferences and
+     * other shared data.
+     */
 	private final GroupClearingApplication myApp = GroupClearingApplication
 			.getInstance();
-	// private EditParticipantDialog editParticipantDialog = null;
 
-	/**
- * 
- */
+	/** Tag used in fragment manager associated with the dialog for
+     * editing the name of participant.
+     */
 	public final static String EDIT_PARTICIPANT_DLG_TAG = "edit_participant_dialog";
 
-	/**
-	 * Tag determining the event id parameter of the activity.
+	/** Tag determining the event id parameter of the activity.
 	 */
 	public static final String EVENT_ID_PARAM_TAG = "cz.su.GroupClearing.EventId";
 
@@ -122,9 +141,19 @@ public class ParticipantsListActivity extends FragmentActivity
 		}
 	}
 
-	/**
-	 * @param position
-	 * @param id
+    /** Called when an item of <code>ListView</code> of participants
+     * is clicked on. Uses <code>FragmentManager</code> to invoke
+     * modal dialog <code>EditParticipantDialog</code> for editing the
+     * name of the corresponding participant. The participant object
+     * is retrieved from <code>participantsListAdapter</code>. If a
+     * special item for creating new participant was selected, then
+     * this fact can be at any time recognized by comparing
+     * <code>position</code> parameter to the number of participants
+     * stored in <code>participantsListAdapter</code>.
+     *
+	 * @param position Position of item within <code>ListView</code>
+     * which was clicked.
+	 * @param id Id of item which has been clicked.
 	 */
 	public void onPersonClicked(final int position, long id) {
 		FragmentManager fm = getSupportFragmentManager();
@@ -149,9 +178,14 @@ public class ParticipantsListActivity extends FragmentActivity
 		editParticipantDialog.show(ft, EDIT_PARTICIPANT_DLG_TAG);
 	}
 
-	/**
-	 * @param position
-	 * @param name
+    /** Called from <code>EditParticipantDialog</code> when user
+     * clicks on OK button. In this method either new participant with
+     * given <code>name</code> is created if <code>position</code> is
+     * at least the number of participants, or the participants name
+     * is updated. Both actions are done through
+     * <code>participantsListAdapter</code> methods.
+	 * @param position Position of participant within the list.
+	 * @param name New name of the participant.
 	 */
 	@Override
 	public void onNameEditorOK(final int position, String name) {
@@ -163,16 +197,26 @@ public class ParticipantsListActivity extends FragmentActivity
 		}
 	}
 
-	/**
-	 * @param position
+	/** Called from <code>EditParticipantDialog</code> when user
+     * cancels it. This method does nothing.
+	 * @param position Position of participant within the list.
 	 */
 	@Override
 	public void onNameEditorCancelled(final int position) {
 	}
 
-	/**
- * 
- */
+    /** Updates the <code>sumValueText</code> with the proper value
+     * and color. The sum is retrieved from
+     * <code>participantsListAdapter</code> using
+     * <code>ParticipantsListAdapter.getParticipantsValuesSum()</code>
+     * method. Color of the text is set to
+     * <code>android.graphics.Color.GREEN</code> in case of positive
+     * balance, to <code>android.graphics.Color.RED</code> in case of
+     * negative balance and to
+     * <code>android.R.color.primary_text_dark</code> in case of zero
+     * balance. If <code>sumValueText</code> is <code>null</code>,
+     * this function does nothing.
+     */
 	private void setBalanceText() {
 		if (sumValueText == null) {
 			return;
@@ -191,9 +235,13 @@ public class ParticipantsListActivity extends FragmentActivity
 		}
 	}
 
-	/**
- * 
- */
+	/** Updates the balances in <code>sumList</code> to proper values
+     * and colors. The sums per currencies are retrieved from
+     * <code>participantsListAdapter</code> using
+     * <code>ParticipantsListAdapter.getAllParticipantsValuesSums()</code> method.
+     * If <code>sumList</code> is <code>null</code>, this function
+     * does nothing.
+     */
 	private void setAllBalanceTexts() {
 		if (sumList == null) {
 			return;
@@ -234,9 +282,10 @@ public class ParticipantsListActivity extends FragmentActivity
 		}
 	}
 
-	/**
- * 
- */
+	/** Refreshes the list of participants and the sums. Consists
+     * mainly of calling
+     * <code>ParticipantsListAdapter.readParticipantsFromDB</code>.
+     */
 	public void refreshData() {
 		participantsListAdapter.readParticipantsFromDB();
 		if (myApp.getConvertToEventCurrency()) {
@@ -309,8 +358,10 @@ public class ParticipantsListActivity extends FragmentActivity
 		}
 	}
 
-	/**
-	 * @param v
+	/** Called when button for creating new participant was clicked.
+     * It just calls <code>onPersonClicked</code> with position equal
+     * to the number of participants.
+	 * @param v View of <code>Button</code> which was clicked.
 	 */
 	public void onAddNewParticipantClicked(View v) {
 		onPersonClicked(participantsListAdapter.getCount(), -1);
