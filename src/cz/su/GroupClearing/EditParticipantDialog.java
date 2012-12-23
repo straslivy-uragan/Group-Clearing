@@ -18,7 +18,8 @@ import android.widget.TextView;
  * <code>DialogFragment.setArguments(Bundle)</code> function. If
  * calling <code>Activity</code> wants to receive respond when user
  * clicks either on OK or on Cancel button, then it has to implement
- * <code>EditParticipantDialog.EditParticipantListener</code> dialog.
+ * <code>EditParticipantDialog.EditParticipantListener</code>
+ * interface.
  * @author Strašlivý Uragán
  * @version 1.0
  * @since 1.0
@@ -33,14 +34,14 @@ public class EditParticipantDialog extends DialogFragment {
     /** Listener object (activity) for this editor. */
 	EditParticipantListener myListener = null;
 
-    /** Tag for storing name of the participant within the
+    /** Tag for storing the name of the participant within the
      * <code>Bundle</code> map. This tag is used in a Bundle used for
      * passing the arguments via
      * <code>setArguments</code>/<code>getArguments</code> pair of
      * functions.
      */
 	public static final String NAME_TAG = "name";
-	/** Tag for storing position of the participant within the
+	/** Tag for storing the position of the participant within the
      * <code>Bundle</code> map. This tag is used in a Bundle used for
      * passing the arguments vie
      * <code>setArguments</code>/<code>getArguments</code> pair of
@@ -108,7 +109,7 @@ public class EditParticipantDialog extends DialogFragment {
 		okButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				okButtonClicked(v);
+				onOkButtonClicked(v);
 			}
 		});
 		Button cancelButton = (Button) v
@@ -142,7 +143,7 @@ public class EditParticipantDialog extends DialogFragment {
      * @param v <code>View</code> of button which was
      * clicked.
 	 */
-	public void okButtonClicked(View v) {
+	public void onOkButtonClicked(View v) {
 		name = nameTextView.getText().toString();
 		dismiss();
         if (myListener != null)

@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+/* TODO: Arguments pass using setArguments(Bundle)/getArguments. 
+ * TODO: OnClickListener should be associated in onAttach(Activity) function. */
 public class WarningDialogWithCheck extends DialogFragment {
     String message = null;
     CheckBox check = null;
