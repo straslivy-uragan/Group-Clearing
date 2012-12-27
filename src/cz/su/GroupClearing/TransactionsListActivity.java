@@ -13,15 +13,35 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-
+/** Class representing the activity showing a list of transactions for
+ * given event. The layout of this activity consists of a
+ * <code>ListView</code> for showing the list of transactions and a
+ * button for adding a new transaction. The layout of this activity is
+ * stored in <code>transactions_list.xml</code>. The list items are
+ * described in <code>transactions_list_item.xml</code>. Options menu
+ * contains item for creating new transactions. Context menu of each
+ * transaction item contains possibility to delete the transaction.
+ * Data to the list of transactions are provided by an object of class
+ * <code>TransactionsListAdapter</code>.
+ *
+ * @see cz.su.GroupClearing.TransactionsListAdapter
+ * @author Strašlivý Uragán
+ * @version 1.0
+ * @since 1.0
+ */
 public class TransactionsListActivity extends FragmentActivity {
 
+    /** Adapter providing data for the list of the transactions. */
 	private TransactionsListAdapter transactionsListAdapter = null;
+    /** Id of the enclosing event. */
 	private long myEventId = -1;
     /** Tag determining the event id parameter of the activity.
      */
     public static final String EVENT_ID_PARAM_TAG = "cz.su.GroupClearing.EventId";
 
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.FragmentActivity#onCreate(android.os.Bundle)
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -41,12 +61,18 @@ public class TransactionsListActivity extends FragmentActivity {
 		registerForContextMenu(lv);
 	}
 
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.FragmentActivity#onResume()
+	 */
 	@Override
 	protected void onResume() {
 		super.onResume();
 		refreshData();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.FragmentActivity#onDestroy()
+	 */
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -55,6 +81,15 @@ public class TransactionsListActivity extends FragmentActivity {
 		}
 	}
 
+    /** Called when a transaction item of the list was clicked. Opens
+     * activity <code>TransactionEditActivity</code> for editing the
+     * transaction. If <code>id</code>&lt;0,
+     * then new transaction is created first by callin
+     * <code>TransactionsListAdapter.createTransaction()</code> function.
+     *
+	 * @param position Position of the transaction within the list.
+	 * @param id Id of the transaction.
+	 */
 	public void onTransactionClicked(final int position, long id) {
 		Intent intent = new Intent(this, TransactionEditActivity.class);
 		ClearingTransaction aTransaction = null;
@@ -71,10 +106,18 @@ public class TransactionsListActivity extends FragmentActivity {
 		startActivity(intent);
 	}
 
+    /** Refreshes the list of transactions from the database. Only
+     * calls
+     * <code>TransactionsListAdapter.readTransactionsFromDB()</code>
+     * function.
+	 */
 	public void refreshData() {
 		transactionsListAdapter.readTransactionsFromDB();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -82,6 +125,9 @@ public class TransactionsListActivity extends FragmentActivity {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
@@ -96,6 +142,9 @@ public class TransactionsListActivity extends FragmentActivity {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	 */
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
@@ -104,6 +153,9 @@ public class TransactionsListActivity extends FragmentActivity {
 		inflater.inflate(R.menu.transaction_context_menu, menu);
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
+	 */
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
@@ -120,6 +172,11 @@ public class TransactionsListActivity extends FragmentActivity {
 		}
 	}
 
+	/** Called when button for adding new transaction was clicked.
+     * Only calls <code>onTransactionClicked</code> with
+     * <code>id</code> equal to -1.
+	 * @param v The <code>View</code> of the button.
+	 */
 	public void onAddNewTransactionClicked(View v) {
 		onTransactionClicked(transactionsListAdapter.getNumberOfTransactions(),
 				-1);
