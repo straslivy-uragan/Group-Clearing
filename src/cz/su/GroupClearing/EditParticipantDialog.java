@@ -70,7 +70,7 @@ public class EditParticipantDialog extends DialogFragment {
 		public void onNameEditorCancelled(int position);
 	}
 
-	/** Construction creating an empty dialog.
+	/** Constructor creating an empty dialog.
      */
 	public EditParticipantDialog() {
 		name = null;

@@ -29,20 +29,21 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 /**
- * Class representing the activity showing event properties. This
- * class corresponds to activity showing event properties with
- * possibility of modifying them. This corresponds to layout stored in
- * <code>event_properties.xml</code>. The <code>id</code> of event
- * whose properties should be shown/edited, is passed via
- * <code>Intent</code> extra. If -1 is passed as the event
- * <code>id</code>, new event is created using
+ * Class representing the activity showing event properties. This class
+ * corresponds to activity showing event properties with possibility of
+ * modifying them. This corresponds to layout stored in
+ * <code>event_properties.xml</code>. The <code>id</code> of event whose
+ * properties should be shown/edited, is passed via <code>Intent</code> extra.
+ * If -1 is passed as the event <code>id</code>, new event is created using
  * <code>GCDatabase.createNewEvent</code>.
  * 
  * @author Strašlivý Uragán <straslivy.uragan@gmail.com>
  * @version 1.0
  * @since 1.0
  */
-public class EventViewActivity extends FragmentActivity {
+public class EventViewActivity extends FragmentActivity
+		implements
+			YesNoDialog.YesNoListener {
 	/** Object representing interface to the database. */
 	private GCDatabase db;
 
@@ -512,19 +513,12 @@ public class EventViewActivity extends FragmentActivity {
 		String message = String.format(format, participant.getName(), myApp
 				.formatCurrencyValueWithSymbol(valueInfo.getValue(),
 						myEvent.getDefaultCurrency()));
-		YesNoDialog dialog = new YesNoDialog(message);
-		dialog.setDialogTag(Long.valueOf(valueInfo.getId()));
-		dialog.setOnClickListener(new YesNoDialog.OnClickListener() {
-			@Override
-			public void onOkClicked(YesNoDialog dlg) {
-				onSuggestReceiverOkClicked(dlg);
-			}
+		YesNoDialog dialog = new YesNoDialog();
+		Bundle bundle = new Bundle();
+		bundle.putString(YesNoDialog.MESSAGE_TAG, message);
+		dialog.setArguments(bundle);
 
-			@Override
-			public void onCancelled(YesNoDialog dlg) {
-				onSuggestReceiverCancelled(dlg);
-			}
-		});
+		dialog.setDialogTag(Long.valueOf(valueInfo.getId()));
 		dialog.show(ft, SUGGEST_RECEIVER_TAG);
 	}
 
@@ -537,7 +531,8 @@ public class EventViewActivity extends FragmentActivity {
 	 * @param dlg
 	 *            Dialog in which the OK button was clicked.
 	 */
-	void onSuggestReceiverOkClicked(YesNoDialog dlg) {
+	@Override
+	public void onYesNoOkClicked(YesNoDialog dlg) {
 		try {
 			ClearingTransaction aTransaction = db
 					.createNewTransaction(myEventId);
@@ -556,13 +551,27 @@ public class EventViewActivity extends FragmentActivity {
 	}
 
 	/**
+	 * Event handler called when user cancelled the dialog suggesting the next
+	 * receiver. This method does nothing.
+	 * 
+	 * @param dlg
+	 *            Dialog in which the Cancel button was clicked.
+	 */
+	@Override
+	public void onYesNoCancelled(YesNoDialog dlg) {
+	}
+
+	/**
 	 * Event handler called when user clicked on Cancel button within dialog
 	 * suggesting the next receiver. This method does nothing.
 	 * 
 	 * @param dlg
 	 *            Dialog in which the Cancel button was clicked.
 	 */
-	void onSuggestReceiverCancelled(YesNoDialog dlg) {
+	@Override
+	public void onYesNoCancelClicked(YesNoDialog dlg) {
+		// TODO Auto-generated method stub
+
 	}
 
 	/**
@@ -598,4 +607,5 @@ public class EventViewActivity extends FragmentActivity {
 			db.updateEventCurrency(myEvent);
 		}
 	}
+
 }

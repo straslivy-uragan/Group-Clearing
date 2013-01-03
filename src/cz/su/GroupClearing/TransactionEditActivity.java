@@ -34,123 +34,140 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-
-/** Class representing the activity for editing properties and data of
- * a transaction. The layout of this activity contains elements
- * necessary for editing all data of a transaction. There are two
- * kinds of layouts, <code>transaction_edit_nocurrency</code> and
- * <code>transaction_edit</code>, the latter version allows to change
- * the currency of transaction while the former version lacks this
- * ability. Which of these layouts is used depends on the status of
- * <code>supportMultipleCurrencies</code> preference. The options menu
- * of this activity is described in
- * <code>transaction_edit_menu.xml</code> and contains only
- * possibility to delete the transaction.
- *
+/**
+ * Class representing the activity for editing properties and data of a
+ * transaction. The layout of this activity contains elements necessary for
+ * editing all data of a transaction. There are two kinds of layouts,
+ * <code>transaction_edit_nocurrency</code> and <code>transaction_edit</code>,
+ * the latter version allows to change the currency of transaction while the
+ * former version lacks this ability. Which of these layouts is used depends on
+ * the status of <code>supportMultipleCurrencies</code> preference. The options
+ * menu of this activity is described in <code>transaction_edit_menu.xml</code>
+ * and contains only possibility to delete the transaction.
+ * 
  * @author Strašlivý Uragán
  * @version 1.0
  * @since 1.0
  */
 public class TransactionEditActivity extends FragmentActivity
-implements EditParticipantValueDialog.EditParticipantValueListener {
-    /** Inflater used to inflate layouts. Used when adding
-     * participants to the list of participants with checkboxes.
-     */
+		implements
+			EditParticipantValueDialog.EditParticipantValueListener,
+			WarningDialogWithCheck.WarningDialogClickListener {
+	/**
+	 * Inflater used to inflate layouts. Used when adding participants to the
+	 * list of participants with checkboxes.
+	 */
 	private LayoutInflater inflater;
-    /** Widget for editing the name of the transaction.
-     */
+	/**
+	 * Widget for editing the name of the transaction.
+	 */
 	private EditText nameEdit = null;
-    /** Widget for editing the note of the transaction.
-     */
+	/**
+	 * Widget for editing the note of the transaction.
+	 */
 	private EditText noteEdit = null;
-    /** Widget for editing the amount of the transaction.
-     */
+	/**
+	 * Widget for editing the amount of the transaction.
+	 */
 	private EditText amountEdit = null;
-    /** <code>Button</code> for setting date of the transaction.
-     */
+	/**
+	 * <code>Button</code> for setting date of the transaction.
+	 */
 	private Button dateButton = null;
-    /** <code>CheckBox</code> for selecting the type of transaction (split
-     * evenly/general).
-     */
+	/**
+	 * <code>CheckBox</code> for selecting the type of transaction (split
+	 * evenly/general).
+	 */
 	private CheckBox splitEvenlyCheck = null;
-    /** Array with participants of the transaction. Usually contains
-     * all participants of the event sorted by their names, this is
-     * the order in which they appear in the list of participants with
-     * checkboxes.
-     */
+	/**
+	 * Array with participants of the transaction. Usually contains all
+	 * participants of the event sorted by their names, this is the order in
+	 * which they appear in the list of participants with checkboxes.
+	 */
 	private Vector<ClearingPerson> participants = null;
-    /** Adapter for populating the <code>Spinner</code> for choosing
-     * receiver/payee of the transaction.
-     */
+	/**
+	 * Adapter for populating the <code>Spinner</code> for choosing
+	 * receiver/payee of the transaction.
+	 */
 	private ArrayAdapter<ClearingPerson> receiversAdapter = null;
-    /** <code>Spinner</code> for choosing receiver/payee of the
-     * transaction.
-     */
+	/**
+	 * <code>Spinner</code> for choosing receiver/payee of the transaction.
+	 */
 	private Spinner receiverSpinner = null;
-    /** List of the participants of the transaction. Each name of participant
-     * is accompanied with a CheckBox for choosing whether he/she
-     * participates in this transaction and a label with value of the
-     * participant.
-     */
+	/**
+	 * List of the participants of the transaction. Each name of participant is
+	 * accompanied with a CheckBox for choosing whether he/she participates in
+	 * this transaction and a label with value of the participant.
+	 */
 	private LinearLayout participantsList = null;
-    /** Id of the enclosing event.
-     */
+	/**
+	 * Id of the enclosing event.
+	 */
 	private long myEventId = -1;
-    /** Id of the transaction.
-     */
+	/**
+	 * Id of the transaction.
+	 */
 	private long myTransactionId = -1;
-    /** Transaction object.
-     */
+	/**
+	 * Transaction object.
+	 */
 	private ClearingTransaction myTransaction = null;
-    /** Connection to the database.
-     */
+	/**
+	 * Connection to the database.
+	 */
 	private GCDatabase db = null;
-    /** A special no receiver person. In the <code>Spinner</code> for
-     * choosing the receiver this value represents the possibility in
-     * which no receiver is chosen.
-     */
+	/**
+	 * A special no receiver person. In the <code>Spinner</code> for choosing
+	 * the receiver this value represents the possibility in which no receiver
+	 * is chosen.
+	 */
 	private ClearingPerson noReceiver = null;
-    /** The application object. For accessing the global and shared
-     * data and preferences.
-     */
+	/**
+	 * The application object. For accessing the global and shared data and
+	 * preferences.
+	 */
 	private final GroupClearingApplication myApp = GroupClearingApplication
 			.getInstance();
-    /** <code>TextView</code> for showing the total balance of the
-     * transaction.
-     */
+	/**
+	 * <code>TextView</code> for showing the total balance of the transaction.
+	 */
 	private TextView balanceText = null;
-    /** <code>Spinner</code> for choosing the currency of the
-     * transaction. Only shown if
-     * <code>supportMultipleCurrencies</code> preference is true.
-     */
+	/**
+	 * <code>Spinner</code> for choosing the currency of the transaction. Only
+	 * shown if <code>supportMultipleCurrencies</code> preference is true.
+	 */
 	private Spinner currencySpinner = null;
-    /** Event object.
-     */
+	/**
+	 * Event object.
+	 */
 	private ClearingEvent myEvent = null;
-    /** Line with widgets for editing the rate. Shown only if currency
-     * of this transaction is different with currency of the event and
-     * <code>supportMultipleCurrencies</code> is true.
-     */
+	/**
+	 * Line with widgets for editing the rate. Shown only if currency of this
+	 * transaction is different with currency of the event and
+	 * <code>supportMultipleCurrencies</code> is true.
+	 */
 	private LinearLayout rateEditorLine = null;
-    /** <code>TextView</code> for displaying the left currency in rate
-     * editor.
-     */
+	/**
+	 * <code>TextView</code> for displaying the left currency in rate editor.
+	 */
 	private TextView rateLeftText = null;
-    /** <code>TextView</code> for displaying the right currency in
-     * rate editor.
-     */
+	/**
+	 * <code>TextView</code> for displaying the right currency in rate editor.
+	 */
 	private TextView rateRightText = null;
-    /** Edit field for editing the rate value.
-     */
+	/**
+	 * Edit field for editing the rate value.
+	 */
 	private EditText rateEdit = null;
 
-    /** Id of the dialog for changing the date of transaction.
-     */
+	/**
+	 * Id of the dialog for changing the date of transaction.
+	 */
 	private static final int DATE_PICK_DIALOG_ID = 0;
-    /** Listener to the dialog for changing the date of transaction.
-     */
-    private final DatePickerDialog.OnDateSetListener dateSetListener =
-        new DatePickerDialog.OnDateSetListener() {
+	/**
+	 * Listener to the dialog for changing the date of transaction.
+	 */
+	private final DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
 
 		@Override
 		public void onDateSet(DatePicker view, int year, int monthOfYear,
@@ -159,13 +176,14 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	};
 
-    /** Class implementing listener to events of <code>Spinner</code>
-     * for choosing the receiver/payee of the transaction.
-     *
-     * @author Strašlivý Uragán
-     * @version 1.0
-     * @since 1.0
-     */
+	/**
+	 * Class implementing listener to events of <code>Spinner</code> for
+	 * choosing the receiver/payee of the transaction.
+	 * 
+	 * @author Strašlivý Uragán
+	 * @version 1.0
+	 * @since 1.0
+	 */
 	public class ReceiverSpinnerOnItemSelected
 			implements
 				OnItemSelectedListener {
@@ -181,43 +199,59 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Class wrapping an item of the list of participants.
+	/**
+	 * Class wrapping an item of the list of participants.
+	 * 
 	 * @author Strašlivý Uragán
-     * @version 1.0
-     * @since 1.0
+	 * @version 1.0
+	 * @since 1.0
 	 */
 	public class ParticipantItemWrapper {
-        /** Base view of the item. Is expected to be layout defined in
-         * <code>trans_participants_list_item.xml</code>.
-         */
+		/**
+		 * Base view of the item. Is expected to be layout defined in
+		 * <code>trans_participants_list_item.xml</code>.
+		 */
 		private View base;
-        /** <code>CheckBox</code> for selecting the participant. In case of split
-         * evenly transaction this check box determines whether
-         * a person is or is not participating in this transaction.
-         */
+		/**
+		 * <code>CheckBox</code> for selecting the participant. In case of split
+		 * evenly transaction this check box determines whether a person is or
+		 * is not participating in this transaction.
+		 */
 		private CheckBox check;
-        /** <code>TextView</code> for showing balance of the
-         * participant in this transaction.
-         */
+		/**
+		 * <code>TextView</code> for showing balance of the participant in this
+		 * transaction.
+		 */
 		private TextView participantBalanceText;
-        /** Balance of the participant in this transaction.
-         */
+		/**
+		 * Balance of the participant in this transaction.
+		 */
 		private BigDecimal balance = BigDecimal.ZERO;
-        /** Id of the participant being shown in this item.
-         */
+		/**
+		 * Id of the participant being shown in this item.
+		 */
 		private long participantId = 0;
-        /** Position of this item within the list of participants.
-         */
+		/**
+		 * Position of this item within the list of participants.
+		 */
 		private int position = 0;
 
-		/** Creates new wrapper with given data.
-		 * @param v Base view of the item.
-		 * @param aPosition Position of the item within the list.
-		 * @param aParticipantId Id of the participant.
-		 * @param name Name of the participant.
-		 * @param state State of the <code>CheckBox</code> determining whether
-         * given person is really participating in this transaction.
-		 * @param aBalance Balance value of the participant.
+		/**
+		 * Creates new wrapper with given data.
+		 * 
+		 * @param v
+		 *            Base view of the item.
+		 * @param aPosition
+		 *            Position of the item within the list.
+		 * @param aParticipantId
+		 *            Id of the participant.
+		 * @param name
+		 *            Name of the participant.
+		 * @param state
+		 *            State of the <code>CheckBox</code> determining whether
+		 *            given person is really participating in this transaction.
+		 * @param aBalance
+		 *            Balance value of the participant.
 		 */
 		public ParticipantItemWrapper(View v, int aPosition,
 				long aParticipantId, String name, boolean state,
@@ -251,30 +285,36 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 			setBalance(aBalance);
 		}
 
-		/** Returns the state of the <code>CheckBox</code>
-         * <code>check</code>. I.e. the <code>CheckBox</code> determining
-         * if the person is really participating in this transaction.
-		 * @return State of the <code>CheckBox</code> determining if
-         * the person is really participating in this transaction.
+		/**
+		 * Returns the state of the <code>CheckBox</code> <code>check</code>.
+		 * I.e. the <code>CheckBox</code> determining if the person is really
+		 * participating in this transaction.
+		 * 
+		 * @return State of the <code>CheckBox</code> determining if the person
+		 *         is really participating in this transaction.
 		 */
 		boolean getCheckState() {
 			return check.isChecked();
 		}
 
-		/** Sets the new state of the <code>CheckBox</code>
-         * <code>check</code>. I.e. the <code>CheckBox</code>
-         * determining if the person is really participating in this
-         * transaction.
-		 * @param state New state of the <code>CheckBox</code>
-         * determining if the person is really participating in this
-         * transaction.
+		/**
+		 * Sets the new state of the <code>CheckBox</code> <code>check</code>.
+		 * I.e. the <code>CheckBox</code> determining if the person is really
+		 * participating in this transaction.
+		 * 
+		 * @param state
+		 *            New state of the <code>CheckBox</code> determining if the
+		 *            person is really participating in this transaction.
 		 */
 		void setCheckState(boolean state) {
 			check.setChecked(state);
 		}
 
-		/** Sets new balance of the participant.
-		 * @param aBalance New balance of the participant.
+		/**
+		 * Sets new balance of the participant.
+		 * 
+		 * @param aBalance
+		 *            New balance of the participant.
 		 */
 		void setBalance(BigDecimal balance) {
 			this.balance = balance;
@@ -291,14 +331,18 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 			}
 		}
 
-		/** Returns the balance of the participant in this transaction.
+		/**
+		 * Returns the balance of the participant in this transaction.
+		 * 
 		 * @return Balance of the participant in this transaction.
 		 */
 		BigDecimal getBalance() {
 			return balance;
 		}
 
-		/** Id of the participant.
+		/**
+		 * Id of the participant.
+		 * 
 		 * @return Id of the participant.
 		 */
 		public long getParticipantId() {
@@ -306,27 +350,33 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Tag for tagging an editor of participant value in a fragment
-     * manager.
+	/**
+	 * Tag for tagging an editor of participant value in a fragment manager.
 	 */
 	public final static String EDIT_PARTICIPANT_VALUE_DLG_TAG = "edit_participant_value_dialog";
-	/** Tag for tagging split warning tag.
+	/**
+	 * Tag for tagging split warning tag.
 	 */
 	public final static String SPLIT_WARNING_TAG = "split_warning_dialog";
-    /** Tag of parameter with event id for passing through
-     * <code>Intent</code> extra information.
-     */
-    public final static String EVENT_ID_PARAM_TAG = "cz.su.GroupClearing.EventId";
-    /** Tag of parameter with transaction id for passing through
-     * <code>Intent</code> extra information.
-     */
-    public final static String TRANSACTION_ID_PARAM_TAG = "cz.su.GroupClearing.TransactionId";
+	/**
+	 * Tag of parameter with event id for passing through <code>Intent</code>
+	 * extra information.
+	 */
+	public final static String EVENT_ID_PARAM_TAG = "cz.su.GroupClearing.EventId";
+	/**
+	 * Tag of parameter with transaction id for passing through
+	 * <code>Intent</code> extra information.
+	 */
+	public final static String TRANSACTION_ID_PARAM_TAG = "cz.su.GroupClearing.TransactionId";
 
-	/** Array of wrappers of items in the list of participants.
+	/**
+	 * Array of wrappers of items in the list of participants.
 	 */
 	Vector<ParticipantItemWrapper> participantWrappers = null;
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.support.v4.app.FragmentActivity#onCreate(android.os.Bundle)
 	 */
 	@Override
@@ -412,7 +462,8 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 				.setOnItemSelectedListener(new ReceiverSpinnerOnItemSelected());
 		participantsList = (LinearLayout) findViewById(R.id.transaction_participants_list);
 		myEventId = getIntent().getLongExtra(EVENT_ID_PARAM_TAG, -1);
-		myTransactionId = getIntent().getLongExtra(TRANSACTION_ID_PARAM_TAG, -1);
+		myTransactionId = getIntent()
+				.getLongExtra(TRANSACTION_ID_PARAM_TAG, -1);
 		db = new GCDatabase(this);
 		myEvent = db.readEventWithId(myEventId);
 		noReceiver = new ClearingPerson(-1);
@@ -461,7 +512,9 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.support.v4.app.FragmentActivity#onResume()
 	 */
 	@Override
@@ -514,7 +567,9 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		refreshParticipants();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.support.v4.app.FragmentActivity#onPause()
 	 */
 	@Override
@@ -525,7 +580,9 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		onAmountChanged();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.support.v4.app.FragmentActivity#onDestroy()
 	 */
 	@Override
@@ -537,18 +594,21 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Reacts on click of the transaction date button. Shows dialog
-     * for picking the date of transaction.
-	 * @param v The <code>View</code> of button.
+	/**
+	 * Reacts on click of the transaction date button. Shows dialog for picking
+	 * the date of transaction.
+	 * 
+	 * @param v
+	 *            The <code>View</code> of button.
 	 */
 	public void onTransactionDateButtonClicked(View v) {
 		showDialog(DATE_PICK_DIALOG_ID);
 	}
 
-	/** Reads the list of participants from the database. It populates
-     * the array <code>participantWrappers</code> of participant item
-     * wrappers. And sets new transaction balance by calling
-     * <code>setBalanceText()</code>.
+	/**
+	 * Reads the list of participants from the database. It populates the array
+	 * <code>participantWrappers</code> of participant item wrappers. And sets
+	 * new transaction balance by calling <code>setBalanceText()</code>.
 	 */
 	public void refreshParticipants() {
 		participants = db.readParticipantsOfEvent(myEventId,
@@ -580,11 +640,12 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		setBalanceText();
 	}
 
-	/** Sets new transaction balance text. Sets the text of
-     * <code>balanceText</code> to value obtained from
-     * <code>ClearingTransaction.getBalance()</code>. The color of the
-     * balance text is set to red, green, or default text color
-     * depending on the signum of balance value.
+	/**
+	 * Sets new transaction balance text. Sets the text of
+	 * <code>balanceText</code> to value obtained from
+	 * <code>ClearingTransaction.getBalance()</code>. The color of the balance
+	 * text is set to red, green, or default text color depending on the signum
+	 * of balance value.
 	 */
 	public void setBalanceText() {
 		balanceText.setText(myApp.formatCurrencyValueWithSymbol(
@@ -600,8 +661,9 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Called when name was modified. Stores the new value in the
-     * database and the transaction object. 
+	/**
+	 * Called when name was modified. Stores the new value in the database and
+	 * the transaction object.
 	 */
 	public void onNameChanged() {
 		String newName = nameEdit.getText().toString();
@@ -611,8 +673,9 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Called when note was modified. Stores the new value in the
-     * database and the transaction object.
+	/**
+	 * Called when note was modified. Stores the new value in the database and
+	 * the transaction object.
 	 */
 	public void onNoteChanged() {
 		String newNote = noteEdit.getText().toString();
@@ -622,14 +685,14 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Recomputes the values of participants and visualizes the
-     * changes. Recompute is done through
-     * <code>ClearingTransaction.recomputeAndSaveChanges(GCDatabase db)</code>.
-     * Values in participant item wrappers are then set accordingly.
-     * Also receiver is found again as it could have changed during
-     * the recompute.
+	/**
+	 * Recomputes the values of participants and visualizes the changes.
+	 * Recompute is done through
+	 * <code>ClearingTransaction.recomputeAndSaveChanges(GCDatabase db)</code>.
+	 * Values in participant item wrappers are then set accordingly. Also
+	 * receiver is found again as it could have changed during the recompute.
 	 * 
-     * @see cz.su.GroupClearing.ClearingTransaction#recomputeAndSaveChanges(cz.su.GroupClearing.GCDatabase)
+	 * @see cz.su.GroupClearing.ClearingTransaction#recomputeAndSaveChanges(cz.su.GroupClearing.GCDatabase)
 	 */
 	private void recomputeValues() {
 		myTransaction.recomputeAndSaveChanges(db);
@@ -658,9 +721,10 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		setBalanceText();
 	}
 
-	/** Called when the amount changed in the <code>EditText</code>.
-     * New amount value is parsed, possibly stored and then the values
-     * are recomputed by calling <code>recomputeValues()</code>.
+	/**
+	 * Called when the amount changed in the <code>EditText</code>. New amount
+	 * value is parsed, possibly stored and then the values are recomputed by
+	 * calling <code>recomputeValues()</code>.
 	 */
 	public void onAmountChanged() {
 		try {
@@ -678,11 +742,16 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 
 	}
 
-	/** Called when user picks new date of transaction. New date is
-     * stored and displayed.
-	 * @param year New year part of the date.
-	 * @param monthOfYear New month part of the date.
-	 * @param day New day part of the date.
+	/**
+	 * Called when user picks new date of transaction. New date is stored and
+	 * displayed.
+	 * 
+	 * @param year
+	 *            New year part of the date.
+	 * @param monthOfYear
+	 *            New month part of the date.
+	 * @param day
+	 *            New day part of the date.
 	 */
 	public void onDateChanged(int year, int monthOfYear, int day) {
 		if (day != myTransaction.getDayOfMonth()
@@ -696,8 +765,11 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Shows given dialog. Used only for date picking dialog.
-     * @param id Id of the dialog to be created.
+	/**
+	 * Shows given dialog. Used only for date picking dialog.
+	 * 
+	 * @param id
+	 *            Id of the dialog to be created.
 	 * @see android.app.Activity#onCreateDialog(int)
 	 */
 	@Override
@@ -711,10 +783,12 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		return null;
 	}
 
-	/** Called when receiver was changed. New receiver is specified by
-     * its position within the list provided by <code>receiversAdapter</code>.
-     * New receiver is stored and the values are recomputed by calling
-     * <code>recomputeValues()</code> function.
+	/**
+	 * Called when receiver was changed. New receiver is specified by its
+	 * position within the list provided by <code>receiversAdapter</code>. New
+	 * receiver is stored and the values are recomputed by calling
+	 * <code>recomputeValues()</code> function.
+	 * 
 	 * @param position
 	 * @param id
 	 */
@@ -727,21 +801,23 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		recomputeValues();
 	}
 
-	/** Called when the status of split evenly check box changed. In case
-     * <code>noSplitChangeWarning</code> preference value is true or
-     * transaction has only zero values
-     * <code>onSplitEvenlyConfirmed(true)</code>
-     * is called directly to finish the change. Otherwise split
-     * warning dialog is presented to the user. It is a dialog of type
-     * <code>WarningDialogWithCheck</code> and is shown using
-     * <code>FragmentManeger</code>.
-	 * @param v View of the <code>CheckBox</code> in question.
-     * @see su.cz.GroupClearing.WarningDialogWithCheck
+	/**
+	 * Called when the status of split evenly check box changed. In case
+	 * <code>noSplitChangeWarning</code> preference value is true or transaction
+	 * has only zero values <code>onSplitEvenlyConfirmed(true)</code> is called
+	 * directly to finish the change. Otherwise split warning dialog is
+	 * presented to the user. It is a dialog of type
+	 * <code>WarningDialogWithCheck</code> and is shown using
+	 * <code>FragmentManeger</code>.
+	 * 
+	 * @param v
+	 *            View of the <code>CheckBox</code> in question.
+	 * @see su.cz.GroupClearing.WarningDialogWithCheck
 	 */
 	public void onSplitEvenlyChanged(View v) {
 		if (myApp.getNoSplitChangeWarning()
 				|| !myTransaction.hasNonzeroValues()) {
-			onSplitEvenlyConfirmed(true);
+			onWarningConfirmed(true);
 		} else {
 			FragmentManager fm = getSupportFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
@@ -751,70 +827,72 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 				ft.remove(prev);
 			}
 			ft.addToBackStack(null);
-			WarningDialogWithCheck dialog = new WarningDialogWithCheck(
-					getResources().getString(R.string.split_warning));
-			dialog.setOnWarningListener(new WarningDialogWithCheck.WarningDialogClickListener() {
-				@Override
-				public void onWarningConfirmed(boolean checked) {
-					onSplitEvenlyConfirmed(checked);
-				}
-
-				@Override
-				public void onWarningCancelled(boolean checked) {
-					onSplitEvenlyCancelled(checked);
-				}
-			});
+			WarningDialogWithCheck dialog = new WarningDialogWithCheck();
+			Bundle bundle = new Bundle();
+			bundle.putString(WarningDialogWithCheck.MESSAGE_TAG, getResources()
+					.getString(R.string.split_warning));
+			dialog.setArguments(bundle);
 			dialog.show(ft, SPLIT_WARNING_TAG);
 		}
 	}
 
-	/** Called when split evenly change was confirmed. The
-     * <code>checked</code> parameter determines new value of
-     * <code>noSplitChangeWarning</code> preference value. The new
-     * status of split evenly flag is stored in the transaction and
-     * the values of transaction are reseted. The values are then
-     * updated in the database as well. In the end
-     * <code>recomputeValues</code> is called to finish the change.
-	 * @param checked New status of <code>noSplitChangeWarning</code>
-     * preference value.
+	/**
+	 * Called when split evenly change was confirmed. The <code>checked</code>
+	 * parameter determines new value of <code>noSplitChangeWarning</code>
+	 * preference value. The new status of split evenly flag is stored in the
+	 * transaction and the values of transaction are reseted. The values are
+	 * then updated in the database as well. In the end
+	 * <code>recomputeValues</code> is called to finish the change.
+	 * 
+	 * @param checked
+	 *            New status of <code>noSplitChangeWarning</code> preference
+	 *            value.
 	 */
-	public void onSplitEvenlyConfirmed(boolean checked) {
+	@Override
+	public void onWarningConfirmed(boolean checked) {
 		myApp.setNoSplitChangeWarning(checked);
 		if (splitEvenlyCheck.isChecked() != myTransaction.getSplitEvenly()) {
 			myTransaction.setSplitEvenly(splitEvenlyCheck.isChecked());
 			db.updateTransactionSplitEvenly(myTransaction);
 			myTransaction.resetValues();
-            db.resetTransactionParticipantsValues(myTransaction,
-                    myTransaction.getSplitEvenly());
-            db.updateTransactionAmount(myTransaction);
-            db.updateTransactionReceiverId(myTransaction);
+			db.resetTransactionParticipantsValues(myTransaction,
+					myTransaction.getSplitEvenly());
+			db.updateTransactionAmount(myTransaction);
+			db.updateTransactionReceiverId(myTransaction);
 			amountEdit.setEnabled(myTransaction.getSplitEvenly());
 			receiverSpinner.setEnabled(myTransaction.getSplitEvenly());
 			recomputeValues();
 		}
 	}
 
-	/** Called when split evenly change was cancelled by user.
-     * <code>CheckBox</code> <code>splitEvenlyCheck</code> status is
-     * changed to the original value. 
-	 * @param checked New status of <code>noSplitChangeWarning</code>
-     * preference value.
-     */
-	public void onSplitEvenlyCancelled(boolean checked) {
+	/**
+	 * Called when split evenly change was cancelled by user.
+	 * <code>CheckBox</code> <code>splitEvenlyCheck</code> status is changed to
+	 * the original value.
+	 * 
+	 * @param checked
+	 *            New status of <code>noSplitChangeWarning</code> preference
+	 *            value.
+	 */
+	@Override
+	public void onWarningCancelled(boolean checked) {
 		myApp.setNoSplitChangeWarning(checked);
 		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
 	}
 
-    /** Called when the status of a CheckBox within a participant item
-     * changed. If this is a split evenly transaction, participants
-     * mark status is changed in the transaction. If the transaction
-     * is not split evenly, then value editor is opened (by calling
-     * <code>openValueEditor(int,long)</code>for changing
-     * the value of participant.
-	 * @param position Position of the item of participant within the
-     * list.
-	 * @param participantId Id of the participant.
-	 * @param isChecked The new status of the <code>CheckBox</code>.
+	/**
+	 * Called when the status of a CheckBox within a participant item changed.
+	 * If this is a split evenly transaction, participants mark status is
+	 * changed in the transaction. If the transaction is not split evenly, then
+	 * value editor is opened (by calling <code>openValueEditor(int,long)</code>
+	 * for changing the value of participant.
+	 * 
+	 * @param position
+	 *            Position of the item of participant within the list.
+	 * @param participantId
+	 *            Id of the participant.
+	 * @param isChecked
+	 *            The new status of the <code>CheckBox</code>.
 	 */
 	public void onParticipantCheckedChange(int position, long participantId,
 			boolean isChecked) {
@@ -828,13 +906,16 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Shows the dialog for changing the value of participant within
-     * the transaction. It shows the
-     * <code>EditParticipantValueDialog</code> using
-     * <code>FragmentManager</code>.
-	 * @param position Position of the participant within the list.
-	 * @param participantId Id of the participant.
-     * @see cz.su.GroupClearing.EditParticipantValueDialog
+	/**
+	 * Shows the dialog for changing the value of participant within the
+	 * transaction. It shows the <code>EditParticipantValueDialog</code> using
+	 * <code>FragmentManager</code>.
+	 * 
+	 * @param position
+	 *            Position of the participant within the list.
+	 * @param participantId
+	 *            Id of the participant.
+	 * @see cz.su.GroupClearing.EditParticipantValueDialog
 	 */
 	public void openValueEditor(int position, long participantId) {
 		FragmentManager fm = getSupportFragmentManager();
@@ -846,31 +927,31 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 		ft.addToBackStack(null);
 		ClearingPerson participant = participants.get(position);
-		EditParticipantValueDialog editParticipantValueDialog =
-            new EditParticipantValueDialog();
-        Bundle bundle = new Bundle();
-        bundle.putString(EditParticipantValueDialog.NAME_TAG,
-                participant.getName());
-        bundle.putLong(EditParticipantValueDialog.ID_TAG, participantId);
-        bundle.putInt(EditParticipantValueDialog.POSITION_TAG, position);
-        BigDecimal value = 
-                myTransaction.getParticipantValue(participantId);
-        bundle.putString(EditParticipantValueDialog.VALUE_TAG,
-                value.toString());
-        BigDecimal precomputed = value.add(myTransaction.getBalance());
-        bundle.putString(EditParticipantValueDialog.PRECOMPUTED_TAG,
-                precomputed.toString());
-        bundle.putString(EditParticipantValueDialog.CURRENCY_TAG,
-                myTransaction.getCurrency().toString());
-        editParticipantValueDialog.setArguments(bundle);
+		EditParticipantValueDialog editParticipantValueDialog = new EditParticipantValueDialog();
+		Bundle bundle = new Bundle();
+		bundle.putString(EditParticipantValueDialog.NAME_TAG,
+				participant.getName());
+		bundle.putLong(EditParticipantValueDialog.ID_TAG, participantId);
+		bundle.putInt(EditParticipantValueDialog.POSITION_TAG, position);
+		BigDecimal value = myTransaction.getParticipantValue(participantId);
+		bundle.putString(EditParticipantValueDialog.VALUE_TAG, value.toString());
+		BigDecimal precomputed = value.add(myTransaction.getBalance());
+		bundle.putString(EditParticipantValueDialog.PRECOMPUTED_TAG,
+				precomputed.toString());
+		bundle.putString(EditParticipantValueDialog.CURRENCY_TAG, myTransaction
+				.getCurrency().toString());
+		editParticipantValueDialog.setArguments(bundle);
 		editParticipantValueDialog.show(ft, EDIT_PARTICIPANT_VALUE_DLG_TAG);
 	}
 
-	/** Opens a value editor for participant after the corresponding
-     * item in the list was long clicked. Calls
-     * <code>openValueEditor(int,long)</code>.
-	 * @param position Position of the participant within the list.
-	 * @param participantId Id of the participant.
+	/**
+	 * Opens a value editor for participant after the corresponding item in the
+	 * list was long clicked. Calls <code>openValueEditor(int,long)</code>.
+	 * 
+	 * @param position
+	 *            Position of the participant within the list.
+	 * @param participantId
+	 *            Id of the participant.
 	 */
 	public void onParticipantLongClick(int position, long participantId) {
 		if (!myTransaction.getSplitEvenly()) {
@@ -878,22 +959,26 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Finishes editing the value of participant after user clicked
-     * on OK button in the editor dialog. Stores the new value in the
-     * transaction object <code>myTransaction</code> and in the
-     * database. Updates the value text and balance text in the layout.
-     *
-	 * @param position Position of the participant within the list.
-	 * @param participantId Id of the participant.
-	 * @param value New value of the participant.
+	/**
+	 * Finishes editing the value of participant after user clicked on OK button
+	 * in the editor dialog. Stores the new value in the transaction object
+	 * <code>myTransaction</code> and in the database. Updates the value text
+	 * and balance text in the layout.
+	 * 
+	 * @param position
+	 *            Position of the participant within the list.
+	 * @param participantId
+	 *            Id of the participant.
+	 * @param value
+	 *            New value of the participant.
 	 */
 	@Override
 	public void onValueEditorOK(int position, long participantId,
 			BigDecimal value) {
 		myTransaction.setParticipantValue(participantId, value);
-        db.updateTransactionParticipantValue(myTransaction, participantId);
-        db.updateTransactionSplitEvenly(myTransaction);
-        db.updateTransactionAmount(myTransaction);
+		db.updateTransactionParticipantValue(myTransaction, participantId);
+		db.updateTransactionSplitEvenly(myTransaction);
+		db.updateTransactionAmount(myTransaction);
 		amountEdit.setText(myApp.formatCurrencyValue(myTransaction.getAmount(),
 				myTransaction.getCurrency()));
 		ParticipantItemWrapper wrapper = participantWrappers.get(position);
@@ -903,10 +988,13 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		splitEvenlyCheck.setChecked(myTransaction.getSplitEvenly());
 	}
 
-	/** Called when user clicke on Cancel button in the value editor
-     * dialog.
-	 * @param position Position of the participant within the list.
-	 * @param participantId Id of the participant.
+	/**
+	 * Called when user clicke on Cancel button in the value editor dialog.
+	 * 
+	 * @param position
+	 *            Position of the participant within the list.
+	 * @param participantId
+	 *            Id of the participant.
 	 */
 	@Override
 	public void onValueEditorCancelled(int position, long participantId) {
@@ -914,7 +1002,9 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		wrapper.setCheckState(myTransaction.isParticipantMarked(participantId));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
@@ -924,7 +1014,9 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
@@ -941,14 +1033,18 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-	/** Called when new currency was selected in the <code>Spinner</code>. Updates the 
-     * new currency in the <code>myTransaction</code> object and in
-     * the database. Rate editor line is updated and default rate is
-     * retrieved from the database. In the end values are recomputed
-     * using <code>recomputeValues</code> function. The currencies are
-     * accessed via <code>CurrencyList</code> instance.
-	 * @param position Position of new currency within the list.
-	 * @param id Id of the new transaction (this is not used).
+	/**
+	 * Called when new currency was selected in the <code>Spinner</code>.
+	 * Updates the new currency in the <code>myTransaction</code> object and in
+	 * the database. Rate editor line is updated and default rate is retrieved
+	 * from the database. In the end values are recomputed using
+	 * <code>recomputeValues</code> function. The currencies are accessed via
+	 * <code>CurrencyList</code> instance.
+	 * 
+	 * @param position
+	 *            Position of new currency within the list.
+	 * @param id
+	 *            Id of the new transaction (this is not used).
 	 */
 	void onCurrencySelected(int position, long id) {
 		CurrencyList cl = CurrencyList.getInstance();
@@ -971,11 +1067,12 @@ implements EditParticipantValueDialog.EditParticipantValueListener {
 		}
 	}
 
-    /** Called when rate text was changed in <code>rateEdit</code>
-     * <code>EditText</code>. Rate is updated in
-     * <code>myTransaction</code> object and in the database, if bad
-     * value is contained in <code>rateEdit</code>, it is changed back
-     * to the value stored in <code>myTransaction</code>.
+	/**
+	 * Called when rate text was changed in <code>rateEdit</code>
+	 * <code>EditText</code>. Rate is updated in <code>myTransaction</code>
+	 * object and in the database, if bad value is contained in
+	 * <code>rateEdit</code>, it is changed back to the value stored in
+	 * <code>myTransaction</code>.
 	 */
 	public void onRateChanged() {
 		String rateText = rateEdit.getText().toString();
