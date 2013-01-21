@@ -56,8 +56,7 @@ public class GCDatabase {
 	 * @since 1.0
 	 * @see cz.su.GroupClearing.GCDatabase#readParticipantsOfEvent(long,ComputeBalance)
 	 * @see cz.su.GroupClearing.ClearingPerson#setBalance(BigDecimal)
-	 * @see cz.su.GroupClearing.ClearingPerson#setAllBalances(SortedMap<String,
-	 *      BigDecimal>)
+	 * @see cz.su.GroupClearing.ClearingPerson#setAllBalances(SortedMap)
 	 */
 	public enum ComputeBalance {
 		/**

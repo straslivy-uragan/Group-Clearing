@@ -321,7 +321,7 @@ public class ParticipantsListAdapter implements ListAdapter {
 	/** Returns sum of balances of participants. Cumulative balances
      * over all currencies as returned by
      * <code>ClearingPerson.getBalance()</code> are summed.
-	 * @return
+	 * @return The sum of balances of participants.
 	 */
 	public BigDecimal getParticipantsValuesSum() {
 		BigDecimal value = BigDecimal.ZERO;

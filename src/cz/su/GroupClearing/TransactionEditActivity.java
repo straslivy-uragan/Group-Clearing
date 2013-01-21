@@ -313,8 +313,7 @@ public class TransactionEditActivity extends FragmentActivity
 		/**
 		 * Sets new balance of the participant.
 		 * 
-		 * @param aBalance
-		 *            New balance of the participant.
+		 * @param balance New balance of the participant.
 		 */
 		void setBalance(BigDecimal balance) {
 			this.balance = balance;
@@ -810,9 +809,8 @@ public class TransactionEditActivity extends FragmentActivity
 	 * <code>WarningDialogWithCheck</code> and is shown using
 	 * <code>FragmentManeger</code>.
 	 * 
-	 * @param v
-	 *            View of the <code>CheckBox</code> in question.
-	 * @see su.cz.GroupClearing.WarningDialogWithCheck
+	 * @param v View of the <code>CheckBox</code> in question.
+	 * @see cz.su.GroupClearing.WarningDialogWithCheck
 	 */
 	public void onSplitEvenlyChanged(View v) {
 		if (myApp.getNoSplitChangeWarning()

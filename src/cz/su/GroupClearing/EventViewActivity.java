@@ -494,7 +494,7 @@ public class EventViewActivity extends FragmentActivity
 	 * shown as a <code>Fragment</code>. It is a <code>YesNoDialog</code>.
 	 * 
 	 * @see cz.su.GroupClearing.GCDatabase#findParticipantWithMinValue(long)
-	 * @see cz.su.YesNoDialog
+	 * @see cz.su.GroupClearing.YesNoDialog
 	 */
 	public void suggestReceiver() {
 		FragmentManager fm = getSupportFragmentManager();
