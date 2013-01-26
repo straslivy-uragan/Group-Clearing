@@ -12,3 +12,10 @@ of the features of this application is naturally a support for
 multiple currencies (which has to be switched on in the settings).
 
 Version 1.0
+
+Author: Strašlivý Uragán <straslivy.uragan@gmail.com>
+
+Copyright notice: This program is a free program, you can download and
+reuse the source code under the terms similar to GPL, I will most
+probably cover the program source codes by GPL v3 license in near
+future.
